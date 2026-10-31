@@ -1,6183 +1,12738 @@
--- clean by prince︱.gg/freesource
-
-playIntroAnimation = function()
-    local Players2 = game:GetService("Players")
-    local TweenService2 = game:GetService("TweenService")
-    local SoundService2 = game:GetService("SoundService")
-    local Debris2 = game:GetService("Debris")
-    local RunService2 = game:GetService("RunService")
-    local LP2 = Players2.LocalPlayer
-    local guiParent = LP2:WaitForChild("PlayerGui")
-
-    pcall(function()
-        for _, parent in ipairs({
-            guiParent,
-            (gethui and gethui()) or nil,
-            game:GetService("CoreGui"),
-        }) do
-            if parent then
-                local old = parent:FindFirstChild("NxcSniperIntro")
-                if old then old:Destroy() end
-            end
-        end
-    end)
-
-    local themeAccent = Color3.fromRGB(55, 140, 255)
-    local themeDim = Color3.fromRGB(100, 140, 190)
-    local themeText = Color3.fromRGB(220, 235, 255)
-    local LASER = Color3.fromRGB(255, 45, 45)
-
-    local splashGui = Instance.new("ScreenGui")
-    splashGui.Name = "NxcSniperIntro"
-    splashGui.ResetOnSpawn = false
-    splashGui.DisplayOrder = 9999
-    splashGui.IgnoreGuiInset = true
-    splashGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-    do
-        local ok = false
-        if typeof(gethui) == "function" then
-            ok = pcall(function() splashGui.Parent = gethui() end)
-        end
-        if not ok then
-            ok = pcall(function() splashGui.Parent = game:GetService("CoreGui") end)
-        end
-        if not ok then
-            splashGui.Parent = guiParent
-        end
-    end
-
-    local overlay = Instance.new("Frame")
-    overlay.Size = UDim2.fromScale(1, 1)
-    overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    overlay.BorderSizePixel = 0
-    overlay.ZIndex = 1
-    overlay.Parent = splashGui
-    local backdrop = Instance.new("ImageLabel")
-    backdrop.Name = "NebulaBackdrop"
-    backdrop.Size = UDim2.fromScale(1, 1)
-    backdrop.BackgroundTransparency = 1
-    backdrop.Image = "rbxassetid://129085053275432"
-    backdrop.ScaleType = Enum.ScaleType.Crop
-    backdrop.ImageTransparency = 0.82
-    backdrop.ImageColor3 = Color3.fromRGB(60, 110, 255)
-    backdrop.ZIndex = 1
-    backdrop.Parent = splashGui
-    local backdropShade = Instance.new("Frame")
-    backdropShade.BackgroundColor3 = Color3.fromRGB(5, 10, 19)
-    backdropShade.BackgroundTransparency = 0.28
-    backdropShade.Size = UDim2.fromScale(1, 1)
-    backdropShade.BorderSizePixel = 0
-    backdropShade.ZIndex = 1
-    backdropShade.Parent = splashGui
-    local backgroundGradient = Instance.new("UIGradient")
-    backgroundGradient.Color = ColorSequence.new(Color3.fromRGB(7, 18, 36), Color3.fromRGB(0, 0, 0))
-    backgroundGradient.Rotation = 90
-    backgroundGradient.Parent = backdropShade
-    local introRandom = Random.new(24688)
-    for i = 1, 22 do
-        local star = Instance.new("Frame")
-        local diameter = i % 5 == 0 and 3 or 2
-        star.Name = "Star"
-        star.Size = UDim2.fromOffset(diameter, diameter)
-        star.Position = UDim2.fromScale(introRandom:NextNumber(0.05, 0.95), introRandom:NextNumber(0.08, 0.92))
-        star.BackgroundColor3 = Color3.fromRGB(110, 205, 249)
-        star.BackgroundTransparency = introRandom:NextNumber(0.55, 0.85)
-        star.BorderSizePixel = 0
-        star.ZIndex = 2
-        star.Parent = splashGui
-        Instance.new("UICorner", star).CornerRadius = UDim.new(1, 0)
-    end
-
-    local viewport = (workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize) or Vector2.new(1280, 720)
-    local SCOPE_D = math.floor(math.clamp(math.min(viewport.X, viewport.Y) * 0.36, 132, 200))
-    local TUBE = math.floor(SCOPE_D * 0.55)
-
-    local function splashText(value, at, size, tint, alignment, z)
-        local textObj = Instance.new("TextLabel")
-        textObj.Text = value
-        textObj.BackgroundTransparency = 1
-        textObj.TextColor3 = tint
-        textObj.Font = Enum.Font.GothamBold
-        textObj.TextSize = size
-        textObj.TextXAlignment = alignment or Enum.TextXAlignment.Center
-        textObj.TextTruncate = Enum.TextTruncate.AtEnd
-        textObj.Size = UDim2.new(1, -36, 0, size + 12)
-        textObj.Position = at
-        textObj.ZIndex = z or 20
-        textObj.Parent = splashGui
-        return textObj
-    end
-    local topBrand = splashText("C A L C I U M   H U B", UDim2.new(0, 20, 0, 27), 20,
-        Color3.fromRGB(220, 245, 255), Enum.TextXAlignment.Left, 20)
-    local topDivision = splashText("CALCIUM HUB  /  STARTUP", UDim2.new(0, 20, 0, 61), 11,
-        Color3.fromRGB(91, 172, 224), Enum.TextXAlignment.Left, 20)
-    local headerRule = Instance.new("Frame")
-    headerRule.Size = UDim2.new(1, -40, 0, 1)
-    headerRule.Position = UDim2.fromOffset(20, 89)
-    headerRule.BackgroundColor3 = Color3.fromRGB(43, 119, 171)
-    headerRule.BackgroundTransparency = 0.45
-    headerRule.BorderSizePixel = 0
-    Instance.new("UICorner",headerRule).CornerRadius=UDim.new(1,0)
-    headerRule.ZIndex = 20
-    headerRule.Parent = splashGui
-    local lowerTitle = splashText("INITIALIZING SYSTEM", UDim2.new(0, 18, 1, -147), 12,
-        Color3.fromRGB(171, 221, 251), Enum.TextXAlignment.Center, 20)
-    local progressTrack = Instance.new("Frame")
-    progressTrack.Name = "LoadingTrack"
-    progressTrack.AnchorPoint = Vector2.new(0.5, 0)
-    progressTrack.Position = UDim2.new(0.5, 0, 1, -74)
-    progressTrack.Size = UDim2.new(0.78, 0, 0, 4)
-    progressTrack.BackgroundColor3 = Color3.fromRGB(33, 65, 86)
-    progressTrack.BorderSizePixel = 0
-    progressTrack.ClipsDescendants = true
-    progressTrack.ZIndex = 20
-    progressTrack.Parent = splashGui
-    Instance.new("UICorner", progressTrack).CornerRadius = UDim.new(1, 0)
-    local progressConstraint = Instance.new("UISizeConstraint", progressTrack)
-    progressConstraint.MaxSize = Vector2.new(340, 4)
-    local progressFill = Instance.new("Frame")
-    progressFill.Name = "Progress"
-    progressFill.Size = UDim2.new(0, 0, 1, 0)
-    progressFill.BackgroundColor3 = Color3.fromRGB(68, 225, 255)
-    progressFill.BorderSizePixel = 0
-    progressFill.ZIndex = 21
-    progressFill.Parent = progressTrack
-    Instance.new("UICorner", progressFill).CornerRadius = UDim.new(1, 0)
-    local progressGlow = Instance.new("UIStroke", progressFill)
-    progressGlow.Color = Color3.fromRGB(120, 225, 255)
-    progressGlow.Transparency = 0.3
-    progressGlow.Thickness = 1
-    TweenService2:Create(progressFill, TweenInfo.new(11.7, Enum.EasingStyle.Linear),
-        {Size = UDim2.fromScale(1, 1)}):Play()
-
-    local housing = Instance.new("Frame")
-    housing.Size = UDim2.fromOffset(SCOPE_D + TUBE * 2, SCOPE_D + TUBE * 2)
-    housing.Position = UDim2.new(0.5, -(SCOPE_D/2 + TUBE), 0.5, -(SCOPE_D/2 + TUBE))
-    housing.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    housing.BorderSizePixel = 0
-    housing.ZIndex = 2
-    housing.Parent = splashGui
-    Instance.new("UICorner", housing).CornerRadius = UDim.new(1, 0)
-    local halo = Instance.new("Frame")
-    halo.Name = "ScopePulse"
-    halo.AnchorPoint = Vector2.new(0.5, 0.5)
-    halo.Position = UDim2.fromScale(0.5, 0.5)
-    halo.Size = UDim2.fromOffset(SCOPE_D + 64, SCOPE_D + 64)
-    halo.BackgroundTransparency = 1
-    halo.ZIndex = 3
-    halo.Parent = splashGui
-    Instance.new("UICorner", halo).CornerRadius = UDim.new(1, 0)
-    local haloEdge = Instance.new("UIStroke", halo)
-    haloEdge.Thickness = 2
-    haloEdge.Color = Color3.fromRGB(79, 208, 255)
-    haloEdge.Transparency = 0.45
-    TweenService2:Create(haloEdge, TweenInfo.new(1.35, Enum.EasingStyle.Sine,
-        Enum.EasingDirection.InOut, -1, true), {Transparency = 0.87, Thickness = 1}):Play()
-
-    local bevel = Instance.new("Frame")
-    bevel.Size = UDim2.fromOffset(SCOPE_D + 18, SCOPE_D + 18)
-    bevel.Position = UDim2.new(0.5, -(SCOPE_D + 18)/2, 0.5, -(SCOPE_D + 18)/2)
-    bevel.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
-    bevel.BorderSizePixel = 0
-    bevel.ZIndex = 3
-    bevel.Parent = splashGui
-    Instance.new("UICorner", bevel).CornerRadius = UDim.new(1, 0)
-    do
-        local s = Instance.new("UIStroke", bevel)
-        s.Color = Color3.fromRGB(70, 70, 75)
-        s.Thickness = 2.5
-        s.Transparency = 0.25
-    end
-
-    local scopeClip = Instance.new("Frame")
-    scopeClip.Name = "ScopeClip"
-    scopeClip.Size = UDim2.fromOffset(SCOPE_D, SCOPE_D)
-    scopeClip.Position = UDim2.new(0.5, -SCOPE_D/2, 0.5, -SCOPE_D/2)
-    scopeClip.BackgroundColor3 = Color3.fromRGB(12, 16, 14)
-    scopeClip.BorderSizePixel = 0
-    scopeClip.ClipsDescendants = true
-    scopeClip.ZIndex = 4
-    scopeClip.Parent = splashGui
-    Instance.new("UICorner", scopeClip).CornerRadius = UDim.new(1, 0)
-
-    local glass = Instance.new("Frame")
-    glass.Size = UDim2.fromScale(1, 1)
-    glass.BackgroundColor3 = Color3.fromRGB(25, 55, 30)
-    glass.BackgroundTransparency = 0.88
-    glass.BorderSizePixel = 0
-    glass.ZIndex = 5
-    glass.Parent = scopeClip
-    Instance.new("UICorner", glass).CornerRadius = UDim.new(1, 0)
-
-    local vig = Instance.new("Frame")
-    vig.Size = UDim2.fromScale(1, 1)
-    vig.BackgroundTransparency = 1
-    vig.ZIndex = 6
-    vig.Parent = scopeClip
-    Instance.new("UICorner", vig).CornerRadius = UDim.new(1, 0)
-    do
-        local s = Instance.new("UIStroke", vig)
-        s.Color = Color3.fromRGB(0, 0, 0)
-        s.Thickness = 32
-        s.Transparency = 0.12
-    end
-
-    local lip = Instance.new("Frame")
-    lip.Size = UDim2.fromOffset(SCOPE_D + 4, SCOPE_D + 4)
-    lip.Position = UDim2.new(0.5, -(SCOPE_D + 4)/2, 0.5, -(SCOPE_D + 4)/2)
-    lip.BackgroundTransparency = 1
-    lip.ZIndex = 7
-    lip.Parent = splashGui
-    Instance.new("UICorner", lip).CornerRadius = UDim.new(1, 0)
-    do
-        local s = Instance.new("UIStroke", lip)
-        s.Color = Color3.fromRGB(110, 110, 115)
-        s.Thickness = 2
-        s.Transparency = 0.25
-    end
-
-    local target = Instance.new("Frame")
-    target.Name = "Target"
-    target.Size = UDim2.fromOffset(72, 72)
-    target.AnchorPoint = Vector2.new(0.5, 0.5)
-    target.Position = UDim2.new(0.5, 18, 0.5, -8)
-    target.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-    target.BorderSizePixel = 0
-    target.ZIndex = 8
-    target.Parent = scopeClip
-    Instance.new("UICorner", target).CornerRadius = UDim.new(1, 0)
-    do
-        local s = Instance.new("UIStroke", target)
-        s.Color = Color3.fromRGB(200, 60, 60)
-        s.Thickness = 2
-        s.Transparency = 0.3
-    end
-
-    local head = Instance.new("ImageLabel")
-    head.Name = "Headshot"
-    head.Size = UDim2.fromScale(1, 1)
-    head.BackgroundTransparency = 1
-    head.ScaleType = Enum.ScaleType.Crop
-    head.ZIndex = 9
-    head.Parent = target
-    Instance.new("UICorner", head).CornerRadius = UDim.new(1, 0)
-    pcall(function()
-        head.Image = "rbxthumb://type=AvatarHeadShot&id=" .. tostring(LP2.UserId) .. "&w=150&h=150"
-    end)
-
-    local nameTag = Instance.new("TextLabel")
-    nameTag.Size = UDim2.fromOffset(100, 14)
-    nameTag.AnchorPoint = Vector2.new(0.5, 0)
-    nameTag.Position = UDim2.new(0.5, 0, 1, 4)
-    nameTag.BackgroundTransparency = 1
-    nameTag.Text = tostring(LP2.Name or "TARGET")
-    nameTag.TextColor3 = Color3.fromRGB(255, 80, 80)
-    nameTag.Font = Enum.Font.GothamBold
-    nameTag.TextSize = 10
-    nameTag.TextTransparency = 0.15
-    nameTag.ZIndex = 10
-    nameTag.Parent = target
-
-    local function hair(w, h, x, y, color, z)
-        local f = Instance.new("Frame")
-        f.Size = UDim2.fromOffset(w, h)
-        f.Position = UDim2.new(0.5, x, 0.5, y)
-        f.BackgroundColor3 = color
-        f.BorderSizePixel = 0
-        f.ZIndex = z or 11
-        f.Parent = scopeClip
-        Instance.new("UICorner", f).CornerRadius = UDim.new(1, 0)
-        return f
-    end
-    local BLACK = Color3.fromRGB(8, 8, 8)
-    local span = SCOPE_D * 0.46
-    hair(span * 2, 2, -span, -1, BLACK, 11)
-    hair(2, span * 2, -1, -span, BLACK, 11)
-    local laserHorizontal = hair(26, 2, -13, -1, LASER, 12)
-    local laserVertical = hair(2, 26, -1, -13, LASER, 12)
-    Instance.new("UICorner",laserHorizontal).CornerRadius=UDim.new(1,0)
-    Instance.new("UICorner",laserVertical).CornerRadius=UDim.new(1,0)
-    local centerDot = Instance.new("Frame")
-    centerDot.Size = UDim2.fromOffset(6, 6)
-    centerDot.AnchorPoint = Vector2.new(0.5, 0.5)
-    centerDot.Position = UDim2.new(0.5, 0, 0.5, 0)
-    centerDot.BackgroundColor3 = LASER
-    centerDot.BorderSizePixel = 0
-    centerDot.ZIndex = 13
-    centerDot.Parent = scopeClip
-    Instance.new("UICorner", centerDot).CornerRadius = UDim.new(1, 0)
-
-    for i = 1, 4 do
-        local y = 18 + i * 14
-        local d = Instance.new("Frame")
-        d.Size = UDim2.fromOffset(4, 4)
-        d.Position = UDim2.new(0.5, -2, 0.5, y - 2)
-        d.BackgroundColor3 = LASER
-        d.BackgroundTransparency = 0.15
-        d.BorderSizePixel = 0
-        d.ZIndex = 12
-        d.Parent = scopeClip
-        Instance.new("UICorner", d).CornerRadius = UDim.new(1, 0)
-    end
-
-    local glare = Instance.new("Frame")
-    glare.Size = UDim2.fromOffset(SCOPE_D * 0.65, 9)
-    glare.AnchorPoint = Vector2.new(0.5, 0.5)
-    glare.Position = UDim2.new(0.5, 0, 0.32, 0)
-    glare.Rotation = -26
-    glare.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    glare.BackgroundTransparency = 0.93
-    glare.BorderSizePixel = 0
-    glare.ZIndex = 7
-    glare.Parent = scopeClip
-    Instance.new("UICorner", glare).CornerRadius = UDim.new(1, 0)
-
-    local loadingLbl = Instance.new("TextLabel")
-    loadingLbl.Size = UDim2.new(1, 0, 0, 16)
-    loadingLbl.Position = UDim2.new(0, 0, 1, -113)
-    loadingLbl.BackgroundTransparency = 1
-    loadingLbl.Text = "ACQUIRING TARGET..."
-    loadingLbl.TextColor3 = themeDim
-    loadingLbl.Font = Enum.Font.GothamBold
-    loadingLbl.TextSize = 12
-    loadingLbl.ZIndex = 20
-    loadingLbl.Parent = splashGui
-
-    local tapHint = Instance.new("TextLabel")
-    tapHint.Size = UDim2.new(1, 0, 0, 16)
-    tapHint.Position = UDim2.new(0, 0, 1, -24)
-    tapHint.BackgroundTransparency = 1
-    tapHint.Text = "TAP ANYWHERE TO SKIP"
-    tapHint.TextColor3 = themeDim
-    tapHint.Font = Enum.Font.GothamMedium
-    tapHint.TextSize = 10
-    tapHint.TextTransparency = 0.3
-    tapHint.ZIndex = 20
-    tapHint.Parent = splashGui
-
-    local skipZone = Instance.new("TextButton")
-    skipZone.Size = UDim2.fromScale(1, 1)
-    skipZone.BackgroundTransparency = 1
-    skipZone.Text = ""
-    skipZone.ZIndex = 19
-    skipZone.Parent = splashGui
-
-    local nxcLbl = Instance.new("TextLabel")
-    nxcLbl.Size = UDim2.fromOffset(120, 28)
-    nxcLbl.AnchorPoint = Vector2.new(0.5, 0.5)
-    nxcLbl.Position = UDim2.new(0.5, -52, 0.5, 36)
-    nxcLbl.BackgroundTransparency = 1
-    nxcLbl.Text = "CALCIUM HUB"
-    nxcLbl.TextColor3 = themeText
-    nxcLbl.Font = Enum.Font.GothamBlack
-    nxcLbl.TextSize = 15
-    nxcLbl.TextTransparency = 1
-    nxcLbl.TextStrokeTransparency = 0.3
-    nxcLbl.ZIndex = 14
-    nxcLbl.Parent = scopeClip
-    local calcGrad = Instance.new("UIGradient", nxcLbl)
-    calcGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, themeAccent),
-        ColorSequenceKeypoint.new(0.5, themeText),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 210, 255)),
-    })
-
-    local sniperLbl = Instance.new("TextLabel")
-    sniperLbl.Size = UDim2.fromOffset(80, 28)
-    sniperLbl.AnchorPoint = Vector2.new(0.5, 0.5)
-    sniperLbl.Position = UDim2.new(0.5, 56, 0.5, 36)
-    sniperLbl.BackgroundTransparency = 1
-    sniperLbl.Text = "SNIPER"
-    sniperLbl.TextColor3 = themeText
-    sniperLbl.Font = Enum.Font.GothamBlack
-    sniperLbl.TextSize = 15
-    sniperLbl.TextTransparency = 1
-    sniperLbl.TextStrokeTransparency = 0.3
-    sniperLbl.ZIndex = 14
-    sniperLbl.Parent = scopeClip
-    local sniperGrad = Instance.new("UIGradient", sniperLbl)
-    sniperGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 210, 255)),
-        ColorSequenceKeypoint.new(0.5, themeText),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 70, 120)),
-    })
-
-    local hitRing = Instance.new("Frame")
-    hitRing.AnchorPoint = Vector2.new(0.5, 0.5)
-    hitRing.Position = UDim2.new(0.5, 0, 0.5, 0)
-    hitRing.Size = UDim2.fromOffset(20, 20)
-    hitRing.BackgroundTransparency = 1
-    hitRing.ZIndex = 15
-    hitRing.Visible = false
-    hitRing.Parent = scopeClip
-    Instance.new("UICorner", hitRing).CornerRadius = UDim.new(1, 0)
-    local hitStroke = Instance.new("UIStroke", hitRing)
-    hitStroke.Color = LASER
-    hitStroke.Thickness = 3
-    hitStroke.Transparency = 0.2
-
-    local introFinished = false
-    local introCompleteEvent = Instance.new("BindableEvent")
-    local introSound = nil
-
-    local function stopIntroMusic()
-        pcall(function()
-            if introSound then
-                introSound:Stop()
-                introSound:Destroy()
-                introSound = nil
-            end
-        end)
-    end
-
-    task.spawn(function()
-        local url = "https://files.catbox.moe/8ch5qz.mp3"
-        local cacheName = "NxcSniperIntro_v2.mp3"
-        local function tryCustom(path)
-            local asset = nil
-            pcall(function() if getcustomasset then asset = getcustomasset(path) end end)
-            if (not asset or asset == "") and syn and syn.getcustomasset then
-                pcall(function() asset = syn.getcustomasset(path) end)
-            end
-            return asset
-        end
-        local assetId = nil
-        pcall(function()
-            if isfile and isfile(cacheName) then
-                assetId = tryCustom(cacheName)
-            end
-        end)
-        if not assetId then
-            local content = nil
-            pcall(function()
-                local req = (syn and syn.request) or (http and http.request) or request or http_request
-                if req then
-                    local res = req({Url = url, Method = "GET"})
-                    content = res and (res.Body or res.body)
-                end
-            end)
-            if (not content or #content == 0) then
-                pcall(function() content = game:HttpGet(url) end)
-            end
-            if content and #content > 0 then
-                pcall(function() writefile(cacheName, content) end)
-                task.wait(0.05)
-                assetId = tryCustom(cacheName)
-                if not assetId then
-                    task.wait(0.12)
-                    assetId = tryCustom(cacheName)
-                end
-            end
-        end
-        if introFinished then return end
-        if assetId and type(assetId) == "string" and #assetId > 0 then
-            pcall(function()
-                introSound = Instance.new("Sound")
-                introSound.Name = "NxcSniperIntroMusic"
-                introSound.SoundId = assetId
-                introSound.Volume = 1
-                introSound.Looped = false
-                introSound.PlaybackSpeed = 1
-                local ok = pcall(function() introSound.Parent = SoundService2 end)
-                if not ok then introSound.Parent = workspace end
-                local t0 = tick()
-                while introSound.Parent and not introSound.IsLoaded and (tick() - t0) < 2.5 do
-                    task.wait(0.04)
-                    if introFinished then return end
-                end
-                if not introFinished and introSound.Parent then
-                    introSound.TimePosition = 0
-                    introSound:Play()
-                end
-            end)
-        end
-    end)
-
-    local INTRO_DURATION = 13.0
-    local exitStarted = false
-    local animConn = nil
-
-    local function stopAnim()
-        if animConn then pcall(function() animConn:Disconnect() end) animConn = nil end
-    end
-
-    local function playSfx(id, pitch, vol, delay)
-        task.delay(delay or 0, function()
-            if introFinished then return end
-            local s = Instance.new("Sound")
-            s.SoundId = id
-            s.PlaybackSpeed = pitch or 1
-            s.Volume = vol or 0.6
-            s.Parent = SoundService2
-            s:Play()
-            Debris2:AddItem(s, 4)
-        end)
-    end
-
-    local function finishIntro()
-        if introFinished then return end
-        introFinished = true
-        stopAnim()
-        stopIntroMusic()
-        pcall(function() splashGui:Destroy() end)
-        introCompleteEvent:Fire()
-    end
-
-    local function playExit()
-        if exitStarted then return end
-        exitStarted = true
-        stopAnim()
-        pcall(function()
-            if introSound then
-                TweenService2:Create(introSound, TweenInfo.new(0.4), {Volume = 0}):Play()
-            end
-        end)
-        loadingLbl.Text = "CALCIUM HUB  /  READY"
-        loadingLbl.TextColor3 = themeAccent
-        lowerTitle.Text = "SYSTEM ONLINE"
-        lowerTitle.TextColor3 = Color3.fromRGB(104, 244, 209)
-        TweenService2:Create(progressFill, TweenInfo.new(0.18), {Size = UDim2.fromScale(1, 1)}):Play()
-        local closeInfo = TweenInfo.new(0.55, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
-        for _, obj in ipairs({scopeClip, bevel, lip, housing}) do
-            pcall(function()
-                TweenService2:Create(obj, closeInfo, {
-                    Size = UDim2.fromOffset(0, 0),
-                    Position = UDim2.new(0.5, 0, 0.5, 0),
-                }):Play()
-            end)
-        end
-        TweenService2:Create(overlay, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
-        TweenService2:Create(loadingLbl, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
-        TweenService2:Create(tapHint, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
-        task.delay(0.65, finishIntro)
-    end
-
-    skipZone.MouseButton1Click:Connect(function()
-        if not introFinished then playExit() end
-    end)
-
-    task.spawn(function()
-        loadingLbl.Text = "CALIBRATING SCOPE..."
-        playSfx("rbxassetid://9113826540", 0.85, 0.25, 0)
-
-        local tTrack = TweenService2:Create(target, TweenInfo.new(2.4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-            Position = UDim2.new(0.5, 0, 0.5, 0),
-        })
-        tTrack:Play()
-
-        local lastVisualFrame = 0
-        animConn = RunService2.RenderStepped:Connect(function()
-            if introFinished or exitStarted then return end
-            local t = tick()
-            if t - lastVisualFrame < (1 / 30) then return end
-            lastVisualFrame = t
-            scopeClip.Rotation = math.sin(t * 0.7) * 1.2
-            local breath = 1 + math.sin(t * 1.1) * 0.008
-            local d = SCOPE_D * breath
-            if not exitStarted then
-                scopeClip.Size = UDim2.fromOffset(d, d)
-                scopeClip.Position = UDim2.new(0.5, -d/2, 0.5, -d/2)
-            end
-            calcGrad.Rotation = (t * 40) % 360
-            sniperGrad.Rotation = (-t * 35) % 360
-        end)
-
-        task.wait(2.2)
-        if introFinished then return end
-        loadingLbl.Text = "TARGET LOCKED  /  " .. tostring(LP2.DisplayName or LP2.Name)
-        lowerTitle.Text = "OPTICS LINKED"
-        loadingLbl.TextColor3 = Color3.fromRGB(255, 200, 80)
-        pcall(function()
-            local s = target:FindFirstChildOfClass("UIStroke")
-            if s then
-                TweenService2:Create(s, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 3, true), {
-                    Thickness = 4,
-                    Transparency = 0.05,
-                }):Play()
-            end
-        end)
-
-        task.wait(1.3)
-        if introFinished then return end
-        TweenService2:Create(nxcLbl, TweenInfo.new(0.6), {TextTransparency = 0.05}):Play()
-        TweenService2:Create(sniperLbl, TweenInfo.new(0.6), {TextTransparency = 0.05}):Play()
-        loadingLbl.Text = "SYNCING SYSTEM..."
-        lowerTitle.Text = "SYNC  /  02"
-        loadingLbl.TextColor3 = themeDim
-
-        task.wait(2.0)
-        if introFinished then return end
-        loadingLbl.Text = "READY TO LAUNCH"
-        lowerTitle.Text = "SYNC  /  03"
-        loadingLbl.TextColor3 = Color3.fromRGB(120, 220, 140)
-
-        task.wait(1.5)
-        if introFinished then return end
-        loadingLbl.Text = "CALCIUM HUB ONLINE"
-        lowerTitle.Text = "CALCIUM HUB  /  READY"
-        loadingLbl.TextColor3 = LASER
-        playSfx("rbxassetid://9120383924", 1.1, 0.7, 0)
-        playSfx("rbxassetid://4612414100", 1.8, 0.5, 0.05)
-
-        local flash = Instance.new("Frame")
-        flash.Size = UDim2.fromScale(1, 1)
-        flash.BackgroundColor3 = Color3.fromRGB(255, 220, 180)
-        flash.BackgroundTransparency = 0.35
-        flash.BorderSizePixel = 0
-        flash.ZIndex = 18
-        flash.Parent = scopeClip
-        Instance.new("UICorner", flash).CornerRadius = UDim.new(1, 0)
-        TweenService2:Create(flash, TweenInfo.new(0.18), {BackgroundTransparency = 1}):Play()
-        Debris2:AddItem(flash, 0.3)
-
-        hitRing.Visible = true
-        hitRing.Size = UDim2.fromOffset(16, 16)
-        hitStroke.Transparency = 0
-        TweenService2:Create(hitRing, TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = UDim2.fromOffset(100, 100),
-        }):Play()
-        TweenService2:Create(hitStroke, TweenInfo.new(0.45), {Transparency = 1}):Play()
-
-        TweenService2:Create(head, TweenInfo.new(0.3), {ImageTransparency = 0.35}):Play()
-        TweenService2:Create(target, TweenInfo.new(0.25), {BackgroundColor3 = Color3.fromRGB(80, 20, 20)}):Play()
-        nameTag.Text = "ELIMINATED"
-        nameTag.TextColor3 = LASER
-
-        for i = 1, 6 do
-            if introFinished then break end
-            local ox = (math.random() - 0.5) * 10
-            local oy = (math.random() - 0.5) * 10
-            scopeClip.Position = UDim2.new(0.5, -SCOPE_D/2 + ox, 0.5, -SCOPE_D/2 + oy)
-            housing.Position = UDim2.new(0.5, -(SCOPE_D/2 + TUBE) + ox, 0.5, -(SCOPE_D/2 + TUBE) + oy)
-            task.wait(0.03)
-        end
-        scopeClip.Position = UDim2.new(0.5, -SCOPE_D/2, 0.5, -SCOPE_D/2)
-
-        task.wait(1.2)
-        if introFinished then return end
-        loadingLbl.Text = "CALCIUM HUB  /  ONLINE"
-        loadingLbl.TextColor3 = themeAccent
-
-        task.wait(2.0)
-        if introFinished then return end
-        playExit()
-    end)
-
-    task.delay(INTRO_DURATION + 1.5, function()
-        if not introFinished then playExit() end
-    end)
-
-    return introCompleteEvent.Event
-end
-
-local cloneref = cloneref or function(object) return object end
-local Players           = cloneref(game:GetService("Players"))
-local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
-local RunService        = cloneref(game:GetService("RunService"))
-local UserInputService  = cloneref(game:GetService("UserInputService"))
-local HttpService       = cloneref(game:GetService("HttpService"))
-local TweenService      = cloneref(game:GetService("TweenService"))
-local player = Players.LocalPlayer
-local playerGui = player:FindFirstChild("PlayerGui") or player:WaitForChild("PlayerGui", 1) or player:WaitForChild("PlayerGui")
-local GUI
-local _instanceRunning = true
-local _keybindListener, _boxFocusedListener, _focusReleasedListener
-local _characterListener, _targetWatcherListener, _feedbackAddedListener
-local _feedbackListeners = {}
-
-local function getExecutorName()
-    local name = nil
-    pcall(function()
-        if type(identifyexecutor) == "function" then
-            local ok, n = pcall(identifyexecutor)
-            if ok and type(n) == "string" and n ~= "" then name = n end
-        end
-        if (not name or name == "") and type(getexecutorname) == "function" then
-            local ok, n = pcall(getexecutorname)
-            if ok and type(n) == "string" and n ~= "" then name = n end
-        end
-    end)
-    if not name or name == "" then
-        local env = (typeof(getgenv) == "function" and getgenv()) or _G
-        if type(env) == "table" then
-            if env.__FLUXUS or env.fluxus then name = "Fluxus"
-            elseif env.__SOLARA or env.solara then name = "Solara"
-            elseif env.__WAVE or env.wave then name = "Wave"
-            elseif env.__DELTA or env.delta then name = "Delta"
-            elseif env.__XENO or env.xeno then name = "Xeno"
-            elseif env.__ARCEUS or env.arceus then name = "Arceus X"
-            elseif env.__CODEIUM then name = "Codeium"
-            elseif env.__VELOCITY then name = "Velocity"
-            elseif env.__TRIGON then name = "Trigon"
-            elseif env.__ATOM or env.atom then name = "Atom"
-            elseif env.__HYDROXIDE then name = "Hydroxide"
-            elseif env.__MACSWARE then name = "MacSware"
-            end
-        end
-        if not name then
-            if syn then name = "Synapse X"
-            elseif secure_load or is_sirhurt_closure then name = "SirHurt"
-            elseif KRNL_LOADED then name = "Krnl"
-            elseif isElectron then name = "Electron"
-            elseif fluxus then name = "Fluxus"
-            end
-        end
-    end
-    if not name or name == "" then name = "Unknown Executor" end
-    return tostring(name)
-end
-local EXECUTOR_NAME = getExecutorName()
-
-local _autoFarm
-local _cachedBox        = nil
-local _cachedBoxTime    = 0
-local _cachedSubmitBtn  = nil
-local _writingCodeBox   = false
-
-local FRAME_HOOK = (RunService:IsClient() and (RunService.PreRender or RunService.PreSimulation)) or RunService.PreSimulation or RunService.Heartbeat
-local _pendingCodeThisFrame = nil
-local _frameFlushQueued = false
-
-if getgenv and getgenv().StopAura then pcall(getgenv().StopAura) end
-
-local Workspace = cloneref(game:GetService("Workspace"))
-local _ragdollConnection = nil
-local _ragdollCooldown = 0
-function nxcForceUnragdoll()
-    local char = player.Character
-    if not char then return end
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    local root = char:FindFirstChild("HumanoidRootPart")
-    if not hum or hum.Health <= 0 then return end
-    pcall(function()
-        hum:ChangeState(Enum.HumanoidStateType.GettingUp)
-        hum:ChangeState(Enum.HumanoidStateType.Running)
-        hum.PlatformStand = false
-        hum.Sit = false
-        if root then
-            root.AssemblyLinearVelocity = Vector3.new(0, root.AssemblyLinearVelocity.Y, 0)
-            root.AssemblyAngularVelocity = Vector3.zero
-        end
-    end)
-end
-function startAntiRagdollAlways()
-    if _ragdollConnection then return end
-    _ragdollConnection = RunService.Heartbeat:Connect(function()
-        local char = player.Character
-        if not char then return end
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        if not hum or hum.Health <= 0 then return end
-        local state = hum:GetState()
-        local isRag = (state == Enum.HumanoidStateType.Physics
-            or state == Enum.HumanoidStateType.Ragdoll
-            or state == Enum.HumanoidStateType.FallingDown)
-        if isRag then
-            local now = tick()
-            if now - _ragdollCooldown > 0.12 then
-                _ragdollCooldown = now
-                nxcForceUnragdoll()
-            end
-        end
-    end)
-end
-startAntiRagdollAlways()
-_characterListener = player.CharacterAdded:Connect(function()
-    task.wait(0.2)
-    startAntiRagdollAlways()
-end)
-
-local _autoBuyActive = false
-local _autoBuyRange = 22
-local _autoBuyPurchaseRemote = nil
-local _autoBuyConveyorCache = {}
-local _autoBuyBuyLoop = nil
-local _autoBuyScanLoop = nil
-local _autoBuyAnchorConn = nil
-local _autoBuyLockedTarget = nil
-local _autoBuyAnchorPos = nil
-local BUY_INTERVAL = 0.06
-
-function autoBuyResolveRemote()
-    if _autoBuyPurchaseRemote and _autoBuyPurchaseRemote.Parent then return _autoBuyPurchaseRemote end
-    pcall(function()
-        local pkgs = ReplicatedStorage:FindFirstChild("Packages")
-        local net = pkgs and pkgs:FindFirstChild("Net")
-        if net then
-            for _, v in ipairs(net:GetChildren()) do
-                local nl = (v.Name or ""):lower()
-                if nl:find("buy") or nl:find("purchase") or nl:find("acquire") then
-                    _autoBuyPurchaseRemote = v
-                    return
-                end
-            end
-        end
-    end)
-    return _autoBuyPurchaseRemote
-end
-function autoBuyFirePurchase(prompt)
-    if not prompt or not prompt.Parent or not prompt.Enabled then return end
-    pcall(function()
-        if fireproximityprompt then fireproximityprompt(prompt) end
-    end)
-    task.spawn(function()
-        local remote = autoBuyResolveRemote()
-        if remote then
-            pcall(function()
-                if remote:IsA("RemoteFunction") then
-                    remote:InvokeServer(prompt.Parent)
-                elseif remote:IsA("RemoteEvent") then
-                    remote:FireServer(prompt.Parent)
-                end
-            end)
-        end
-    end)
-end
-
-function autoBuyScanConveyor()
-    local results = {}
-    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-    if not hrp then return results end
-    local origin = hrp.Position
-
-    local ok, parts = pcall(function()
-        return Workspace:GetPartBoundsInRadius(origin, _autoBuyRange + 8)
-    end)
-    if not ok or not parts then return results end
-
-    for _, part in ipairs(parts) do
-        if part and part.Parent then
-            for _, d in ipairs(part:GetChildren()) do
-                if d:IsA("ProximityPrompt") and d.Enabled then
-                    local action = (d.ActionText or ""):lower()
-                    if action:find("purchase") or action:find("buy") or action:find("comprar") then
-                        local dist = (origin - part.Position).Magnitude
-                        if dist <= _autoBuyRange then
-                            table.insert(results, { prompt = d, part = part, dist = dist })
-                        end
-                    end
-                elseif d:IsA("Attachment") then
-                    for _, p in ipairs(d:GetChildren()) do
-                        if p:IsA("ProximityPrompt") and p.Enabled then
-                            local action = (p.ActionText or ""):lower()
-                            if action:find("purchase") or action:find("buy") or action:find("comprar") then
-                                local dist = (origin - part.Position).Magnitude
-                                if dist <= _autoBuyRange then
-                                    table.insert(results, { prompt = p, part = part, dist = dist })
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-    table.sort(results, function(a, b) return (a.dist or 0) < (b.dist or 0) end)
-    return results
-end
-function autoBuyRefreshConveyor()
-    local ok, found = pcall(autoBuyScanConveyor)
-    if ok then _autoBuyConveyorCache = found end
-end
-function autoBuyAnchorCharacter()
-    local char = player.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if not hrp then return end
-    if not _autoBuyAnchorPos then
-        _autoBuyAnchorPos = hrp.Position
-    end
-    pcall(function()
-        hrp.Anchored = true
-        hrp.AssemblyLinearVelocity = Vector3.zero
-        hrp.AssemblyAngularVelocity = Vector3.zero
-        hrp.CFrame = CFrame.new(_autoBuyAnchorPos) * (hrp.CFrame - hrp.CFrame.Position)
-        if hum then
-            hum.PlatformStand = false
-            hum.Sit = false
-            hum.WalkSpeed = 0
-            hum.JumpPower = 0
-            if hum.UseJumpPower == false then
-                hum.JumpHeight = 0
-            end
-        end
-    end)
-end
-function autoBuyUnanchorCharacter()
-    local char = player.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    pcall(function()
-        if hrp then hrp.Anchored = false end
-        if hum then
-            hum.WalkSpeed = 16
-            hum.JumpPower = 50
-            if hum.UseJumpPower == false then
-                hum.JumpHeight = 7.2
-            end
-        end
-    end)
-    _autoBuyAnchorPos = nil
-end
-function autoBuyUpdate()
-    if not _autoBuyActive then
-        _autoBuyLockedTarget = nil
-        return
-    end
-    autoBuyAnchorCharacter()
-    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    for _, entry in ipairs(_autoBuyConveyorCache) do
-        if entry.prompt and entry.prompt.Parent and entry.prompt.Enabled and entry.part and entry.part.Parent then
-            local dist = (hrp.Position - entry.part.Position).Magnitude
-            if dist <= _autoBuyRange then
-                _autoBuyLockedTarget = entry
-                autoBuyFirePurchase(entry.prompt)
-            end
-        end
-    end
-end
-function autoBuyStart()
-    if _autoBuyActive then return end
-    _autoBuyActive = true
-    _autoFarm = true
-    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-    if hrp then _autoBuyAnchorPos = hrp.Position end
-    autoBuyAnchorCharacter()
-    autoBuyRefreshConveyor()
-    if not _autoBuyBuyLoop then
-        _autoBuyBuyLoop = task.spawn(function()
-            while _instanceRunning do
-                task.wait(BUY_INTERVAL)
-                if _autoBuyActive then pcall(autoBuyUpdate) end
-            end
-        end)
-    end
-    if not _autoBuyScanLoop then
-        _autoBuyScanLoop = task.spawn(function()
-            while _instanceRunning do
-                task.wait(0.9)
-                if _autoBuyActive then pcall(autoBuyRefreshConveyor) end
-            end
-        end)
-    end
-    if not _autoBuyAnchorConn then
-        _autoBuyAnchorConn = RunService.Heartbeat:Connect(function()
-            if _autoBuyActive then pcall(autoBuyAnchorCharacter) end
-        end)
-    end
-end
-function autoBuyStop()
-    if not _autoBuyActive then return end
-    _autoBuyActive = false
-    _autoFarm = false
-    _autoBuyLockedTarget = nil
-    if _autoBuyAnchorConn then
-        pcall(function() _autoBuyAnchorConn:Disconnect() end)
-        _autoBuyAnchorConn = nil
-    end
-    autoBuyUnanchorCharacter()
-end
-
-local CONFIG_FILE = "nxc_code_sniper_auto_redeem_test_config.json"
-local savedConfig = {
-    codeSniper = true,
-    autoSubmit = true,
-    submitAfter = 1,
-    retypeInvalid = false,
-    riddleSolver = false,
-    autoFarm = false,
-    spamRedeem = true,
-    kbCodeSniper = "F1",
-    kbAutoSubmit = "F2",
-    kbRiddleSolver = "F3",
-    kbRetypeInvalid = "F4",
-    kbAutoFarm = "F5",
-    kbManualSubmit = "F6",
-}
-pcall(function()
-    if type(isfile) == "function" and type(readfile) == "function"
-    and isfile(CONFIG_FILE) then
-        local decoded = HttpService:JSONDecode(readfile(CONFIG_FILE))
-        if type(decoded) == "table" then
-            if type(decoded.codeSniper) == "boolean" then savedConfig.codeSniper = decoded.codeSniper end
-            if type(decoded.autoSubmit) == "boolean" then savedConfig.autoSubmit = decoded.autoSubmit end
-            if type(decoded.submitAfter) == "number" then savedConfig.submitAfter = math.max(1, math.floor(decoded.submitAfter)) end
-            if type(decoded.retypeInvalid) == "boolean" then savedConfig.retypeInvalid = decoded.retypeInvalid end
-            if type(decoded.riddleSolver) == "boolean" then savedConfig.riddleSolver = decoded.riddleSolver end
-            if type(decoded.autoFarm) == "boolean" then savedConfig.autoFarm = decoded.autoFarm end
-            if type(decoded.spamRedeem) == "boolean" then savedConfig.spamRedeem = decoded.spamRedeem end
-            if type(decoded.kbCodeSniper) == "string" then savedConfig.kbCodeSniper = decoded.kbCodeSniper end
-            if type(decoded.kbAutoSubmit) == "string" then savedConfig.kbAutoSubmit = decoded.kbAutoSubmit end
-            if type(decoded.kbRiddleSolver) == "string" then savedConfig.kbRiddleSolver = decoded.kbRiddleSolver end
-            if type(decoded.kbRetypeInvalid) == "string" then savedConfig.kbRetypeInvalid = decoded.kbRetypeInvalid end
-            if type(decoded.kbAutoFarm) == "string" then savedConfig.kbAutoFarm = decoded.kbAutoFarm end
-            if type(decoded.kbManualSubmit) == "string" then savedConfig.kbManualSubmit = decoded.kbManualSubmit end
-            if decoded.kbCodeSniper == false or decoded.kbCodeSniper == "" then savedConfig.kbCodeSniper = nil end
-            if decoded.kbAutoSubmit == false or decoded.kbAutoSubmit == "" then savedConfig.kbAutoSubmit = nil end
-            if decoded.kbRiddleSolver == false or decoded.kbRiddleSolver == "" then savedConfig.kbRiddleSolver = nil end
-            if decoded.kbRetypeInvalid == false or decoded.kbRetypeInvalid == "" then savedConfig.kbRetypeInvalid = nil end
-            if decoded.kbAutoFarm == false or decoded.kbAutoFarm == "" then savedConfig.kbAutoFarm = nil end
-            if decoded.kbManualSubmit == false or decoded.kbManualSubmit == "" then savedConfig.kbManualSubmit = nil end
-        end
-    end
-end)
-
-function saveConfig()
-    if type(writefile) ~= "function" then return end
-    pcall(function()
-        writefile(CONFIG_FILE, HttpService:JSONEncode({
-            codeSniper = savedConfig.codeSniper,
-            autoSubmit = savedConfig.autoSubmit,
-            submitAfter = savedConfig.submitAfter,
-            retypeInvalid = savedConfig.retypeInvalid,
-            riddleSolver = savedConfig.riddleSolver,
-            autoFarm = savedConfig.autoFarm,
-            spamRedeem = savedConfig.spamRedeem ~= false,
-            kbCodeSniper = savedConfig.kbCodeSniper,
-            kbAutoSubmit = savedConfig.kbAutoSubmit,
-            kbRiddleSolver = savedConfig.kbRiddleSolver,
-            kbRetypeInvalid = savedConfig.kbRetypeInvalid,
-            kbAutoFarm = savedConfig.kbAutoFarm,
-            kbManualSubmit = savedConfig.kbManualSubmit,
-        }))
-    end)
-end
-
-local _enabled              = (savedConfig.codeSniper ~= false)
-local _seen                 = {}
-local _focused              = nil
-local _lastBox              = nil
-local _autoAccept           = (savedConfig.autoSubmit ~= false)
-local _submitAfter          = math.max(1, tonumber(savedConfig.submitAfter) or 1)
-local _capturedParts        = {}
-local _lastWatchedBox       = nil
-local _boxTextConn          = nil
-local _boxAncestryConn      = nil
-local _retypeInvalid        = savedConfig.retypeInvalid
-local _riddleSolver         = savedConfig.riddleSolver
-_autoFarm                   = (savedConfig.autoFarm == true)
-local _spamRedeem           = (savedConfig.spamRedeem ~= false)
-task.defer(function()
-    if _autoFarm then pcall(autoBuyStart) end
-end)
-local _lastNonBlankBoxText  = ""
-local _pendingRejectedText  = nil
-local _pendingRejectedBox   = nil
-local _pendingRejectedUntil = 0
-local _pendingRejectedToken = 0
-
-local getupvalues = (debug and debug.getupvalues) or getupvalues
-local getconns    = getconnections or (debug and debug.getconnections)
-local setupv      = (debug and debug.setupvalue) or setupvalue
-
-local setStatus, flashCode, appendToBox
-local rememberPendingSubmission, clearPendingSubmission, handleRedemptionFeedback
-local clearNxcCapture
-local _lastStatusMsg = nil
-
-function isOurGui(instance)
-    local p = instance
-    for _ = 1, 10 do
-        if not p then break end
-        if p.Name == "NxcCodeSniperUI" or p.Name == "SourcesHubRedeemerGui" then return true end
-        p = p.Parent
-    end
-    return false
-end
-
-function isVisibleChain(inst)
-    local current = inst
-    while current do
-        if current:IsA("GuiObject") and not current.Visible then return false end
-        if current:IsA("ScreenGui") then return current.Enabled end
-        current = current.Parent
-    end
-    return true
-end
-
-local RedeemSpeedUI = { label = nil, set = nil }
-local _SetClip = (typeof(setclipboard) == "function") and setclipboard
-              or (typeof(toclipboard) == "function") and toclipboard
-              or (syn and syn.write_clipboard) or nil
-local _FireSignal = (typeof(firesignal) == "function") and firesignal or nil
-local _FireClick = (typeof(fireclick) == "function") and fireclick or nil
-local _GetConns = (typeof(getconnections) == "function") and getconnections
-               or (typeof(getconns) == "function") and getconns
-               or (debug and debug.getconnections) or nil
-
-local _fastTargets = {}
-local _fastTargetKey = nil
-local _primaryTarget = nil
-local _lastLinkScan = -1e9
-local _linkDirty = true
-local _linkScanQueued = false
-local _lastSubmitCode = nil
-local _lastSubmitAt = -1e9
-local _lastLinkDescription = "SEARCHING"
-
-local function linkInfo()
-    if not _primaryTarget or not _primaryTarget.box or not _primaryTarget.box.Parent then
-        return "NO CODEBOX"
-    end
-    if _primaryTarget.btn and _primaryTarget.btn.Parent then
-        return "CODEBOX + SUBMIT LINKED"
-    end
-    return "CODEBOX LINKED / BUTTON NOT FOUND"
-end
-
-local function externalGui(inst)
-    if not inst or not inst.Parent then return false end
-    if isOurGui(inst) then return false end
-    if GUI and inst:IsDescendantOf(GUI) then return false end
-    return inst:IsDescendantOf(playerGui)
-end
-
-local function codeScore(box)
-    local score = 0
-    local name = string.lower(box.Name or "")
-    local placeholder = string.lower(box.PlaceholderText or "")
-    local parent = box.Parent
-    local pn = parent and string.lower(parent.Name or "") or ""
-    local root = box:FindFirstAncestor("Codes")
-    if root then score += 90 end
-    if name == "codebox" or name == "codeinput" or name == "code" then score += 90 end
-    if name:find("code",1,true) or name:find("redeem",1,true) then score += 45 end
-    if name:find("input",1,true) or name:find("promo",1,true) then score += 22 end
-    if pn:find("code",1,true) or pn:find("redeem",1,true) then score += 36 end
-    if placeholder:find("code",1,true) or placeholder:find("redeem",1,true) then score += 45 end
-    if box.Visible then score += 4 end
-    if box.TextEditable then score += 1 end
-    return score
-end
-
-local function buttonScore(btn, box)
-    if not btn or not btn.Parent then return -1e9 end
-    local name = string.lower(btn.Name or "")
-    local bt = ""
-    pcall(function() bt = string.lower(btn.Text or "") end)
-    local score = 0
-    if name:find("redeem",1,true) or name:find("submit",1,true) then score += 100 end
-    if bt:find("redeem",1,true) or bt:find("submit",1,true) then score += 110 end
-    if name:find("claim",1,true) or bt:find("claim",1,true) then score += 35 end
-    if name:find("enter",1,true) or bt:find("enter",1,true) then score += 20 end
-    if btn.Parent == box.Parent then score += 70 end
-    if btn:FindFirstAncestor("Codes") and box:FindFirstAncestor("Codes") then score += 45 end
-    if btn.Visible then score += 2 end
-    return score
-end
-
-local function getConnections(signal)
-    if not _GetConns then return nil end
-    local ok, list = pcall(_GetConns, signal)
-    if ok and type(list) == "table" then return list end
-    return nil
-end
-
-local function hasConnection(list)
-    if not list then return false end
-    for _, connection in ipairs(list) do
-        if connection.Enabled ~= false then return true end
-    end
-    return false
-end
-
-local function invokeSignal(signal, args, cachedConnections)
-    if _FireSignal then
-        local ok = pcall(_FireSignal, signal, table.unpack(args or {}))
-        if ok then return true end
-    end
-    local cons = cachedConnections or getConnections(signal)
-    if cons then
-        for _, c in ipairs(cons) do
-            if c.Enabled ~= false then
-                local ok = pcall(function()
-                    if c.Fire then c:Fire(table.unpack(args or {}))
-                    elseif type(c.Function) == "function" then c.Function(table.unpack(args or {}))
-                    else error("no signal function") end
-                end)
-                if ok then return true end
-            end
-        end
-    end
-    return false
-end
-
-local function makeTarget(box, btn)
-    local t = {box=box, btn=btn}
-    t.alive = function()
-        return externalGui(box) and (not t.btn or externalGui(t.btn))
-    end
-    t.setText = function(code)
-        local ok = pcall(function() box.Text = code end)
-        return ok and box.Text == code
-    end
-    t.focusConns = getConnections(box.FocusLost)
-    if btn then
-        t.activateConns = getConnections(btn.Activated)
-        t.clickConns = getConnections(btn.MouseButton1Click)
-    end
-    t.submit = function()
-        if btn and not hasConnection(t.activateConns) and not hasConnection(t.clickConns) then
-            t.activateConns = getConnections(btn.Activated)
-            t.clickConns = getConnections(btn.MouseButton1Click)
-        end
-        if not hasConnection(t.focusConns) then
-            t.focusConns = getConnections(box.FocusLost)
-        end
-        if btn and externalGui(btn) then
-            local signal, cons
-            if hasConnection(t.activateConns) then
-                signal, cons = btn.Activated, t.activateConns
-            elseif hasConnection(t.clickConns) then
-                signal, cons = btn.MouseButton1Click, t.clickConns
-            else
-                signal, cons = btn.MouseButton1Click, t.clickConns
-            end
-            if invokeSignal(signal, {}, cons) then return true, "button" end
-            if _FireClick and pcall(_FireClick, btn) then return true, "click" end
-            if pcall(function() btn:Activate() end) then return true, "activate" end
-        end
-        if hasConnection(t.focusConns) or _FireSignal then
-            local focused = false
-            pcall(function() focused = box:IsFocused() end)
-            if focused and pcall(function() box:ReleaseFocus(true) end) then
-                return true, "focus"
-            end
-            if invokeSignal(box.FocusLost, {true}, t.focusConns) then
-                return true, "focus"
-            end
-        end
-        return false, "no working submit handler"
-    end
-    return t
-end
-
-local function resolveCodeTarget()
-    local roots = {}
-    local explicit = playerGui:FindFirstChild("Codes")
-    if explicit then
-        roots[#roots+1] = {root=explicit, priority=300}
-    end
-    for _, child in ipairs(playerGui:GetChildren()) do
-        if child:IsA("ScreenGui") and child ~= explicit and child.Enabled and not isOurGui(child) then
-            roots[#roots+1] = {root=child, priority=0}
-        end
-    end
-    local bestBox, bestButton, bestScore = nil, nil, -1e9
-    for _, entry in ipairs(roots) do
-        local boxes, buttons = {}, {}
-        for _, d in ipairs(entry.root:GetDescendants()) do
-            if externalGui(d) then
-                if d:IsA("TextBox") then boxes[#boxes+1] = d end
-                if d:IsA("TextButton") or d:IsA("ImageButton") then
-                    buttons[#buttons+1] = d
-                end
-            end
-        end
-        for _, box in ipairs(boxes) do
-            local score = codeScore(box) + entry.priority
-            if score >= 30 then
-                local btn, btnScore = nil, -1e9
-                for _, candidate in ipairs(buttons) do
-                    local candidateScore = buttonScore(candidate, box)
-                    if candidateScore > btnScore then
-                        btn, btnScore = candidate, candidateScore
-                    end
-                end
-                if btnScore < 65 then btn = nil end
-                local pairScore = score + (btn and 30 or 0)
-                if pairScore > bestScore then
-                    bestBox, bestButton, bestScore = box, btn, pairScore
-                end
-            end
-        end
-    end
-    if not bestBox then return nil end
-    return makeTarget(bestBox, bestButton)
-end
-
-local function refreshFastTargets(force)
-    if not _instanceRunning then return end
-    local now = os.clock()
-    if not force and not _linkDirty and _primaryTarget and _primaryTarget.alive() and _primaryTarget.btn then return end
-    if not force and now - _lastLinkScan < 0.07 then return end
-    _lastLinkScan = now
-    local target = resolveCodeTarget()
-    _primaryTarget = target
-    _fastTargets = target and {target} or {}
-    _fastTargetKey = target and tostring(target.box) .. ":" .. tostring(target.btn) or ""
-    _linkDirty = false
-    _cachedBox = target and target.box or nil
-    _cachedSubmitBtn = target and target.btn or nil
-    _cachedBoxTime = now
-    local desc = linkInfo()
-    if desc ~= _lastLinkDescription then
-        _lastLinkDescription = desc
-        pcall(function()
-            if setStatus then setStatus("Codebox: " .. desc) end
-        end)
-    end
-end
-
-local function scheduleRelink()
-    _linkDirty = true
-    if _linkScanQueued then return end
-    _linkScanQueued = true
-    task.defer(function()
-        _linkScanQueued = false
-        if _instanceRunning then refreshFastTargets(false) end
-    end)
-end
-
-_targetWatcherListener = playerGui.DescendantAdded:Connect(function(d)
-    if d:IsA("TextBox") or d:IsA("TextButton") or d:IsA("ImageButton") then
-        scheduleRelink()
-    end
-end)
-local _codeboxRemovedListener = playerGui.DescendantRemoving:Connect(function(d)
-    if _primaryTarget and (d == _primaryTarget.box or d == _primaryTarget.btn) then
-        _primaryTarget = nil
-        _cachedBox, _cachedSubmitBtn = nil, nil
-        scheduleRelink()
-    end
-end)
-
-local _codeboxAutoLinkConn
-local _codeboxAutoLinkElapsed = 0
-_codeboxAutoLinkConn = RunService.Heartbeat:Connect(function(dt)
-    if not _instanceRunning then
-        if _codeboxAutoLinkConn then _codeboxAutoLinkConn:Disconnect() end
-        return
-    end
-    _codeboxAutoLinkElapsed += math.min(dt, 0.25)
-    if _codeboxAutoLinkElapsed < 1.25 then return end
-    _codeboxAutoLinkElapsed = 0
-    if not _primaryTarget or not _primaryTarget.alive()
-        or not _primaryTarget.btn or _linkDirty then
-        refreshFastTargets(false)
-    end
-end)
-
-function findAllTextBoxes()
-    local t = _primaryTarget
-    if t and t.alive() then return {t.box} end
-    refreshFastTargets(true)
-    t = _primaryTarget
-    return t and t.alive() and {t.box} or {}
-end
-
-function findCodeButtons()
-    local t = _primaryTarget
-    if t and t.alive() and t.btn then return {t.btn} end
-    refreshFastTargets(true)
-    t = _primaryTarget
-    return t and t.alive() and t.btn and {t.btn} or {}
-end
-
-function clickButton(btn)
-    if not btn then return false end
-    local a = getConnections(btn.Activated)
-    local c = getConnections(btn.MouseButton1Click)
-    if hasConnection(a) then return invokeSignal(btn.Activated, {}, a) end
-    if invokeSignal(btn.MouseButton1Click, {}, c) then return true end
-    if _FireClick and pcall(_FireClick, btn) then return true end
-    return pcall(function() btn:Activate() end)
-end
-
-function fireBoxFocusLost(box)
-    if not box then return false end
-    local focused = false
-    pcall(function() focused = box:IsFocused() end)
-    if focused and pcall(function() box:ReleaseFocus(true) end) then return true end
-    return invokeSignal(box.FocusLost, {true})
-end
-
-function ultraFastSubmit(code, force)
-    local start = os.clock()
-    code = tostring(code or ""):match("^%s*(.-)%s*$") or ""
-    if code == "" then return false, "empty code", 0 end
-    if not _instanceRunning then return false, "engine stopped", 0 end
-
-    if (not force) and code == _lastSubmitCode and start - _lastSubmitAt < 0.12 then
-        return true, "already submitted", (os.clock() - start) * 1000
-    end
-    local t = _primaryTarget
-    if not t or not t.alive() or _linkDirty then
-        refreshFastTargets(true)
-        t = _primaryTarget
-    end
-    if not t or not t.alive() then
-        return false, "codebox not connected", (os.clock() - start) * 1000
-    end
-    if not t.setText(code) then
-        scheduleRelink()
-        return false, "could not write codebox", (os.clock() - start) * 1000
-    end
-    _lastBox = t.box
-    _lastNonBlankBoxText = code
-    local dispatched, method = t.submit()
-    if not dispatched then
-        return false, method, (os.clock() - start) * 1000
-    end
-    _lastSubmitCode, _lastSubmitAt = code, os.clock()
-    return true, "submitted via " .. tostring(method), (os.clock() - start) * 1000
-end
-
-function timedSubmit(code)
-    return ultraFastSubmit(code)
-end
-
-function nxcCodeBox()
-    local t = _primaryTarget
-    if t and t.alive() then return t.box end
-    refreshFastTargets(true)
-    t = _primaryTarget
-    return t and t.alive() and t.box or nil
-end
-
-_boxFocusedListener = UserInputService.TextBoxFocused:Connect(function(box)
-    if GUI and box:IsDescendantOf(GUI) then return end
-    if not externalGui(box) then return end
-    if box:IsA("TextBox") and (codeScore(box) >= 30) then
-        if not _primaryTarget or _primaryTarget.box ~= box then
-            _cachedBox = box
-            _cachedBoxTime = os.clock()
-            scheduleRelink()
-        end
-        _focused = box
-        _lastBox = box
-        if watchBoxForBlankReset then watchBoxForBlankReset(box) end
-    end
-end)
-
-task.defer(function()
-    refreshFastTargets(true)
-end)
-
-local COLORS = {
-    Window = Color3.fromRGB(12, 13, 18),
-    Row = Color3.fromRGB(18, 20, 28),
-    Control = Color3.fromRGB(26, 28, 36),
-    Log = Color3.fromRGB(8, 9, 12),
-    Border = Color3.fromRGB(48, 54, 68),
-    White = Color3.fromRGB(245, 248, 255),
-    Text = Color3.fromRGB(220, 228, 242),
-    Dim = Color3.fromRGB(150, 165, 190),
-    Accent = Color3.fromRGB(110, 180, 255),
-    Green = Color3.fromRGB(80, 220, 130),
-    Red = Color3.fromRGB(255, 75, 85),
-    Gold = Color3.fromRGB(255, 205, 90),
-    Pink = Color3.fromRGB(255, 130, 200),
-}
-
-function addCorner(parent, radius)
-    local value = Instance.new("UICorner")
-    value.CornerRadius = UDim.new(0, radius)
-    value.Parent = parent
-    return value
-end
-
-function addStroke(parent, color, thickness, transparency)
-    local value = Instance.new("UIStroke")
-    value.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    value.Color = color
-    value.Thickness = thickness or 1
-    value.Transparency = transparency or 0
-    value.Parent = parent
-    return value
-end
-
-function makeLabel(parent, name, text, size, position, textSize, color, font)
-    local label = Instance.new("TextLabel")
-    label.Name = name
-    label.Size = size
-    label.Position = position
-    label.BackgroundTransparency = 1
-    label.Text = text
-    label.TextSize = textSize
-    label.TextColor3 = color
-    label.Font = font or Enum.Font.GothamMedium
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.TextYAlignment = Enum.TextYAlignment.Center
-    label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    label.TextStrokeTransparency = 0.55
-    label.Parent = parent
-    return label
-end
-
-pcall(function()
-    for _, name in ipairs({"NxcCodeSniperUI", "AutoTypeCodesUI", "NxcPaste"}) do
-        local previous = game.CoreGui:FindFirstChild(name)
-        if previous then previous:Destroy() end
-    end
-end)
-for _, name in ipairs({"NxcCodeSniperUI", "AutoTypeCodesUI", "NxcPaste"}) do
-    local previous = playerGui:FindFirstChild(name)
-    if previous then previous:Destroy() end
-end
-
-GUI = Instance.new("ScreenGui")
-GUI.Name = "NxcCodeSniperUI"
-GUI.Enabled = false
-GUI.ResetOnSpawn = false
-GUI.IgnoreGuiInset = true
-GUI.DisplayOrder = 999
-GUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-if not pcall(function() GUI.Parent = playerGui end) or GUI.Parent ~= playerGui then
-    if not pcall(function() GUI.Parent = game.CoreGui end) then
-        pcall(function() if gethui then GUI.Parent = gethui() end end)
-    end
-end
-
-local Window = Instance.new("Frame")
-Window.Name = "Window"
-Window.Size = UDim2.fromOffset(310, 620)
-Window.AnchorPoint = Vector2.new(1, 0)
-Window.Position = UDim2.new(1, -8, 0, 8)
-Window.BackgroundColor3 = Color3.fromRGB(14, 16, 22)
-Window.BackgroundTransparency = 1
-Window.BorderSizePixel = 0
-Window.ClipsDescendants = true
-Window.Visible = false
-Window.Parent = GUI
-addCorner(Window, 14)
-
-Window.BackgroundTransparency = 1
-do
-    local bgImg = Instance.new("ImageLabel")
-    bgImg.Name = "BgImage"
-    bgImg.Size = UDim2.fromScale(1, 1)
-    bgImg.Position = UDim2.fromScale(0, 0)
-    bgImg.BackgroundColor3 = Color3.fromRGB(8, 10, 14)
-    bgImg.BackgroundTransparency = 0
-    bgImg.Image = "rbxassetid://129085053275432"
-    bgImg.ScaleType = Enum.ScaleType.Crop
-    bgImg.ImageTransparency = 0.15
-    bgImg.ZIndex = 1
-    bgImg.Parent = Window
-    addCorner(bgImg, 14)
-
-    local dim = Instance.new("Frame")
-    dim.Name = "BgDim"
-    dim.Size = UDim2.fromScale(1, 1)
-    dim.BackgroundColor3 = Color3.fromRGB(4, 6, 10)
-    dim.BackgroundTransparency = 0.42
-    dim.BorderSizePixel = 0
-    dim.ZIndex = 2
-    dim.Parent = Window
-    addCorner(dim, 14)
-end
-
-local WindowStrokeRef = addStroke(Window, Color3.fromRGB(50, 110, 255), 1.4, 0.5)
+--[[
+
+  /$$$$$$  /$$       /$$$$$$  /$$$$$$  /$$$$$$$$ /$$$$$$$ 
+ /$$__  $$| $$      |_  $$_/ /$$__  $$| $$_____/| $$__  $$
+| $$  \__/| $$        | $$  | $$  \__/| $$      | $$  \ $$
+|  $$$$$$ | $$        | $$  | $$      | $$$$$   | $$  | $$
+ \____  $$| $$        | $$  | $$      | $$__/   | $$  | $$
+ /$$  \ $$| $$        | $$  | $$    $$| $$      | $$  | $$
+|  $$$$$$/| $$$$$$$$ /$$$$$$|  $$$$$$/| $$$$$$$$| $$$$$$$/
+ \______/ |________/|______/ \______/ |________/|_______/
+
+              [ LEAKED BY SLICED ]
+            [ discord.gg/pubmethod ]
+
+]]
 
 do
-    local pop = Instance.new("UIScale")
-    pop.Name = "OpenPop"
-    pop.Scale = 0.88
-    pop.Parent = Window
-    task.spawn(function()
-        pcall(function()
-            TweenService:Create(pop, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
-        end)
-        task.delay(0.35, function()
-            if pop and pop.Parent then pop:Destroy() end
-        end)
-    end)
+	slicedfn29 = cloneref or function(arg)
+		return arg
+	end
+
+	do
+		local sliced99 = slicedfn29(game:GetService("Players"))
+		sliced86 = slicedfn29(game:GetService("ReplicatedStorage"))
+		sliced96 = slicedfn29(game:GetService("UserInputService"))
+		sliced97 = slicedfn29(game:GetService("TweenService"))
+		sliced98 = slicedfn29(game:GetService("HttpService"))  -- LEAKED BY SLICED | discord.gg/pubmethod
+		sliced87 = slicedfn29(game:GetService("RunService"))
+		sliced88 = slicedfn29(game:GetService("Workspace"))
+		localPlayer = sliced99.LocalPlayer
+	end
 end
 
-_G.NxcPulseRefs = _G.NxcPulseRefs or {
-    windowStroke  = nil,
-    headerAccent  = nil,
-    execDot       = nil,
-    consoleStroke = nil,
-    consolePulse  = nil,
-    manualSubmit  = nil,
-    miniAvatar    = nil,
-    ogBtn         = nil,
-    ogDot         = nil,
-    mainStars     = nil,
-    ogStars       = nil,
-    miniStars     = nil,
-}
+playerGui = localPlayer:WaitForChild("PlayerGui")
+sliced89 = sliced86:WaitForChild("Packages"):WaitForChild("Net")
+_G.__RiddlerProxyUrl = "https://riddler-proxy.rp-relay-7k2m.workers.dev"
+_G.__RiddlerClientToken = "2b1f85fb32a1bbe4faf71cf47f64ee8777f9190b35337ee59d05e7b0081a6ad7"
 
-do
-    local pulseRefs = _G.NxcPulseRefs
-    pulseRefs.windowStroke = WindowStrokeRef
+do  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local tbl19 = {}
 
-    local _accum = 0
-    local conn
-    conn = RunService.Heartbeat:Connect(function(dt)
-        _accum = _accum + dt
-        if _accum < 0.033 then return end
-        local dtEff = _accum
-        _accum = 0
+	if readfile and isfile then
+		local ok, result = pcall(function()
+			if isfile("riddler_settings.txt") then
+				return readfile("riddler_settings.txt")
+			end
+		end)
 
-        local refs = _G.NxcPulseRefs
-        if not refs or not GUI or not GUI.Parent then
-            if conn then conn:Disconnect() end
-            return
-        end
-        if not Window or not Window.Visible then return end 
+		if ok and type(result) == "string" then
+			for match in result:gmatch("[^\n]+") do
+				local match2, sliced99 = match:match("^(%w+)=(.*)$")  -- LEAKED BY SLICED | discord.gg/pubmethod
 
-        local t = tick()
+				if match2 then
+					tbl19[match2] = sliced99
+				end
+			end
+		end
+	end
 
-        local ws = refs.windowStroke
-        if ws and ws.Parent then
-            local p = math.sin(t * 1.4) * 0.5 + 0.5
-            ws.Transparency = 0.4 + p * 0.25
-            ws.Thickness    = 1.2 + p * 0.4
-        end
+	_G.__RiddlerCfgBool = function(arg, arg2)
+		local sliced99 = tbl19[arg]
+		if sliced99 == "1" then
+			return true  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
 
-        local ha = refs.headerAccent
-        if ha and ha.Parent then
-            local p = math.sin(t * 2.2) * 0.5 + 0.5
-            ha.BackgroundTransparency = 0.35 + p * 0.4
-        end
+		if sliced99 ~= "0" then
+			return arg2
+		end
 
-        local ed = refs.execDot
-        if ed and ed.Parent then
-            local p = math.sin(t * 3.0) * 0.5 + 0.5
-            ed.BackgroundTransparency = 0.05 + p * 0.5
-            ed.BackgroundColor3 = Color3.fromRGB(
-                math.floor(70 + p * 40),
-                math.floor(200 + p * 40),
-                math.floor(120 + p * 30)
-            )
-        end
+		return false
+	end
 
-        local cs = refs.consoleStroke
-        if cs and cs.Parent then
-            local p = math.sin(t * 1.4) * 0.5 + 0.5
-            cs.Transparency = 0.4 + p * 0.35
-        end
+	_G.__RiddlerCfgStr = function(arg, arg2)
+		local sliced99 = tbl19[arg]
+		return type(sliced99) == "string" and sliced99 ~= "" and sliced99 or arg2
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
 
-        local cp = refs.consolePulse
-        if cp and cp.Parent then
-            local p = math.sin(t * 3.2) * 0.5 + 0.5
-            cp.TextTransparency = 0.05 + p * 0.55
-            cp.TextStrokeTransparency = 0.35 + p * 0.45
-            cp.TextColor3 = Color3.fromRGB(
-                math.floor(100 + p * 40),
-                math.floor(180 + p * 40),
-                255
-            )
-        end
+	_G.__RiddlerCfgSet = function(arg, arg2)
+		local sliced99 = tbl19
+		local sliced100 = "boolean"
+		sliced99[arg] = type(arg2) == sliced100 and (arg2 and "1" or "0") or tostring(arg2)
+		if not writefile then
+			return
+		end
+		local tbl20 = {}
 
-        local ms = refs.manualSubmit
-        if ms and ms.Parent then
-            local p = math.sin(t * 2.4) * 0.5 + 0.5
-            ms.BackgroundColor3 = Color3.fromRGB(
-                math.floor(30 + p * 25),
-                math.floor(70 + p * 40),
-                math.floor(140 + p * 50)
-            )
-        end
+		for k, sliced101 in pairs(tbl19) do
+			tbl20[#tbl20 + 1] = k .. "=" .. tostring(sliced101)  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
 
-        local ma = refs.miniAvatar
-        if ma and ma.Parent then
-            local p = math.sin(t * 2.6) * 0.5 + 0.5
-            ma.Transparency = 0.15 + p * 0.45
-            ma.Color = COLORS.Accent
-        end
-
-        local ob = refs.ogBtn
-        if ob and ob.Parent then
-            local p = math.sin(t * 2.4) * 0.5 + 0.5
-            ob.Transparency = 0.35 + p * 0.4
-        end
-
-        local od = refs.ogDot
-        if od and od.Parent then
-            local isOpen = getgenv and getgenv().NxcOGSniperGui and getgenv().NxcOGSniperGui.Parent
-            od.BackgroundColor3 = isOpen and COLORS.Green or COLORS.Dim
-        end
-
-        local msLayer = refs.mainStars
-        if msLayer and msLayer.layer and msLayer.layer.Parent and Window and Window.Parent and Window.Visible then
-            local h = math.max(1, Window.AbsoluteSize.Y)
-            local w = math.max(1, Window.AbsoluteSize.X)
-            for _, s in ipairs(msLayer.pool) do
-                local fr = s.frame
-                if fr and fr.Parent then
-                    local x = fr.Position.X.Offset + s.drift * dtEff
-                    local y = fr.Position.Y.Offset + s.speed * dtEff
-                    if y > h + 8 then
-                        y = -6 - math.random() * 20
-                        x = math.random() * w
-                        s.speed = 12 + math.random() * 38
-                        s.drift = (math.random() - 0.5) * 18
-                    end
-                    if x < -8 then x = w + 2 end
-                    if x > w + 8 then x = -2 end
-                    fr.Position = UDim2.fromOffset(x, y)
-                    s.twinkle = s.twinkle + dtEff * s.twSpeed
-                    fr.BackgroundTransparency = 0.12 + (math.sin(s.twinkle) * 0.5 + 0.5) * 0.6
-                end
-            end
-        end
-
-        local mnLayer = refs.miniStars
-        if mnLayer and mnLayer.layer and mnLayer.layer.Parent and MiniView and MiniView.Visible then
-            local h = math.max(1, MiniView.AbsoluteSize.Y)
-            local w = math.max(1, MiniView.AbsoluteSize.X)
-            for _, s in ipairs(mnLayer.pool) do
-                local fr = s.frame
-                if fr and fr.Parent then
-                    local x = fr.Position.X.Offset + s.drift * dtEff
-                    local y = fr.Position.Y.Offset + s.speed * dtEff
-                    if y > h + 6 then
-                        y = -4 - math.random() * 10
-                        x = math.random() * w
-                        s.speed = 18 + math.random() * 42
-                        s.drift = (math.random() - 0.5) * 12
-                    end
-                    if x < -6 then x = w + 2 end
-                    if x > w + 6 then x = -2 end
-                    fr.Position = UDim2.fromOffset(x, y)
-                    s.twinkle = s.twinkle + dtEff * 3
-                    fr.BackgroundTransparency = 0.2 + (math.sin(s.twinkle) * 0.5 + 0.5) * 0.55
-                end
-            end
-        end
-
-        local ogLayer = refs.ogStars
-        if ogLayer and ogLayer.layer and ogLayer.layer.Parent and ogLayer.frame and ogLayer.frame.Parent and ogLayer.frame.Visible then
-            local h = math.max(1, ogLayer.frame.AbsoluteSize.Y)
-            local w = math.max(1, ogLayer.frame.AbsoluteSize.X)
-            for _, s in ipairs(ogLayer.pool) do
-                local fr = s.frame
-                if fr and fr.Parent then
-                    local x = fr.Position.X.Offset + s.drift * dtEff
-                    local y = fr.Position.Y.Offset + s.speed * dtEff
-                    if y > h + 8 then
-                        y = -6 - math.random() * 20
-                        x = math.random() * w
-                        s.speed = 12 + math.random() * 38
-                        s.drift = (math.random() - 0.5) * 18
-                    end
-                    if x < -8 then x = w + 2 end
-                    if x > w + 8 then x = -2 end
-                    fr.Position = UDim2.fromOffset(x, y)
-                    s.twinkle = s.twinkle + dtEff * s.twSpeed
-                    fr.BackgroundTransparency = 0.12 + (math.sin(s.twinkle) * 0.5 + 0.5) * 0.6
-                end
-            end
-        end
-    end)
+		table.sort(tbl20)
+		pcall(writefile, "riddler_settings.txt", table.concat(tbl20, "\n"))
+	end
 end
 
 do
-    local MainStarLayer = Instance.new("Frame")
-    MainStarLayer.Name = "MainStarLayer"
-    MainStarLayer.Size = UDim2.new(1, 0, 1, 0)
-    MainStarLayer.BackgroundTransparency = 1
-    MainStarLayer.ZIndex = 2
-    MainStarLayer.ClipsDescendants = true
-    MainStarLayer.Active = false
-    MainStarLayer.Parent = Window
+	local slicedfn60
 
-    local pool = {}
-    local STAR_COUNT = 16
-    for i = 1, STAR_COUNT do
-        local star = Instance.new("Frame")
-        star.Name = "FxStar" .. i
-        star.BorderSizePixel = 0
-        local sz = (i % 4 == 0) and (3 + math.random(0, 2)) or (1 + math.random(0, 2))
-        star.Size = UDim2.fromOffset(sz, sz)
-        star.BackgroundColor3 = (i % 5 == 0)
-            and Color3.fromRGB(255, 210, 140)
-            or Color3.fromRGB(160 + math.random(0, 40), 200 + math.random(0, 40), 255)
-        star.BackgroundTransparency = 0.15 + math.random() * 0.5
-        star.Position = UDim2.fromOffset(math.random(0, 290), math.random(-20, 480))
-        star.ZIndex = 2
-        star.Parent = MainStarLayer
-        addCorner(star, 8)
-        pool[i] = {
-            frame = star,
-            speed = 12 + math.random() * 38,
-            drift = (math.random() - 0.5) * 18,
-            twinkle = math.random() * math.pi * 2,
-            twSpeed = 2 + math.random() * 3,
-        }
-    end
+	do
+		do
+			_G.__RiddlerUiMult = function()  -- LEAKED BY SLICED | discord.gg/pubmethod
+				return ({ BIG = 1.15, SMALL = 0.8 })[_G.__RiddlerCfgStr("uiSize", "MEDIUM")] or 1
+			end
 
-    _G.NxcPulseRefs.mainStars = {
-        layer = MainStarLayer,
-        pool = pool,
-    }
+			model = _G.__RiddlerCfgStr("model", "FASTER")
+
+			if model ~= "FASTER" and model ~= "FAST" then
+				model = "FASTER"
+			end
+
+			getupvalues_ = debug and debug.getupvalues or getupvalues
+			_G.__RiddlerGetConstants = debug and debug.getconstants or getconstants
+			_G.__RiddlerGetLoadedModules = getloadedmodules
+
+			do  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local sliced99 = getconnections
+
+				if sliced99 then
+					getconnections_ = sliced99
+				else
+					getconnections_ = debug and debug.getconnections
+				end
+			end
+		end
+
+		do
+			local setupvalue_, writeClipboard  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			do
+				setupvalue_ = debug and debug.setupvalue or setupvalue
+
+				do
+					local sliced99 = setclipboard or toclipboard
+
+					if sliced99 then
+						writeClipboard = sliced99
+					else
+						writeClipboard = syn and syn.write_clipboard
+					end
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			request_ = syn and syn.request or http and http.request or http_request or request
+			flag18 = sliced96.TouchEnabled and not sliced96.KeyboardEnabled
+			flag19 = _G.__RiddlerCfgBool("wordMode", false)
+			flag20 = false
+			sliced90 = _G.__RiddlerCfgBool("autoType", false)
+			secure = _G.__RiddlerCfgBool("secure", false)
+			autoCopy = _G.__RiddlerCfgBool("autoCopy", true)
+			openFeed = _G.__RiddlerCfgBool("openFeed", true)
+			sliced91 = _G.__RiddlerCfgBool("autoRedeem", true)  -- LEAKED BY SLICED | discord.gg/pubmethod
+			flag21 = false
+			sliced92 = _G.__RiddlerCfgBool("showTimers", true)
+			_G.__RiddlerDuo = _G.__RiddlerCfgBool("duo", false)
+
+			_G.__SabClassifyDrop = function(arg)
+				local str8 = tostring(arg or "")
+				local str9 = str8:lower()
+				local tbl19 = {}
+
+				for match in str8:gmatch("[%w']+") do
+					tbl19[#tbl19 + 1] = match
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				local slicedn34 = #tbl19
+				if slicedn34 == 0 then
+					return nil
+				end
+				local str10 = " " .. str9:gsub("[^%w]", " ") .. " "
+				if str9:find("?", 1, true) then
+					return "riddle"
+				end
+
+				for _, sliced99 in ipairs({
+					" what ",  -- LEAKED BY SLICED | discord.gg/pubmethod
+					" whats ",
+					" which ",
+					" how ",
+					" when ",
+					" who ",
+					" whos ",
+					" where ",
+					" why ",
+					" guess ",
+					" riddle ",  -- LEAKED BY SLICED | discord.gg/pubmethod
+					" name the ",
+				}) do
+					if str10:find(sliced99, 1, true) then
+						return "riddle"
+					end
+				end
+
+				if str10:find(" my ", 1, true) then
+					return "riddle"
+				end
+
+				if slicedn34 >= 2 and (str10:find(" plus ", 1, true) or str9:find("+", 1, true)) then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					return "riddle"
+				end
+
+				if slicedn34 >= 4 and str10:find(" and ", 1, true) then
+					return "riddle"
+				end
+				local flag24 = not str8:find("%l")
+
+				local tbl20 = {
+					LOL = 1,
+					OMG = 1,
+					GOOD = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+					LUCK = 1,
+					CAPS = 1,
+					ALL = 1,
+					SPACES = 1,
+					WINS = 1,
+					WIN = 1,
+					HINT = 1,
+					NOT = 1,
+					LAST = 1,
+					ONE = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+					UPPERCASE = 1,
+					CAPITALS = 1,
+					SECONDS = 1,
+					FAST = 1,
+					NEW = 1,
+					THE = 1,
+					AND = 1,
+					FIRST = 1,
+					GUYS = 1,
+					BRO = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+					YES = 1,
+					NICE = 1,
+				}
+
+				local tbl21 = {
+					colour = 1,
+					color = 1,
+					colours = 1,
+					colors = 1,
+					name = 1,
+					rarity = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+					income = 1,
+					gen = 1,
+					generation = 1,
+					mps = 1,
+					mutation = 1,
+					mutations = 1,
+					trait = 1,
+					traits = 1,
+					exist = 1,
+					exists = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+					date = 1,
+					month = 1,
+					year = 1,
+					age = 1,
+					value = 1,
+					price = 1,
+					speed = 1,
+					tier = 1,
+					amount = 1,
+					stock = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+					count = 1,
+					multiplier = 1,
+					birthday = 1,
+					cost = 1,
+					earnings = 1,
+					fav = 1,
+					favourite = 1,
+					favorite = 1,
+				}
+
+				local flag25 = str9:find("code%s+was") ~= nil or str9:find("answer%s+was") ~= nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				local tbl22 = {
+					prize = 1,
+					hint = 1,
+					reward = 1,
+					time = 1,
+					limit = 1,
+					winners = 1,
+					redeems = 1,
+					uses = 1,
+					ends = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+					giveaway = 1,
+				}
+
+				if not flag25 then
+					local match, sliced99 = str8:match("(%a+):%s*([%w]+)[%s%p]*$")
+
+					if match and sliced99 and not tbl22[match:lower()] then
+						flag25 = true
+					end
+				end
+
+				if not flag25 then
+					local tbl23 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					for match in str8:gmatch("[%w']+") do
+						tbl23[#tbl23 + 1] = match
+					end
+
+					local flag26 = false
+
+					for i, sliced99 in ipairs(tbl23) do
+						local str11 = sliced99:gsub("'[sS]$", "")
+						local str12 = str11:lower()
+						local str13 = tbl23[i + 1] or ""
+						local str14 = tbl23[i + 2] or ""
+						local match = (sliced99:match("'[sS]$") or sliced99:match("[sS]$")) and tbl21[str13:lower()] or str13:match("'[sS]$") and tbl21[str14:lower()]  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+						if not match then
+							match = tbl22[(tbl23[i - 1] or ""):lower()]
+
+							if match then
+								local str15 = tbl23[i - 2] or ""
+								local sliced100 = "of"
+								match = str15:lower() ~= sliced100
+							end
+
+							if match then
+								match = (tbl23[i - 2] or ""):lower() ~= "is"
+							end  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+
+						if str12 == "of" then
+							flag26 = true
+						elseif not (flag26 and str12 == "of") then
+							if str11:match("^%d+[snrt][tdh]$") then
+								flag26 = false
+							else
+								local match2 = #str11 >= 4 and str11:match("^%d+$")
+								local flag27
+
+								if match2 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+									flag27 = not (tbl23[i + 1] or ""):match("^%l")
+								else
+									flag27 = match2
+								end
+
+								flag27 = flag27 or str11:match("^%d+%u+$") or str11:match("%d") and select(2, str11:gsub("%a", "")) >= 2
+
+								if flag27 then
+									flag25 = true
+									break
+								elseif not flag24 and #str11 >= 3 and str11:match("^%u+$") and not tbl20[str11] then
+									if not (flag26 or match) then  -- LEAKED BY SLICED | discord.gg/pubmethod
+										flag25 = true
+										break
+									end
+								else
+									flag26 = false
+								end
+							end
+						end
+					end
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				if not flag25 then
+					local tbl23 = {
+						the = 1,
+						its = 1,
+						his = 1,
+						this = 1,
+						that = 1,
+						their = 1,
+						our = 1,
+						sammys = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						todays = 1,
+						current = 1,
+						sabs = 1,
+					}
+
+					local tbl24 = {
+						prize = 1,
+						brainrot = 1,
+						sab = 1,
+						sammy = 1,
+						dev = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						game = 1,
+						secret = 1,
+						new = 1,
+					}
+
+					local tbl25 = {
+						next = 1,
+						same = 1,
+						one = 1,
+						below = 1,
+						above = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						weekend = 1,
+						week = 1,
+						monday = 1,
+						tuesday = 1,
+						wednesday = 1,
+						thursday = 1,
+						friday = 1,
+						saturday = 1,
+						sunday = 1,
+						message = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						worth = 1,
+						last = 1,
+						final = 1,
+						first = 1,
+					}
+
+					local tbl26 = {
+						just = 1,
+						literally = 1,
+						also = 1,
+						actually = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						still = 1,
+						gonna = 1,
+						going = 1,
+						to = 1,
+						be = 1,
+					}
+
+					local tbl27 = nil
+
+					for _, sliced99 in ipairs({
+						"code%s+is[%s%p]*",
+						"code%s+will%s+be[%s%p]*",  -- LEAKED BY SLICED | discord.gg/pubmethod
+						"code%s*=%s*",
+						"code%s*:%s*",
+						"code%s+equals%s+",
+						"code%s+would%s+be%s+",
+						"codes?%s+gonna%s+be%s+",
+						"code's%s+",
+						"code%s+this%s+time%s+is%s+",
+						"code%s+today%s+is%s+",
+						"code%s+this%s+time%s+will%s+be%s+",
+						"code%s+for%s+[%a%s]-%s+is%s+",  -- LEAKED BY SLICED | discord.gg/pubmethod
+						"code%s+for%s+[%a%s]-%s+will%s+be%s+",
+						"code%s+for%s+[%a%s]-:%s*",
+					}) do
+						local pos, sliced100 = str9:find(sliced99)
+
+						if pos and (not tbl27 or pos < tbl27[1] or pos == tbl27[1] and sliced100 > tbl27[2]) then
+							tbl27 = { pos, sliced100 }
+						end
+					end
+
+					if tbl27 then
+						local tbl28 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+						local tbl29 = {}
+
+						for match in str8:sub(tbl27[2] + 1):gmatch("[%w']+") do
+							tbl28[#tbl28 + 1] = match:lower():gsub("'", "")
+							tbl29[#tbl29 + 1] = match
+							if not (8 <= #tbl28) then
+								continue
+							end
+							break
+						end
+
+						local slicedn35 = 1  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+						while tbl28[slicedn35] and tbl26[tbl28[slicedn35]] do
+							slicedn35 += 1
+						end
+
+						local sliced99 = tbl28[slicedn35]
+						local flag26 = tbl29[slicedn35]
+						flag26 = flag26 and flag26:match("^%u%l") and sliced99 ~= "the" and sliced99 ~= "its"
+
+						if sliced99 and not flag26 then
+							local sliced100 = tbl28[slicedn35 + 1]
+							local flag27 = sliced100 ~= nil and sliced100:match("^%d+[snrt][tdh]$") ~= nil and tbl28[slicedn35 + 2] == "of"
+
+							for i = slicedn35 + 1, math.min(slicedn35 + 5, #tbl28) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+								local sliced101 = tbl28[i]
+
+								if sliced101 == "message" or sliced101 == "messages" or sliced101 == "timer" or sliced101 == "announcement" or sliced101 == "below" or sliced101 == "top" or sliced101 == "following" then
+									flag27 = true
+								end
+							end
+
+							local tbl30 = {
+								morning = 1,
+								afternoon = 1,
+								evening = 1,
+								night = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+								tonight = 1,
+								time = 1,
+								hour = 1,
+								month = 1,
+								year = 1,
+							}
+
+							local flag28 = sliced99 == "this" or sliced99 == "that"
+
+							if flag28 then
+								flag28 = tbl30[sliced100 or ""]
+							end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+							if flag28 then
+								flag28 = not tbl21[tbl28[slicedn35 + 2] or ""]
+							end
+
+							if flag28 then
+								flag27 = true
+							end
+
+							if sliced99 == "this" and str8:sub(tbl27[2] + 1):match("^[%s%p]*this[%s]*[,%.!:%-]") then
+								flag27 = true
+							end
+
+							if tbl23[sliced99] and tbl29[slicedn35 + 1] and tbl29[slicedn35 + 1]:match("^%u%l") and not flag24 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+								local flag29 = false
+
+								for i = slicedn35 + 1, math.min(slicedn35 + 4, #tbl28) do
+									if tbl21[tbl28[i]] or tbl29[i]:match("'[sS]$") then
+										flag29 = true
+									end
+								end
+
+								if not flag29 then
+									flag27 = true
+								end
+							end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+							if tbl23[sliced99] and sliced100 ~= nil and not flag27 and (sliced100 == "one" and (tbl28[slicedn35 + 2] == "that" or tbl28[slicedn35 + 2] == "with" or tbl28[slicedn35 + 2] == "one") or not tbl25[sliced100]) then
+								return "riddle", "property"
+							end
+
+							if sliced99:match("^%d+[snrt][tdh]$") then
+								return "riddle", "property"
+							end
+
+							if tbl21[sliced99] then
+								return "riddle", "property"
+							end
+							local sliced101 = tbl24[sliced99]  -- LEAKED BY SLICED | discord.gg/pubmethod
+							local sliced102
+
+							if sliced101 then
+								local sliced103 = tbl21[sliced100 or ""]
+
+								if sliced103 then
+									sliced102 = sliced103
+								else
+									sliced102 = tbl21[tbl28[slicedn35 + 2] or ""]
+								end
+							else
+								sliced102 = sliced101  -- LEAKED BY SLICED | discord.gg/pubmethod
+							end
+
+							if sliced102 then
+								return "riddle", "property"
+							end
+						end
+
+						if sliced99 then
+							for i = slicedn35, math.min(slicedn35 + 4, #tbl28) do
+								local match = tbl29[i]:match("'[sS]$") or tbl28[i]:match("s$") and tbl28[i] ~= "it" and tbl28[i] ~= "its" and tbl28[i] ~= "his"
+								local sliced100
+
+								if match then  -- LEAKED BY SLICED | discord.gg/pubmethod
+									sliced100 = tbl21[tbl28[i + 1] or ""]
+								else
+									sliced100 = match
+								end
+
+								if sliced100 then
+									return "riddle", "property"
+								end
+
+								if not (tbl29[i]:match("^%u") or tbl28[i]:match("s$")) then
+									break
+								end  -- LEAKED BY SLICED | discord.gg/pubmethod
+							end
+						end
+					end
+
+					local match = str9:match("^(.-)%s+is%s+the%s+code") or str9:match("^(.-)%s+is%s+today'?s%s+code") or str9:match("^(.-)%s+will%s+be%s+the%s+code") or str9:match("^(.-)%s*=%s*the%s+code")
+
+					if match and #match < 40 then
+						for match2 in match:gmatch("%a+") do
+							if tbl21[match2] then
+								return "riddle", "property"
+							end
+						end  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+
+					for _, sliced99 in ipairs({
+						" of the brainrot ",
+						" of the prize ",
+						" of this brainrot ",
+						" of that brainrot ",
+						" of that brainrot ",
+						" of the reward ",
+						" of the item ",
+					}) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+						local pos = str10:find(sliced99, 1, true)
+
+						if pos then
+							pos = tbl21[str10:sub(1, pos):match("(%a+)%s*$") or ""]
+						end
+
+						if pos then
+							return "riddle", "property"
+						end
+					end
+				end
+
+				if str9:find("code", 1, true) then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					return "code"
+				end
+
+				for _, sliced99 in ipairs({ " redeem ", " type ", " enter ", " claim " }) do
+					if str10:find(sliced99, 1, true) then
+						return "code"
+					end
+				end
+
+				if slicedn34 >= 7 then
+					return "riddle"
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				if slicedn34 == 1 then
+					return "code"
+				end
+
+				if slicedn34 <= 3 then
+					local slicedn35 = 0
+
+					for _, sliced99 in ipairs(tbl19) do
+						if #sliced99 >= 3 and (sliced99 == sliced99:upper() and sliced99:match("%a") or sliced99:match("%d")) then
+							slicedn35 += 1
+						end
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					if slicedn35 == slicedn34 then
+						return "code"
+					end
+				end
+
+				return nil
+			end
+
+			do
+				local sliced99 = nil
+				sliced93 = nil
+				flag22 = false  -- LEAKED BY SLICED | discord.gg/pubmethod
+				tbl17 = {}
+				flag23 = false
+				str7 = ""
+				sliced94 = nil
+				sliced95 = nil
+				slicedfn30 = nil
+
+				slicedfn31 = function(arg)
+					if type(arg) ~= "string" then
+						return tostring(arg)
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+					return (arg:gsub("<[^>]->", ""))
+				end
+
+				slicedfn32 = function(arg)
+					return (arg or ""):gsub("^%s+", ""):gsub("%s+$", "")
+				end
+
+				slicedfn33 = function(arg)
+					if not writeClipboard then
+						return false
+					end
+
+					return (pcall(writeClipboard, arg))  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				slicedfn34 = function(arg)
+					if not arg then
+						return nil
+					end
+					local ok, result = pcall(require, arg)
+					if not ok then
+						return
+					end
+
+					return result  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				_G.__RiddlerRequireIfLoaded = function(arg)
+					if not (arg and _G.__RiddlerGetLoadedModules) then
+						return nil
+					end
+					local ok, result = pcall(_G.__RiddlerGetLoadedModules)
+					if not ok or type(result) ~= "table" then
+						return nil
+					end
+
+					for _, sliced100 in ipairs(result) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+						if sliced100 == arg then
+							return slicedfn34(arg)
+						end
+					end
+				end
+
+				_G.__RiddlerFindUpvalueTable = function(arg, arg2)
+					if type(arg) ~= "function" or not getupvalues_ then
+						return nil
+					end
+					local ok, result = pcall(getupvalues_, arg)  -- LEAKED BY SLICED | discord.gg/pubmethod
+					if not ok or type(result) ~= "table" then
+						return nil
+					end
+
+					for _, sliced100 in pairs(result) do
+						if type(sliced100) == "table" and rawget(sliced100, arg2) ~= nil then
+							return sliced100
+						end
+					end
+				end
+
+				_G.__RiddlerGetSynchronizedPlayerCache = function()  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local sliced100 = sliced86:FindFirstChild("Controllers")
+					local sliced101 = _G.__RiddlerRequireIfLoaded(sliced100 and sliced100:FindFirstChild("DataController"))
+					local sliced102 = _G.__RiddlerFindUpvalueTable(type(sliced101) == "table" and sliced101.Load or nil, "CacheTable")
+					local value = type(sliced102) == "table" and rawget(sliced102, "CacheTable") or nil
+					local sliced103 = "table"
+					if type(value) == sliced103 then
+						return value
+					end
+				end
+
+				_G.__RiddlerGetCachedRNGMachineConfig = function()  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local sliced100 = sliced86:FindFirstChild("Controllers")
+					local sliced101 = _G.__RiddlerRequireIfLoaded(sliced100 and sliced100:FindFirstChild("RNGMachineController"))
+					if type(sliced101) ~= "table" then
+						return nil
+					end
+
+					for _, sliced102 in pairs(sliced101) do
+						local sliced103 = _G.__RiddlerFindUpvalueTable(sliced102, "Config")
+						if type(sliced103) == "table" and type(sliced103.SkillTree) == "table" then
+							return sliced103
+						end  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+				end
+
+				_G.__RiddlerExtremes = {}
+
+				_G.__RiddlerRecordExtreme = function(arg, arg2, arg3, arg4, arg5)
+					local str8 = tostring(arg2 or "")
+					if str8 == "" then
+						return
+					end
+
+					local function slicedfn61(arg6)
+						local tbl19 = _G.__RiddlerExtremes[arg6]  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+						if not tbl19 then
+							tbl19 = {}
+							_G.__RiddlerExtremes[arg6] = tbl19
+						end
+
+						local flag24 = arg5 == nil
+
+						local function slicedfn62(arg7, arg8, arg9)
+							if not arg8 then
+								return true
+							end
+
+							if arg7 ~= arg8.value then  -- LEAKED BY SLICED | discord.gg/pubmethod
+								return arg9 and arg7 < arg8.value or not arg9 and arg7 > arg8.value
+							end
+
+							if flag24 ~= arg8.normal then
+								return flag24
+							end
+							return str8 < arg8.name
+						end
+
+						if arg3 and arg3 > 0 then
+							if slicedfn62(arg3, tbl19.cheapest, true) then
+								tbl19.cheapest = { name = str8, value = arg3, normal = flag24 }  -- LEAKED BY SLICED | discord.gg/pubmethod
+							end
+
+							if slicedfn62(arg3, tbl19.expensive, false) then
+								tbl19.expensive = { name = str8, value = arg3, normal = flag24 }
+							end
+						end
+
+						if arg4 and arg4 > 0 and slicedfn62(arg4, tbl19.income, false) then
+							tbl19.income = { name = str8, value = arg4, normal = flag24 }
+						end
+					end
+
+					slicedfn61(tostring(arg or "Unknown"):upper())  -- LEAKED BY SLICED | discord.gg/pubmethod
+					slicedfn61("*")
+				end
+
+				_G.__RiddlerExtremeSummary = function()
+					local tbl19 = {}
+					local tbl20 = { "LIVE_EXTREMES: zero-price placeholders excluded; price ties prefer a normal/non-event entry." }
+
+					for k in pairs(_G.__RiddlerExtremes) do
+						tbl19[#tbl19 + 1] = k
+					end
+
+					table.sort(tbl19)
+
+					for _, sliced100 in ipairs(tbl19) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+						local sliced101 = _G.__RiddlerExtremes[sliced100]
+						tbl20[#tbl20 + 1] = ("  %s: CHEAPEST=%s($%s); MOST_EXPENSIVE=%s($%s); HIGHEST_INCOME=%s(%s/s)"):format(sliced100 == "*" and "ALL" or sliced100, sliced101.cheapest and sliced101.cheapest.name or "?", sliced101.cheapest and tostring(sliced101.cheapest.value) or "?", sliced101.expensive and sliced101.expensive.name or "?", sliced101.expensive and tostring(sliced101.expensive.value) or "?", sliced101.income and sliced101.income.name or "?", sliced101.income and tostring(sliced101.income.value) or "?")
+					end
+
+					return table.concat(tbl20, "\n")
+				end
+
+				_G.__RiddlerResolveLiveExtreme = function(arg)
+					local str8 = tostring(arg or ""):lower()
+
+					for _, sliced100 in ipairs({ "second", "third", "fourth", "fifth", "2nd", "3rd", "fourth", "5th" }) do
+						if (" " .. str8 .. " "):find(" " .. sliced100 .. " ", 1, true) then
+							return nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+					end
+
+					local str9
+
+					if str8:find("cheapest", 1, true) or str8:find("lowest price", 1, true) then
+						str9 = "cheapest"
+					elseif str8:find("most expensive", 1, true) or str8:find("highest price", 1, true) then
+						str9 = "expensive"
+					elseif str8:find("highest income", 1, true) or str8:find("most income", 1, true) or str8:find("highest earning", 1, true) then
+						str9 = "income"
+					else  -- LEAKED BY SLICED | discord.gg/pubmethod
+						if not ((" " .. str8 .. " "):find(" best ", 1, true) or str8:find(" greatest ", 1, true) or (" " .. str8 .. " "):find(" top ", 1, true)) then
+							return nil
+						end
+						str9 = "best"
+					end
+
+					for _, sliced100 in ipairs({ "merchant", "shop", "machine", "stall", "sell", "sold", "stock" }) do
+						if str8:find(sliced100, 1, true) then
+							return nil
+						end
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					local match = str8:match("%splus%s+(%d+)%s*[%?%.!]*$") or str8:match("%+%s*(%d+)%s*[%?%.!]*$")
+					local str10
+
+					if match then
+						str10 = str8:gsub("%splus%s+%d+%s*[%?%.!]*$", ""):gsub("%+%s*%d+%s*[%?%.!]*$", "")
+					else
+						str10 = str8
+					end
+
+					if str10:find(" plus ", 1, true) or str10:find("+", 1, true) or str10:find(" and ", 1, true) then
+						return nil
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local sliced100 = " "
+					local str11 = " " .. str8:gsub("[^%w]", " ") .. sliced100
+					local sliced101 = _G.__RiddlerExtremes["*"]
+					local str12 = "*"
+
+					for k, riddlerExtreme in pairs(_G.__RiddlerExtremes) do
+						local pos = k ~= "*" and str11:find(" " .. k:lower() .. " ", 1, true)
+						local flag24
+
+						if pos then
+							flag24 = str12 == "*" or #k > #str12
+						else  -- LEAKED BY SLICED | discord.gg/pubmethod
+							flag24 = pos
+						end
+
+						if flag24 then
+							str12 = k
+							sliced101 = riddlerExtreme
+						end
+					end
+
+					if str9 == "best" then
+						if str12 == "*" or str12 == "OG" then
+							return nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+						str9 = "income"
+					end
+
+					sliced101 = sliced101 and sliced101[str9]
+					if not sliced101 then
+						return nil
+					end
+					local riddlerCodeName = _G.__RiddlerCodeName and _G.__RiddlerCodeName(sliced101.name)
+
+					if not riddlerCodeName then
+						riddlerCodeName = sliced101.name:gsub("[^%w]", ""):upper()  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+
+					if match and riddlerCodeName:sub(-#match) ~= match then
+						riddlerCodeName ..= match
+					end
+
+					return riddlerCodeName
+				end
+
+				_G.__RiddlerMalformedCodeBody = function(arg)
+					local str8 = " " .. tostring(arg or ""):lower() .. " "
+
+					if #str8 > 100 then
+						return true  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+
+					for _, sliced100 in ipairs({ " because ", " between ", " normally ", " but ", " tied ", " than ", " versus " }) do
+						if str8:find(sliced100, 1, true) then
+							return true
+						end
+					end
+
+					return false
+				end
+
+				slicedfn35 = function()
+					if sliced99 and sliced99.Parent then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						return sliced99
+					end
+					local ok, result = pcall(require, sliced89)
+
+					if ok and type(result) == "table" then
+						local ok2, result2 = pcall(function()
+							return result:RemoteFunction("7d14a912-1040-4867-b005-98838eb9acc4")
+						end)
+
+						if ok2 and typeof(result2) == "Instance" then
+							sliced99 = result2
+						end  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+
+					return sliced99
+				end
+			end
+
+			slicedfn36 = function()
+				local sliced99 = playerGui:FindFirstChild("Codes")
+				if not sliced99 then
+					return nil
+				end
+				local codeRedeem = (sliced99:FindFirstChild("Codes") or sliced99):FindFirstChild("CodeRedeem")  -- LEAKED BY SLICED | discord.gg/pubmethod
+				codeRedeem = codeRedeem and codeRedeem:FindFirstChild("TextBox")
+				if codeRedeem and codeRedeem:IsA("TextBox") then
+					return codeRedeem
+				end
+
+				for _, descendant in ipairs(sliced99:GetDescendants()) do
+					if descendant:IsA("TextBox") then
+						return descendant
+					end
+				end
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			slicedfn60 = nil
+
+			slicedfn60 = function(arg, arg2)
+				if not (arg and setupvalue_ and getupvalues_) then
+					return
+				end
+				arg2 = arg2 or 1
+				local ok, result = pcall(getupvalues_, arg)
+
+				if ok and type(result) == "table" then
+					for k, sliced99 in pairs(result) do
+						if type(sliced99) == "boolean" then  -- LEAKED BY SLICED | discord.gg/pubmethod
+							pcall(setupvalue_, arg, k, false)
+						elseif type(sliced99) == "function" and arg2 > 0 then
+							slicedfn60(sliced99, arg2 - 1)
+						end
+					end
+				end
+			end
+		end
+	end
+
+	do  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local slicedfn61
+
+		do
+			do
+				local function slicedfn62()
+					local codes = playerGui:FindFirstChild("Codes")
+					if not codes then
+						return nil
+					end
+					local sliced99 = codes:FindFirstChild("Codes") or codes
+					local confirm = (sliced99:FindFirstChild("Main") or sliced99):FindFirstChild("Confirm")  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local isImageButton
+
+					if confirm then
+						isImageButton = confirm:IsA("ImageButton") or confirm:IsA("TextButton")
+					else
+						isImageButton = confirm
+					end
+
+					if isImageButton then
+						return confirm
+					end
+					local sliced100 = nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					for _, descendant in ipairs(codes:GetDescendants()) do
+						if descendant:IsA("ImageButton") or descendant:IsA("TextButton") then
+							local str8 = descendant.Name:lower()
+							if str8:find("confirm") or str8:find("submit") or str8:find("redeem") or str8:find("enter") then
+								return descendant
+							end
+							sliced100 = sliced100 or descendant
+						end
+					end
+
+					return sliced100  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				local function slicedfn63(arg, ...)
+					if not getconnections_ then
+						return false
+					end
+					local ok, result = pcall(getconnections_, arg)
+					if not ok or type(result) ~= "table" or #result == 0 then
+						return false
+					end
+					local sliced99 = table.pack(...)  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local sliced100, sliced101, sliced102 = ipairs(result)
+					local flag24 = false
+
+					for _, sliced103 in sliced100, sliced101, sliced102 do
+						if sliced103.Enabled ~= false then
+							local function_ = nil
+
+							pcall(function()
+								function_ = sliced103.Function
+							end)
+
+							slicedfn60(function_)
+							local ok2  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+							if function_ then
+								ok2 = pcall(task.spawn, function_, table.unpack(sliced99, 1, sliced99.n))
+							else
+								ok2 = pcall(function()
+									sliced103:Fire(table.unpack(sliced99, 1, sliced99.n))
+								end)
+							end
+
+							flag24 = flag24 or ok2
+						end
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					return flag24
+				end
+
+				slicedfn61 = function(text)
+					if not getconnections_ then
+						return false, "no getconnections"
+					end
+					local sliced99 = slicedfn36()
+					if not sliced99 then
+						return false, "no codebox"
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					pcall(function()
+						sliced99.Text = text
+						sliced99.Active = true
+						sliced99.Selectable = true
+					end)
+
+					local sliced100 = slicedfn62()
+					local flag24 = false
+
+					if sliced100 then
+						flag24 = slicedfn63(sliced100.MouseButton1Click)
+						flag24 = flag24 or false  -- LEAKED BY SLICED | discord.gg/pubmethod
+						flag24 = slicedfn63(sliced100.Activated) or flag24
+					end
+
+					if not flag24 then
+						flag24 = slicedfn63(sliced99.FocusLost, true) or flag24
+					end
+
+					return flag24, flag24 and "sent" or "no submit control"
+				end
+			end
+		end
+
+		do  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local function slicedfn62(arg)
+				local sliced99 = slicedfn35()
+				if not sliced99 then
+					return false, "no remote"
+				end
+
+				local ok, result = pcall(function()
+					return sliced99:InvokeServer(arg)
+				end)
+
+				if not ok then
+					return false, tostring(result)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+				return true, result
+			end
+
+			slicedfn37 = function(arg)
+				local sliced99, sliced100 = slicedfn61(arg)
+				if sliced99 then
+					return true, sliced100
+				end
+
+				if getconnections_ then
+					return false, sliced100  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+				return slicedfn62(arg)
+			end
+		end
+	end
 end
 
-local WindowScrim = Instance.new("Frame")
-WindowScrim.Name = "ReadabilityScrim"
-WindowScrim.Size = UDim2.new(1, 0, 1, 0)
-WindowScrim.BackgroundColor3 = Color3.fromRGB(6, 10, 18)
-WindowScrim.BackgroundTransparency = 0.72
-WindowScrim.BorderSizePixel = 0
-WindowScrim.ZIndex = 2
-WindowScrim.Parent = Window
-addCorner(WindowScrim, 14)
-
-local InterfaceScale = Instance.new("UIScale")
-InterfaceScale.Name = "InterfaceScale"
-InterfaceScale.Scale = 0.92
-InterfaceScale.Parent = Window
-
-local viewportConnection
-function updateInterfaceScale()
-    local camera = workspace.CurrentCamera
-    local viewport = (camera and camera.ViewportSize) or Vector2.new(1280, 720)
-    local baseW, baseH = 300, 560
-    local fit = math.min((viewport.X - 20) / baseW, (viewport.Y - 24) / baseH)
-    local touch = UserInputService.TouchEnabled
-    local gamepad = UserInputService.GamepadEnabled and not UserInputService.KeyboardEnabled
-    local scale
-    if touch then
-        if viewport.X <= 500 then
-            scale = math.clamp(fit * 0.98, 0.55, 0.82)
-        elseif viewport.X <= 900 then
-            scale = math.clamp(fit * 0.95, 0.62, 0.88)
-        else
-            scale = math.clamp(fit * 0.92, 0.7, 0.95)
-        end
-    elseif gamepad then
-        scale = math.clamp(fit * 0.9, 0.75, 1)
-    else
-        scale = math.clamp(math.min(fit, 1.05), 0.85, 1.08)
-    end
-    InterfaceScale.Scale = scale
-end
-
-function watchViewport()
-    if viewportConnection then viewportConnection:Disconnect(); viewportConnection = nil end
-    local camera = workspace.CurrentCamera
-    if camera then viewportConnection = camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateInterfaceScale) end
-    updateInterfaceScale()
-end
-workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(watchViewport)
-watchViewport()
-
-local Header = Instance.new("Frame")
-Header.Name = "Header"
-Header.Size = UDim2.new(1, 0, 0, 70)
-Header.BackgroundColor3 = Color3.fromRGB(10, 12, 18)
-Header.BackgroundTransparency = 0.35
-Header.BorderSizePixel = 0
-Header.Active = true
-Header.ZIndex = 5
-Header.Parent = Window
-addCorner(Header, 12)
 do
-    local hs = Instance.new("UIStroke")
-    hs.Color = COLORS.Accent
-    hs.Thickness = 1
-    hs.Transparency = 0.75
-    hs.Parent = Header
+	local function slicedfn60()
+		local sliced99 = sliced86:FindFirstChild("Datas")
+		if not sliced99 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+			return "GAME DATA UNAVAILABLE"
+		end
+		local tbl19 = { "GAME: Steal a Brainrot (creator group: BRAZILIAN SPYDER)" }
+		local slicedn34 = -math.huge
+		local shared = sliced86:FindFirstChild("Shared")
+		shared = shared and slicedfn34(shared:FindFirstChild("Updates"))
+		local flag24 = type(shared) == "table" and type(shared.List) == "table"
+		local latestUpdate = nil
+
+		if flag24 then
+			latestUpdate = nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			for k, sliced100 in pairs(shared.List) do
+				local num = type(sliced100) == "table" and tonumber(sliced100.UnixTimeStamp) or nil
+
+				if num and num > slicedn34 then
+					latestUpdate = tostring(k)
+					slicedn34 = num
+				end
+			end
+		end
+
+		if latestUpdate then
+			tbl19[#tbl19 + 1] = "LATEST UPDATE: " .. latestUpdate  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+
+		local sliced100 = slicedfn34(sliced99:FindFirstChild("Mutations"))
+
+		if sliced100 then
+			local tbl20 = {}
+
+			for k, sliced101 in pairs(sliced100) do
+				if type(sliced101) == "table" then
+					local num = tonumber(sliced101.Modifier)
+					tbl20[#tbl20 + 1] = ("%s=%s=%s"):format(tostring(k), tostring(sliced101.DisplayText or k), num and tostring(1 + num) or "?")
+				end
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			table.sort(tbl20)
+			tbl19[#tbl19 + 1] = "MUTATIONS_RAW: " .. table.concat(tbl20, "|")
+		end
+
+		local sliced101 = slicedfn34(sliced99:FindFirstChild("Mutations"))
+
+		if sliced101 then
+			local tbl20 = {}
+
+			for k in pairs(sliced101) do
+				tbl20[#tbl20 + 1] = k
+			end
+
+			table.sort(tbl20)  -- LEAKED BY SLICED | discord.gg/pubmethod
+			tbl19[#tbl19 + 1] = "RARITIES: " .. table.concat(tbl20, ", ")
+		end
+
+		local sliced102 = slicedfn34(sliced99:FindFirstChild("Traits"))
+
+		if sliced102 then
+			local tbl20 = {}
+
+			for k, sliced103 in pairs(sliced102) do
+				local multiplierModifier = type(sliced103) == "table" and sliced103.MultiplierModifier or nil
+				tbl20[#tbl20 + 1] = multiplierModifier and tostring(k) .. "(x" .. tostring(multiplierModifier) .. ")" or tostring(k)
+			end
+
+			table.sort(tbl20)  -- LEAKED BY SLICED | discord.gg/pubmethod
+			tbl19[#tbl19 + 1] = "TRAITS: " .. table.concat(tbl20, ", ")
+		end
+
+		local sliced103 = slicedfn34(sliced99:FindFirstChild("Animals"))
+
+		if sliced103 then
+			local tbl20 = { Secret = true, ["Rainbow"] = true, ["Divine"] = true, ["OG"] = true }
+			local tbl21 = {}
+			local tbl22 = {}
+			local tbl23 = { n = "?", v = -1 }
+			local tbl24 = { n = "?", v = -1 }
+			local slicedn35 = 0  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			for _, sliced104 in pairs(sliced103) do
+				if type(sliced104) == "table" and sliced104.DisplayName then
+					local str8 = tostring(sliced104.Rarity or "Unknown")
+					local displayName = sliced104.DisplayName
+					local num = tonumber(sliced104.Price)
+					local num2 = tonumber(sliced104.Generation)
+					tbl21[str8] = tbl21[str8] or {}
+					local obtainedFrom = sliced104.ObtainedFrom
+					local flag25 = type(obtainedFrom) == "table"
+
+					if flag25 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						local sliced105 = "string"
+						flag25 = type(obtainedFrom.Source) == sliced105
+					end
+
+					flag25 = flag25 and obtainedFrom.Source or nil
+					local flag26 = latestUpdate and _G.__RiddlerGetConstants and type(sliced104.IsEnabled) == "function"
+					local sliced105 = nil
+
+					if flag26 then
+						local ok, result = pcall(_G.__RiddlerGetConstants, sliced104.IsEnabled)
+
+						if ok then
+							local sliced106 = "table"  -- LEAKED BY SLICED | discord.gg/pubmethod
+							ok = type(result) == sliced106
+						end
+
+						sliced105 = nil
+
+						if ok then
+							sliced105 = nil
+
+							for _, sliced106 in pairs(result) do
+								if sliced106 == latestUpdate then
+									sliced105 = latestUpdate
+									break
+								else  -- LEAKED BY SLICED | discord.gg/pubmethod
+									sliced105 = nil
+								end
+							end
+						end
+					end
+
+					_G.__RiddlerRecordExtreme(str8, displayName, num, num2, flag25)
+
+					if flag25 then
+						local str9 = flag25:gsub("[^%w]", ""):upper()
+
+						if #str9 > 5 and str9:sub(-5) == "EVENT" then
+							local str10 = str9:sub(1, #str9 - 5)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+							if #str10 >= 3 then
+								_G.__RiddlerSources[str10] = str9
+							end
+						end
+
+						local tbl25 = {}
+
+						for match in flag25:gmatch("[%w']+") do
+							local str10 = match:gsub("[^%w]", ""):upper()
+
+							if str10 ~= "" and str10 ~= "?" then
+								tbl25[#tbl25 + 1] = str10
+							end  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+
+						if #tbl25 > 1 then
+							_G.__RiddlerWords = _G.__RiddlerWords or {}
+							_G.__RiddlerWords[str9] = tbl25
+						end
+					end
+
+					local str9
+
+					if tbl20[str8] and (num or num2) then
+						str9 = ("%s($%s, %s/s)"):format(displayName, tostring(num or "?"), tostring(num2 or "?"))
+					else  -- LEAKED BY SLICED | discord.gg/pubmethod
+						str9 = displayName
+					end
+
+					if flag25 then
+						str9 ..= " <- " .. flag25
+					end
+
+					if sliced105 then
+						str9 ..= " [" .. sliced105 .. "]"
+						tbl22[#tbl22 + 1] = ("%s [%s; source=%s; $%s; %s/s]"):format(displayName, str8, tostring(flag25 or "unknown"), tostring(num or "?"), tostring(num2 or "?"))
+					end
+
+					table.insert(tbl21[str8], str9)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					if num and num > tbl23.v then
+						tbl23 = { n = displayName, v = num }
+					end
+
+					if num2 and num2 > tbl24.v then
+						tbl24 = { n = displayName, v = num2 }
+					end
+
+					slicedn35 += 1
+				end
+			end
+
+			local tbl25 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			for k in pairs(tbl21) do
+				tbl25[#tbl25 + 1] = k
+			end
+
+			table.sort(tbl25)
+			tbl19[#tbl19 + 1] = ("BRAINROTS_BY_RARITY: %d"):format(slicedn35)
+
+			for _, sliced104 in ipairs(tbl25) do
+				table.sort(tbl21[sliced104])
+				tbl19[#tbl19 + 1] = ("  [%s] %s"):format(sliced104, table.concat(tbl21[sliced104], ", "))
+			end
+
+			if #tbl22 > 0 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+				table.sort(tbl22)
+				tbl19[#tbl19 + 1] = ("LATEST UPDATE BRAINROTS (%s, %d): "):format(latestUpdate, #tbl22) .. table.concat(tbl22, ", ")
+			end
+
+			local tbl26 = {}
+
+			for _, sliced104 in pairs(sliced103) do
+				local sliced105 = "table"
+
+				if type(sliced104) == sliced105 and sliced104.DisplayName and tonumber(sliced104.Generation) then
+					tbl26[#tbl26 + 1] = { name = sliced104.DisplayName, gen = tonumber(sliced104.Generation), price = tonumber(sliced104.Price) }
+				end
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			table.sort(tbl26, function(arg, arg2)
+				return arg.gen > arg2.gen
+			end)
+
+			local function slicedfn61(arg)
+				if not arg then
+					return "?"
+				end
+
+				for _, sliced104 in ipairs({ { 1e12, "T" }, { 1e9, "B" }, { 1000000, "M" }, { 1000, "K" } }) do
+					if sliced104[1] <= arg then
+						return ("%.4g%s"):format(arg / sliced104[1], sliced104[2])  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+				end
+
+				return tostring(arg)
+			end
+
+			local tbl27 = {}
+
+			for i = 1, math.min(12, #tbl26) do
+				local sliced104 = tbl26[i]
+				tbl27[#tbl27 + 1] = ("%s(%s/s, costs %s)"):format(sliced104.name, slicedfn61(sliced104.gen), slicedfn61(sliced104.price))
+			end
+
+			if #tbl27 > 0 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+				tbl19[#tbl19 + 1] = "TOP_INCOME: " .. table.concat(tbl27, ", ")
+			end
+
+			local slicedn36 = #tbl19 + 1
+			local slicedn37 = tbl24.n
+			local sliced104 = tostring
+			local sliced105 = tbl24.v
+			tbl19[slicedn36] = ("MOST EXPENSIVE BRAINROT: %s ($%s). HIGHEST INCOME BRAINROT: %s (%s/s)."):format(tbl23.n, tostring(tbl23.v), slicedn37, sliced104(sliced105))
+			tbl19[#tbl19 + 1] = _G.__RiddlerExtremeSummary()
+		end
+
+		local controllers = sliced86:FindFirstChild("Controllers")  -- LEAKED BY SLICED | discord.gg/pubmethod
+		controllers = controllers and controllers:FindFirstChild("EventController")
+		controllers = controllers and controllers:FindFirstChild("Events")
+
+		if controllers then
+			local tbl20 = {}
+
+			for _, child in ipairs(controllers:GetChildren()) do
+				tbl20[#tbl20 + 1] = child.Name
+			end
+
+			table.sort(tbl20)
+			tbl19[#tbl19 + 1] = "ALL EVENT MODULES PRESENT IN THE GAME FILES (includes removed ones): " .. table.concat(tbl20, ", ")
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		local shared2 = sliced86:FindFirstChild("Shared")
+		shared2 = shared2 and slicedfn34(shared2:FindFirstChild("Updates"))
+
+		if shared2 and type(shared2.List) == "table" then
+			local tbl20 = {}
+
+			for k, sliced104 in pairs(shared2.List) do
+				local slicedn35 = #tbl20 + 1
+				local tbl21 = { key = tostring(k) }
+				local sliced105 = "table"
+				tbl21.ts = type(sliced104) == sliced105 and tonumber(sliced104.UnixTimeStamp) or 0
+				tbl20[slicedn35] = tbl21  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			table.sort(tbl20, function(arg, arg2)
+				return arg.ts < arg2.ts
+			end)
+
+			local tbl21 = {}
+
+			for _, sliced104 in ipairs(tbl20) do
+				tbl21[#tbl21 + 1] = sliced104.key
+			end
+
+			if #tbl21 > 0 then
+				tbl19[#tbl19 + 1] = "UPDATE SCHEDULE (oldest -> newest): " .. table.concat(tbl21, ", ")  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+		end
+
+		local sliced104 = slicedfn34(sliced99:FindFirstChild("BeeMerchantData"))
+		local sliced105 = "table"
+
+		if type(sliced104) == sliced105 and type(sliced104.Brainrots) == "table" then
+			local tbl20 = {}
+
+			for _, brainrot in ipairs(sliced104.Brainrots) do
+				if type(brainrot) == "table" and brainrot.Brainrot then
+					tbl20[#tbl20 + 1] = ("%s (Honey=%s, stock=%s, Robux=%s, product=%s)"):format(tostring(brainrot.Brainrot), tostring(brainrot.Price or "?"), tostring(brainrot.Stock or "?"), tostring(brainrot.RobuxPrice or "?"), tostring(brainrot.ProductId or "?"))
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			if #tbl20 > 0 then
+				_G.__RiddlerBeeLine = "BEE MERCHANT (currency: Honey): " .. table.concat(tbl20, ", ")
+				tbl19[#tbl19 + 1] = _G.__RiddlerBeeLine
+			end
+		end
+
+		local sliced106 = slicedfn34(sliced99:FindFirstChild("Rebirths"))
+
+		if type(sliced106) == "table" and type(sliced106.Brainrots) == "table" then
+			local tbl20 = {}
+
+			pcall(function()  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local value = slicedfn34(sliced86.Shared.Flags.TacoMerchantFlags).TacoPrices.Value
+				local sliced107 = "table"
+
+				if type(value) == sliced107 then
+					for k, sliced108 in pairs(value) do
+						tbl20[tostring(k)] = tonumber(sliced108)
+					end
+				end
+			end)
+
+			local tbl21 = {}
+			local sliced107 = slicedfn34(sliced99:FindFirstChild("Animals"))  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local sliced108 = "table"
+
+			if type(sliced107) == sliced108 then
+				for _, sliced109 in pairs(sliced107) do
+					if type(sliced109) == "table" and sliced109.DisplayName then
+						tbl21[sliced109.DisplayName] = sliced109
+					end
+				end
+			end
+
+			local tbl22 = {}
+
+			for _, brainrot in ipairs(sliced106.Brainrots) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local sliced109 = "table"
+
+				if type(brainrot) == sliced109 and brainrot.Brainrot then
+					local str8 = tostring(brainrot.Brainrot)
+
+					tbl22[#tbl22 + 1] = {
+						name = str8,
+						data = tbl21[str8] or {},
+						tacos = tbl20[str8] or tonumber(brainrot.TacoPrice) or 0,
+						robux = (tonumber(brainrot.ProductId) or 0) > 0,
+					}
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			table.sort(tbl22, function(arg, arg2)
+				return arg.tacos < arg2.tacos
+			end)
+
+			local tbl23 = {}
+
+			for _, sliced109 in ipairs(tbl22) do
+				tbl23[#tbl23 + 1] = ("%s (%s Tacos, %s, income %s/s, price %s%s)"):format(sliced109.name, tostring(sliced109.tacos), tostring(sliced109.data.Rarity or "?"), tostring(sliced109.data.Generation or "?"), tostring(sliced109.data.Price or "?"), sliced109.robux and ", robux option" or "")
+			end
+
+			if #tbl23 > 0 then
+				_G.__RiddlerTacoLine = ("TACO MERCHANT (Taco Tuesday stall, pays in TACOS, open right now: %s; cheapest first): %s. CHEAPEST = %s. BEST / MOST EXPENSIVE / HIGHEST INCOME = %s."):format(sliced86:GetAttribute("TacoMerchantEvent") == true and "YES" or "NO", table.concat(tbl23, ", "), tbl22[1].name, tbl22[#tbl22].name)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				tbl19[#tbl19 + 1] = _G.__RiddlerTacoLine
+			end
+		end
+
+		local sliced107 = slicedfn34(sliced99:FindFirstChild("RNGMachineData"))
+		local sliced108 = _G.__RiddlerGetCachedRNGMachineConfig()
+		local tbl20 = {}
+		local sliced109 = "table"
+
+		if type(sliced107) == sliced109 and sliced107.DisplayRotations ~= nil then
+			tbl20[#tbl20 + 1] = "DisplayRotations=" .. tostring(sliced107.DisplayRotations)
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		if type(sliced108) == "table" then
+			if type(sliced108.SpinCosts) == "table" then
+				local tbl21 = {}
+
+				for k, spinCost in pairs(sliced108.SpinCosts) do
+					if tonumber(k) and tonumber(spinCost) then
+						tbl21[#tbl21 + 1] = { tier = tonumber(k), cost = tonumber(spinCost) }
+					end
+				end
+
+				table.sort(tbl21, function(arg, arg2)
+					return arg.tier < arg2.tier  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end)
+
+				local tbl22 = {}
+
+				for _, sliced110 in ipairs(tbl21) do
+					tbl22[#tbl22 + 1] = ("tier %d=$%s"):format(sliced110.tier, tostring(sliced110.cost))
+				end
+
+				if 0 < #tbl22 then
+					tbl20[#tbl20 + 1] = "SpinCosts{" .. table.concat(tbl22, ", ") .. "}"
+				end
+			end
+
+			if tonumber(sliced108.SpeedSpinCostMultiplier) then  -- LEAKED BY SLICED | discord.gg/pubmethod
+				tbl20[#tbl20 + 1] = "SpeedSpinCostMultiplier=" .. tostring(sliced108.SpeedSpinCostMultiplier)
+			end
+
+			if sliced108.ShowResultOdds ~= nil then
+				tbl20[#tbl20 + 1] = "ShowResultOdds=" .. tostring(sliced108.ShowResultOdds)
+			end
+		end
+
+		if #tbl20 > 0 then
+			tbl19[#tbl19 + 1] = "RNG MACHINE CONFIG: " .. table.concat(tbl20, "; ")
+		end
+
+		if type(sliced108) == "table" and type(sliced108.SkillTree) == "table" then  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local tbl21 = {}
+
+			for k, sliced110 in pairs(sliced108.SkillTree) do
+				if type(sliced110) == "table" then
+					local tbl22 = {}
+
+					for k2, sliced111 in pairs(sliced110) do
+						if tonumber(k2) and type(sliced111) == "table" then
+							tbl22[#tbl22 + 1] = { level = tonumber(k2), node = sliced111 }
+						end
+					end
+
+					table.sort(tbl22, function(arg, arg2)  -- LEAKED BY SLICED | discord.gg/pubmethod
+						return arg.level < arg2.level
+					end)
+
+					local tbl23 = {}
+
+					for _, sliced111 in ipairs(tbl22) do
+						local tbl24 = {}
+
+						for k2, sliced112 in pairs(sliced111.node) do
+							local kind = type(sliced112)
+
+							if kind == "string" or kind == "number" or kind == "boolean" then
+								tbl24[#tbl24 + 1] = tostring(k2) .. "=" .. tostring(sliced112)
+							end  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+
+						table.sort(tbl24)
+						tbl23[#tbl23 + 1] = ("L%d{%s}"):format(sliced111.level, table.concat(tbl24, ","))
+					end
+
+					tbl21[#tbl21 + 1] = tostring(k) .. ": " .. table.concat(tbl23, ", ")
+				end
+			end
+
+			table.sort(tbl21)
+
+			if #tbl21 > 0 then
+				tbl19[#tbl19 + 1] = "RNG MACHINE SKILL TREE: " .. table.concat(tbl21, " | ")  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+		end
+
+		local sliced110 = _G.__RiddlerGetSynchronizedPlayerCache()
+
+		if type(sliced110) == "table" then
+			local function slicedfn61(arg)
+				if type(arg) ~= "table" then
+					return nil
+				end
+				local tbl21 = {}
+
+				for k in pairs(arg) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+					tbl21[#tbl21 + 1] = tostring(k)
+				end
+
+				table.sort(tbl21)
+				return #tbl21 > 0 and table.concat(tbl21, ",") or nil
+			end
+
+			local tbl21 = {}
+			local sliced111 = slicedfn61(sliced110.BeeEvent)
+			local sliced112 = slicedfn61(sliced110.RNGMachine)
+
+			if sliced111 then
+				tbl21[#tbl21 + 1] = "BeeEvent{" .. sliced111 .. "}"  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			if sliced112 then
+				tbl21[#tbl21 + 1] = "RNGMachine{" .. sliced112 .. "}"
+			end
+
+			if #tbl21 > 0 then
+				tbl19[#tbl19 + 1] = "SYNCHRONIZER CACHED UPDATE DATA (schema only): " .. table.concat(tbl21, "; ")
+			end
+		end
+
+		local tbl21 = {}
+
+		for _, child in ipairs(sliced99:GetChildren()) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+			if child:IsA("ModuleScript") then
+				tbl21[#tbl21 + 1] = child.Name
+			end
+		end
+
+		table.sort(tbl21)
+		tbl19[#tbl19 + 1] = ("ALL DATA MODULES PRESENT (%d): "):format(#tbl21) .. table.concat(tbl21, ", ")
+
+		local function slicedfn61(arg)
+			local sliced111 = "table"
+
+			if type(arg) == sliced111 then
+				local displayName = arg.DisplayName or arg.Name or arg.Title  -- LEAKED BY SLICED | discord.gg/pubmethod
+				if type(displayName) == "string" then
+					return displayName
+				end
+				local price = arg.Price or arg.Cost
+				if price then
+					return "price " .. tostring(price)
+				end
+				return nil
+			end
+
+			local flag25 = type(arg) == "string"  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			if not flag25 then
+				local sliced112 = "number"
+				flag25 = type(arg) == sliced112
+			end
+
+			if flag25 then
+				return tostring(arg)
+			end
+		end
+
+		for _, sliced111 in ipairs({
+			"LuckyBlocks",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"Shop",
+			"ShopItems",
+			"RodsShopItems",
+			"Items",
+			"Bases",
+			"EggrotZoneNames",
+			"ExtinctMachine",
+			"FuseMachineData",
+			"RNGMachineData",
+			"RNGMachineLimitedStockData",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"MerchantData",
+			"CandyMerchantData",
+			"SantaMerchantData",
+			"MerchShopData",
+			"JumpShopData",
+			"ValentinesShop",
+			"BeeMerchantData",
+			"TacoMerchantData",
+			"UnlockBase",
+			"Rarities",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		}) do
+			local sliced112 = slicedfn34(sliced99:FindFirstChild(sliced111))
+
+			if type(sliced112) == "table" then
+				local tbl22 = {}
+				local sliced113 = 0
+
+				for k, sliced114 in pairs(sliced112) do
+					sliced113 += 1
+
+					if sliced113 <= 200 then
+						local sliced115 = slicedfn61(sliced114)
+						local str8 = tostring(k)  -- LEAKED BY SLICED | discord.gg/pubmethod
+						tbl22[#tbl22 + 1] = sliced115 and sliced115 ~= str8 and str8 .. " (" .. sliced115 .. ")" or str8
+					end
+				end
+
+				if #tbl22 > 0 then
+					table.sort(tbl22)
+					tbl19[#tbl19 + 1] = sliced111:upper() .. ": " .. table.concat(tbl22, ", ") .. (sliced113 > 200 and (" ...(+%d more)"):format(sliced113 - 200) or "")
+				end
+			end
+		end
+
+		local sliced111 = slicedfn34(sliced99:FindFirstChild("Mutations"))  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local sliced112 = "table"
+
+		if type(sliced111) == sliced112 then
+			local tbl22 = {}
+
+			for k, sliced113 in pairs(sliced111) do
+				local num = tonumber(k) or type(sliced113) == "table" and tonumber(sliced113.RebirthNumber)
+
+				if num and type(sliced113) == "table" then
+					tbl22[#tbl22 + 1] = {
+						lvl = num,
+						need = type(sliced113.Requirements) == "table" and sliced113.Requirements.Cash or nil,
+					}  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+			end
+
+			table.sort(tbl22, function(arg, arg2)
+				return arg.lvl < arg2.lvl
+			end)
+
+			local tbl23 = {}
+
+			for _, sliced113 in ipairs(tbl22) do
+				tbl23[#tbl23 + 1] = sliced113.need and ("R%d needs $%s"):format(sliced113.lvl, tostring(sliced113.need)) or "R" .. sliced113.lvl
+			end
+
+			if #tbl23 > 0 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+				tbl19[#tbl19 + 1] = ("REBIRTH TIERS (%d total): %s"):format(#tbl22, table.concat(tbl23, ", "))
+			end
+		end
+
+		local sliced113 = slicedfn34(sliced99:FindFirstChild("ExtinctMachine"))
+
+		if type(sliced113) == "table" and sliced113.Output then
+			local tbl22 = {}
+
+			if type(sliced113.Inputs) == "table" then
+				for k, input in pairs(sliced113.Inputs) do
+					local slicedn35 = #tbl22 + 1
+					local sliced114 = tostring  -- LEAKED BY SLICED | discord.gg/pubmethod
+					input = type(input) == "string" and input
+					k = input or k
+					tbl22[slicedn35] = sliced114(k)
+				end
+
+				table.sort(tbl22)
+			end
+
+			local slicedn35 = #tbl19 + 1
+			local sliced114 = tostring
+			local output = sliced113.Output
+			tbl19[slicedn35] = ("EXTINCT_RECIPE: %s -> %s"):format(table.concat(tbl22, " + "), sliced114(output))  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+
+		local sliced114 = sliced86:FindFirstChild("Shared")
+
+		if sliced114 then
+			local sliced115 = slicedfn34(sliced114:FindFirstChild("LiveSoccerTeams"))
+
+			if type(sliced115) == "table" then
+				local tbl22 = {}
+
+				for k, sliced116 in pairs(sliced115) do
+					local num = tonumber(k)
+					local flag25
+
+					if num then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						local sliced117 = "string"
+						flag25 = type(sliced116) == sliced117
+					else
+						flag25 = num
+					end
+
+					if flag25 then
+						tbl22[#tbl22 + 1] = { n = num, name = sliced116 }
+					end
+				end
+
+				table.sort(tbl22, function(arg, arg2)  -- LEAKED BY SLICED | discord.gg/pubmethod
+					return arg.n < arg2.n
+				end)
+
+				local tbl23 = {}
+
+				for _, sliced116 in ipairs(tbl22) do
+					tbl23[#tbl23 + 1] = sliced116.n .. "=" .. sliced116.name
+				end
+
+				if #tbl23 > 0 then
+					tbl19[#tbl19 + 1] = ("SOCCER_TEAMS: %d | "):format(#tbl23) .. table.concat(tbl23, ", ")
+				end
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			local sliced116 = slicedfn34(sliced114:FindFirstChild("BaseSkins"))
+
+			if type(sliced116) == "table" then
+				local function slicedfn62(arg)
+					if type(arg) ~= "table" then
+						return nil
+					end
+					local tbl22 = {}
+
+					for k, sliced117 in pairs(arg) do
+						local slicedn35 = #tbl22 + 1
+						local sliced118 = tostring  -- LEAKED BY SLICED | discord.gg/pubmethod
+						sliced117 = type(sliced117) == "string" and sliced117
+						k = sliced117 or k
+						tbl22[slicedn35] = sliced118(k)
+					end
+
+					table.sort(tbl22)
+					return #tbl22 > 0 and table.concat(tbl22, ", ") or nil
+				end
+
+				local eventBaseSkins = slicedfn62(sliced116.EventBaseSkins)
+				local paidBaseSkins = slicedfn62(sliced116.PaidBaseSkins)
+
+				if eventBaseSkins then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					tbl19[#tbl19 + 1] = "EVENT BASE SKINS: " .. eventBaseSkins
+				end
+
+				if paidBaseSkins then
+					tbl19[#tbl19 + 1] = "PAID BASE SKINS: " .. paidBaseSkins
+				end
+			end
+		end
+
+		return table.concat(tbl19, "\n")
+	end
+
+	_G.__RiddlerSources = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+	slicedfn60()
 end
 
-local Console, ConsoleOutput, updateConsoleCanvas
-local featureStates = {}
-local CONSOLE_COLORS = {
-    Dim = "rgb(150,170,200)",
-    Amber = "rgb(120,200,255)",
-    Green = "rgb(80,230,160)",
-    Red = "rgb(255,100,120)",
-    Cyan = "rgb(140,220,255)",
-    Gold = "rgb(255,210,110)",
-    Magenta = "rgb(220,140,255)",
-    Tag = "rgb(90,120,160)",
+_G.__RiddlerEventToMutation = {
+	["Blood Moon"] = "Bloodlust",
+	["Candy Cane"] = "Candy",
+	["Halloween"] = "Candy",
+	Molten = "Molten",
+	Lava = "Lava",
+	Galaxy = "Galaxy",
+	["Yin Yang"] = "YinYang",  -- LEAKED BY SLICED | discord.gg/pubmethod
+	YinYang = "YinYang",
+	Radioactive = "Radioactive",
+	Cursed = "Cursed",
+	Divine = "Divine",
+	["Meteor"] = "Meteor",
+	["Gold"] = "Gold",
+	["Crystal"] = "Crystal",
+	Rainbow = "Rainbow",
 }
 
-function scrollConsoleToBottom()
-    task.defer(function()
-        task.wait()
-        if not Console then return end
-        if updateConsoleCanvas then updateConsoleCanvas() end
-        local canvasY = Console.AbsoluteCanvasSize.Y
-        local windowY = Console.AbsoluteWindowSize.Y
-        local bottom = math.max(0, canvasY - windowY)
-        local nearBottom = (Console.CanvasPosition.Y >= bottom - 40) or bottom <= 0
-        if nearBottom then
-            Console.CanvasPosition = Vector2.new(0, bottom)
-        end
-    end)
+_G.__RiddlerEventToTrait = {  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Snow = "Snowy",
+	Glitch = "Glitched",
+	["Raining Tacos"] = "Taco",
+	["Raining Burgers"] = "Burger",
+	["Nyan Cats"] = "Nyan",
+	Matteo = "Matteo",
+	Rainbow = "Rainbow Balloon",
+	["Bubblegum"] = "Bubblegum",
+}
+
+slicedfn58 = function()  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local tbl19 = {}
+	local tbl20 = {}
+	local sliced99 = sliced86:FindFirstChild("Controllers")
+	local sliced100 = slicedfn34(sliced99 and sliced99:FindFirstChild("EventController"))
+
+	if sliced100 and sliced100.GetActiveEvents then
+		local ok, result = pcall(function()
+			return sliced100:GetActiveEvents()
+		end)
+
+		if ok then
+			local sliced101 = "table"  -- LEAKED BY SLICED | discord.gg/pubmethod
+			ok = type(result) == sliced101
+		end
+
+		if ok then
+			for _, sliced101 in pairs(result) do
+				if type(sliced101) == "table" then
+					local eventName = sliced101.eventName or sliced101.EventName or sliced101.name
+
+					if type(eventName) == "string" and eventName ~= "" and not tbl20[eventName] then
+						tbl20[eventName] = true
+						tbl19[#tbl19 + 1] = { name = eventName }
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+			end
+		end
+	end
+
+	local activeEvents = playerGui:FindFirstChild("ActiveEvents")
+	activeEvents = activeEvents and activeEvents:FindFirstChild("ActiveEvents")
+
+	if activeEvents then
+		local tbl21 = {}
+
+		for _, sliced101 in ipairs(tbl19) do
+			tbl21[sliced101.name] = sliced101  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+
+		for _, child in ipairs(activeEvents:GetChildren()) do
+			if child:IsA("Frame") and child.Visible then
+				local textLabel = child:FindFirstChildWhichIsA("TextLabel", true)
+				textLabel = textLabel and textLabel.Text or nil
+
+				if tbl21[child.Name] then
+					tbl21[child.Name].timeLeft = textLabel
+				elseif not tbl20[child.Name] then
+					tbl20[child.Name] = true
+					tbl19[#tbl19 + 1] = { name = child.Name, timeLeft = textLabel }  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+			end
+		end
+	end
+
+	return tbl19
 end
 
-function appendConsoleStatus(name, activated)
-    if not ConsoleOutput then return end
-    local state = activated and "ON" or "OFF"
-    local stateColor = activated and CONSOLE_COLORS.Green or CONSOLE_COLORS.Red
-    local t = os.date("*t")
-    local ts = string.format("%02d:%02d:%02d", t.hour, t.min, t.sec)
-    local line = table.concat({
-        '<font color="', CONSOLE_COLORS.Tag, '">', ts, '</font> ',
-        '<font color="', CONSOLE_COLORS.Cyan, '">[CFG]</font> ',
-        '<font color="', CONSOLE_COLORS.Amber, '">', tostring(name), '</font> ',
-        '<font color="', CONSOLE_COLORS.Dim, '">→</font> ',
-        '<font color="', stateColor, '">', state, '</font>',
-    })
-    if ConsoleOutput.Text == "" then ConsoleOutput.Text = line
-    else ConsoleOutput.Text = ConsoleOutput.Text .. "\n" .. line end
-    scrollConsoleToBottom()
+_G.__RiddlerReadNewContent = function()
+	local tbl19 = {}
+	local datas = sliced86:FindFirstChild("Datas")
+	local sliced99 = slicedfn34(datas and datas:FindFirstChild("Animals"))  -- LEAKED BY SLICED | discord.gg/pubmethod
+	if type(sliced99) ~= "table" then
+		return tbl19
+	end
+	local riddlerGetConstants = _G.__RiddlerGetConstants
+
+	for k, sliced100 in pairs(sliced99) do
+		if type(sliced100) == "table" and type(sliced100.IsEnabled) == "function" then
+			local sliced101 = nil
+
+			if riddlerGetConstants then
+				local ok, result = pcall(riddlerGetConstants, sliced100.IsEnabled)
+
+				if ok then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local sliced102 = "table"
+					ok = type(result) == sliced102
+				end
+
+				sliced101 = nil
+
+				if ok then
+					sliced101 = nil
+
+					for _, sliced102 in pairs(result) do
+						if type(sliced102) == "string" and sliced102:match("^Update%-") then
+							sliced101 = sliced102
+							break  -- LEAKED BY SLICED | discord.gg/pubmethod
+						else
+							sliced101 = nil
+						end
+					end
+				end
+			end
+
+			local flag24 = sliced101 ~= nil
+			local source = nil
+
+			if type(sliced100.ObtainedFrom) == "table" then
+				source = sliced100.ObtainedFrom.Source  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			tbl19[#tbl19 + 1] = {
+				name = tostring(sliced100.DisplayName or k),
+				gen = tonumber(sliced100.Generation),
+				rarity = tostring(sliced100.Rarity or "?"),
+				source = source and tostring(source) or nil,
+				stamp = sliced101,
+				enabled = flag24,
+			}
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end
+
+	table.sort(tbl19, function(arg, arg2)
+		return (arg.gen or 0) > (arg2.gen or 0)
+	end)
+
+	return tbl19
 end
 
-makeLabel(Header, "Title", "CALCIUM HUB", UDim2.fromOffset(150, 18), UDim2.fromOffset(16, 6), 16, COLORS.White, Enum.Font.GothamBlack)
-makeLabel(Header, "Subtitle", "CODE SNIPER", UDim2.fromOffset(120, 12), UDim2.fromOffset(16, 24), 11, COLORS.Accent, Enum.Font.GothamBold)
+_G.__RiddlerShortNum = function(arg)
+	local num = tonumber(arg)
+	if not num then
+		return "?"  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end
 
-local ExecPulseDot = Instance.new("Frame")
-ExecPulseDot.Name = "ExecPulseDot"
-ExecPulseDot.Size = UDim2.fromOffset(6, 6)
-ExecPulseDot.Position = UDim2.fromOffset(16, 45)
-ExecPulseDot.BackgroundColor3 = COLORS.Green
-ExecPulseDot.BorderSizePixel = 0
-ExecPulseDot.ZIndex = 6
-ExecPulseDot.Parent = Header
-addCorner(ExecPulseDot, 3)
-_G.NxcPulseRefs.execDot = ExecPulseDot
+	for _, sliced99 in ipairs({
+		{ 1e30, "No" },
+		{ 1e27, "Oc" },
+		{ 1e24, "Sp" },
+		{ 1e21, "Sx" },
+		{ 1e+18, "Qi" },
+		{ 1e15, "Qa" },
+		{ 1e12, "T" },
+		{ 1e9, "B" },  -- LEAKED BY SLICED | discord.gg/pubmethod
+		{ 1000000, "M" },
+		{ 1000, "K" },
+	}) do
+		if sliced99[1] <= num then
+			local slicedn34 = num / sliced99[1]
+			return (slicedn34 % 1 == 0 and tostring(math.floor(slicedn34)) or ("%.4g"):format(slicedn34)) .. " " .. sliced99[2]
+		end
+	end
 
-local ExecNameLabel = makeLabel(Header, "ExecName", tostring(EXECUTOR_NAME), UDim2.new(1, -150, 0, 12), UDim2.fromOffset(28, 41), 10, COLORS.White, Enum.Font.GothamBold)
-ExecNameLabel.TextXAlignment = Enum.TextXAlignment.Left
-ExecNameLabel.TextTruncate = Enum.TextTruncate.AtEnd
-ExecNameLabel.ZIndex = 6
+	return tostring(num)
+end  -- LEAKED BY SLICED | discord.gg/pubmethod
 
-local DateTimeLabel = Instance.new("TextLabel")
-DateTimeLabel.Name = "DateTime"
-DateTimeLabel.Size = UDim2.new(0, 130, 0, 12)
-DateTimeLabel.Position = UDim2.new(1, -134, 0, 41)
-DateTimeLabel.BackgroundTransparency = 1
-DateTimeLabel.Text = os.date("%H:%M:%S  ·  %d/%m/%Y")
-DateTimeLabel.TextSize = 10
-DateTimeLabel.TextColor3 = COLORS.Dim
-DateTimeLabel.Font = Enum.Font.GothamMedium
-DateTimeLabel.TextXAlignment = Enum.TextXAlignment.Right
-DateTimeLabel.ZIndex = 6
-DateTimeLabel.Parent = Header
+_G.__RiddlerReadNewRebirth = function()
+	local tbl19 = {}
+	local datas = sliced86:FindFirstChild("Datas")
+	local sliced99 = slicedfn34(datas and datas:FindFirstChild("Rebirth"))
+	if type(sliced99) ~= "table" then
+		return tbl19
+	end
+	local riddlerGetConstants = _G.__RiddlerGetConstants
+	local slicedn34 = 0
+
+	for k, sliced100 in pairs(sliced99) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local num = tonumber(type(sliced100) == "table" and sliced100.RebirthNumber or k)
+
+		if num and num > slicedn34 then
+			slicedn34 = num
+		end
+	end
+
+	for k, sliced100 in pairs(sliced99) do
+		local num = tonumber(type(sliced100) == "table" and sliced100.RebirthNumber or k)
+
+		if type(sliced100) == "table" and num == slicedn34 then
+			local flag24 = riddlerGetConstants and type(sliced100.IsEnabled) == "function"
+			local sliced101 = nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			if flag24 then
+				local ok, result = pcall(riddlerGetConstants, sliced100.IsEnabled)
+				ok = ok and type(result) == "table"
+				sliced101 = nil
+
+				if ok then
+					sliced101 = nil
+
+					for _, sliced102 in pairs(result) do
+						if type(sliced102) == "string" and sliced102:match("^Update%-") then
+							sliced101 = sliced102
+							break  -- LEAKED BY SLICED | discord.gg/pubmethod
+						else
+							sliced101 = nil
+						end
+					end
+				end
+			end
+
+			local sliced102 = "table"
+			local requirements = type(sliced100.Requirements) == sliced102 and sliced100.Requirements or {}
+			local sliced103 = "table"
+			local rewards = type(sliced100.Rewards) == sliced103 and sliced100.Rewards or {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local tbl20 = {}
+
+			if type(requirements.RequiredCharacters) == "table" then
+				for _, requiredCharacter in pairs(requirements.RequiredCharacters) do
+					tbl20[#tbl20 + 1] = tostring(requiredCharacter)
+				end
+			end
+
+			tbl19[#tbl19 + 1] = {
+				number = tonumber(sliced100.RebirthNumber) or tonumber(k),
+				name = tostring(sliced100.Name or "Rebirth " .. tostring(k)),
+				cash = tonumber(requirements.Cash),  -- LEAKED BY SLICED | discord.gg/pubmethod
+				chars = tbl20,
+				reward = tonumber(rewards.Cash),
+				mult = tonumber(rewards.Multiplier),
+				stamp = sliced101,
+			}
+		end
+	end
+
+	table.sort(tbl19, function(arg, arg2)
+		return (arg.number or 0) > (arg2.number or 0)
+	end)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	return tbl19
+end
+
+_G.__RiddlerReadBases = function()
+	local tbl19 = {}
+	local plots = sliced88:FindFirstChild("Plots")
+	if not plots then
+		return tbl19
+	end
+
+	for _, child in ipairs(plots:GetChildren()) do
+		local attribute = child:GetAttribute("Skin")  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local slicedn34 = tonumber(child:GetAttribute("Tier")) or 0
+
+		if slicedn34 > 0 or attribute and tostring(attribute) ~= "Normal" then
+			local match = nil
+
+			for _, descendant in ipairs(child:GetDescendants()) do
+				if descendant:IsA("TextLabel") then
+					match = tostring(descendant.Text):match("^(.-)'s Base$")
+					if not (match and match ~= "") then
+						match = nil
+						continue
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+				else
+					match = nil
+					continue
+				end
+
+				break
+			end
+
+			tbl19[#tbl19 + 1] = {
+				skin = attribute and tostring(attribute) or nil,
+				tier = slicedn34,
+				order = tonumber(child:GetAttribute("Order")),  -- LEAKED BY SLICED | discord.gg/pubmethod
+				owner = match,
+			}
+		end
+	end
+
+	table.sort(tbl19, function(arg, arg2)
+		return (arg.tier or 0) > (arg2.tier or 0)
+	end)
+
+	return tbl19
+end
+
+_G.__RiddlerDevBaseEvents = {  -- LEAKED BY SLICED | discord.gg/pubmethod
+	"Sammy's Base",
+	"Caylus Base",
+	"Steak's Base",
+	"Rusty's Base",
+}
+
+_G.__RiddlerReadDevBases = function()
+	local tbl19 = {}
+	local activeEvents = playerGui:FindFirstChild("ActiveEvents")
+	activeEvents = activeEvents and activeEvents:FindFirstChild("ActiveEvents")
+	if not activeEvents then  -- LEAKED BY SLICED | discord.gg/pubmethod
+		return tbl19
+	end
+
+	for _, riddlerDevBaseEvent in ipairs(_G.__RiddlerDevBaseEvents) do
+		local sliced99 = activeEvents:FindFirstChild(riddlerDevBaseEvent)
+
+		if sliced99 and sliced99.Visible then
+			local textLabel = sliced99:FindFirstChildWhichIsA("TextLabel", true)
+			local match = riddlerDevBaseEvent:match("^(.-)'s Base$") or riddlerDevBaseEvent:match("^(.-) Base$")
+			local plots = sliced88:FindFirstChild("Plots")
+			local sliced100 = plots and match
+			local attribute = nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			if sliced100 then
+				attribute = nil
+
+				for _, child in ipairs(plots:GetChildren()) do
+					for _, descendant in ipairs(child:GetDescendants()) do
+						if descendant:IsA("TextLabel") then
+							local match2 = tostring(descendant.Text):match("^(.-)'s Base$")
+							if match2 and match2:lower():find(match:lower(), 1, true) then
+								attribute = child:GetAttribute("Skin")
+								break
+							end  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+					end
+
+					if not attribute then
+						continue
+					end
+					break
+				end
+			end
+
+			tbl19[#tbl19 + 1] = {
+				event = riddlerDevBaseEvent,  -- LEAKED BY SLICED | discord.gg/pubmethod
+				who = match,
+				skin = attribute and tostring(attribute) or nil,
+				timeLeft = textLabel and textLabel.Text or nil,
+			}
+		end
+	end
+
+	return tbl19
+end
+
+_G.__RiddlerTraitRanking = function()
+	local datas = sliced86:FindFirstChild("Datas")  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local sliced99 = slicedfn34(datas and datas:FindFirstChild("Traits"))
+	if type(sliced99) ~= "table" then
+		return nil
+	end
+	local tbl19 = {}
+
+	for k, sliced100 in pairs(sliced99) do
+		local mult = type(sliced100) == "table" and tonumber(sliced100.MultiplierModifier)
+
+		if mult then
+			local slicedn34 = #tbl19 + 1
+			local tbl20 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local sliced101 = tostring
+			local sliced102 = "table"
+			tbl20.name = sliced101(type(sliced100) == sliced102 and sliced100.Display or k)
+			tbl20.mult = mult
+			tbl19[slicedn34] = tbl20
+		end
+	end
+
+	if #tbl19 == 0 then
+		return nil
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	table.sort(tbl19, function(arg, arg2)
+		if arg.mult ~= arg2.mult then
+			return arg.mult > arg2.mult
+		end
+		return arg.name < arg2.name
+	end)
+
+	return tbl19
+end
+
+_G.__RiddlerLiveCounts = function()
+	local sliced99 = sliced86:FindFirstChild("Datas")  -- LEAKED BY SLICED | discord.gg/pubmethod
+	if not sliced99 then
+		return nil
+	end
+
+	local function slicedfn60(arg)
+		local sliced100 = slicedfn34(sliced99:FindFirstChild(arg))
+		if type(sliced100) ~= "table" then
+			return nil
+		end
+		local slicedn34 = 0
+
+		for k in pairs(sliced100) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+			slicedn34 += 1
+		end
+
+		return slicedn34
+	end
+
+	local tbl19 = {
+		brainrots = slicedfn60("Animals"),
+		traits = slicedfn60("Traits"),
+		mutations = slicedfn60("Mutations"),
+		rebirths = slicedfn60("Rebirth"),
+	}  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	local sliced100 = slicedfn34(sliced99:FindFirstChild("Mutations"))
+
+	if type(sliced100) == "table" then
+		local sliced101 = 0
+
+		for k, sliced102 in pairs(sliced100) do
+			local num = tonumber(type(sliced102) == "table" and sliced102.RebirthNumber or k)
+
+			if num and num > sliced101 then
+				sliced101 = num
+			end
+		end
+
+		if sliced101 > 0 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+			tbl19.maxRebirth = sliced101
+		end
+	end
+
+	return tbl19
+end
+
+_G.__RiddlerShippedBaseline = [[1x1x1x1
+	25
+	4th Bros
+	67
+	Abyssaloco  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Agarrini la Palini
+	Alessio
+	Anpali Babel
+	Antonio
+	Appelini
+	Aquanaut
+	Aquarino
+	Arcadopus
+	Arcadragon
+	Astrolero Cervalero  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Avocadini Antilopini
+	Avocadini Guffo
+	Avocadorilla
+	Bacuru and Egguru
+	Ballerina Cappuccina
+	Ballerina Peppermintina
+	Ballerino Lololo
+	Bambini Crostini
+	Bambu Bambu Sahur
+	Bananita Dolphinita  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Bananito
+	Bananito Bandito
+	Bandito Axolito
+	Bandito Bobritto
+	Baskito
+	Baskito Egg
+	Bearito Cabinito
+	Bee Loco
+	Belula Beluga
+	Berenjello Angello  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Berryno
+	Bisonte Giuppitere
+	Blackhole Goat
+	Blueberrinni Octopusini
+	Boatito Auratito
+	Boba Panda
+	Bombardini Tortinii
+	Bombardiro Crocodilo
+	Bombardiro Vaccariro
+	Bombombini Gusini  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Boneca Ambalabu
+	Boppin Bunny
+	Brasilini Berimbini
+	Brr Brr Patapim
+	Brr es Teh Patipum
+	Brri Brri Bicus Dicus Bombicus
+	Brunito Marsito
+	Brutto Gialutto
+	Bucketoro
+	Bufalino Boomberino  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Buho de Fuego
+	Buho de Noelo
+	Buho de Volto
+	Buho del Cielo
+	Bulbito Bandito Traktorito
+	Bumbatron
+	Bunito Bunito Spinito
+	Bunny Bunny Bunny Sahur
+	Bunny Bunny Bunny Sahur Egg
+	Bunny Tralala  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Bunny Tralala Egg
+	Bunny and Eggy
+	Bunnyman
+	Buntteo
+	Buntteo Egg
+	Burbaloni Loliloli
+	Burguro And Fryuro
+	Burrito Bandito
+	Burrito Bat
+	Cacasito Satalito  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Cachorrito Melonito
+	Cacto Hipopotamo
+	Camera Ramena
+	Candini Fluffini
+	Cangurato Gelato
+	Capi Taco
+	Capitano Americano
+	Capitano Gullini
+	Capitano Moby
+	Cappuccino Assassino  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Cappuccino Clownino
+	Caramello Filtrello
+	Carloo
+	Carrotini Brainini
+	Cash or Card
+	Cavallo Virtuoso
+	Caylusaurus
+	Celestial Pegasus
+	Celularcini Viciosini
+	Centrucci Nuclucci  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Cerberus
+	Chachechi
+	Chef Crabracadabra
+	Chicleteira Bicicleteira
+	Chicleteira Champeona
+	Chicleteira Cupideira
+	Chicleteira Noelteira
+	Chicleteira Surfeiteira
+	Chicleteirina Bicicleteirina
+	Chihuanini Taconini  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Chill Puppy
+	Chillin Chili
+	Chimnino
+	Chimpanzini Bananini
+	Chipso and Queso
+	Chocco Bunny
+	Chrismasmamat
+	Churrito Bunnito
+	Churrito Bunnito Egg
+	Cigno Fulgoro  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Clickerino Crabo
+	Cloverat Clapat
+	Clovkur Kurkur
+	Coco and Mango
+	Cocoa Assassino
+	Cocofanto Elefanto
+	Cocosini Mama
+	Cocoteddy
+	Cola Cat
+	Conetto Morsetto  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Cooki and Milki
+	Corn Corn Corn Sahur
+	Crabbo Limonetta
+	Craburger
+	Cuadramat and Pakrahmatmamat
+	Cupcake Koala
+	Cupid Cupid Sahur
+	Cupid Hotspot
+	DJ Panda
+	Digi Narwhal  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Divino Platypio
+	Doi Doi Do
+	Dolphini Jetskini
+	Donkeyturbo Express
+	Dragon Aquanini
+	Dragon Cannelloni
+	Dragon Gingerini
+	Dug dug dug
+	Duggy Bros
+	Dul Dul Dul  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Dumborino Miracello
+	Easter Easter Easter Sahur
+	Easter Easter Easter Sahur Egg
+	Egg Lucky Block
+	Eggdin Egg Egg Dun
+	Eggdin Egg Egg Dun Egg
+	Eid Eid Eid Sahur
+	Electro Quacko
+	Elefanto Frigo
+	Esok Goala  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Esok Sekolah
+	Espresso Signora
+	Eviledon
+	Examen Bros
+	Extinct Ballerina
+	Extinct Matteo
+	Extinct Tralalero
+	Festive 67
+	Festive Lucky Block
+	Fishboard  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Fishino Clownino
+	Fizzy Soda
+	Flancito
+	Flipa Sandala
+	Flippo Marino
+	Fluriflura
+	Fortunu and Cashuru
+	Foxini Lanternini
+	Fragola La La La
+	Fragrama and Chocrama  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Frankentteo
+	Frigo Camelo
+	Frio Ninja
+	Frogato Pirato
+	Frogo Elfo
+	Frullato Framingo
+	Futbolini Skatini
+	GOAT
+	Ganganzelli Trulala
+	Gangster Footera  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Garama and Madundung
+	Gato Celesto
+	Gattatino Nyanino
+	Gattito Tacoto
+	Gelatina Volatina
+	Gelato Lumacho
+	Giftini Spyderini
+	Ginger Cisterna
+	Ginger Gerat
+	Ginger Globo  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Girafa Celestre
+	Girafini Raftini
+	Glaciator
+	Globa Steppa
+	Glorbo Fruttodrillo
+	Gobblino Uniciclino
+	Gold Egg
+	Gold Elf
+	Gold Gold Gold
+	Gorillo Subwoofero  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Gorillo Watermelondrillo
+	Grabatron
+	Graipuss Medussi
+	Granchiello Spiritell
+	Granny
+	Granny
+	Griffin
+	Guerriro Digitale
+	Guest 666
+	Gym Bros  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Harpuccino
+	Headless Horseman
+	Heart Lucky Block
+	Hippo Golazo
+	Ho Ho Ho Sahur
+	Holy Arepa
+	Honey Honey Bear
+	Hopilikalika Hopilikalako
+	Hopilikalika Hopilikalako Egg
+	Horegini Boom  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Hydra Bunny
+	Hydra Bunny Egg
+	Hydra Dragon Cannelloni
+	Jacko Jack Jack
+	Jacko Spaventosa
+	Jackorilla
+	Jelly Moby
+	Jingle Jingle Sahur
+	Job Job Job Sahur
+	John Doe  -- LEAKED BY SLICED | discord.gg/pubmethod
+	John Pork
+	Jolly Jolly Sahur
+	Kalika Bros
+	Karker Sahur
+	Karkerheart Luvkur
+	Karkerkar Kurkur
+	Ketchuru and Musturu
+	Ketupat Bros
+	Ketupat Kepat
+	Kraken  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Krupuk Pagi Pagi
+	La Anniversary Grande
+	La Breakfast Combinasion
+	La Casa Boo
+	La Cucaracha
+	La Easter Grande
+	La Extinct Grande
+	La Food Combinasion
+	La Fuse Machine
+	La Ginger Sekolah  -- LEAKED BY SLICED | discord.gg/pubmethod
+	La Grande Combinasion
+	La Jolly Grande
+	La Karkerkar Combinasion
+	La Lucky Grande
+	La Romantic Grande
+	La Sahur Combinasion
+	La Secret Combinasion
+	La Spooky Grande
+	La Summer Grande
+	La Supreme Combinasion  -- LEAKED BY SLICED | discord.gg/pubmethod
+	La Taco Combinasion
+	La Vacca Jacko Linterino
+	La Vacca Lepre Lepreino
+	La Vacca Prese Presente
+	La Vacca Saturno Saturnita
+	Las Capuchinas
+	Las Sis
+	Las Tralaleritas
+	Las Vaquitas Saturnitas
+	Lavadorito Spinito  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Lazy Ducky
+	Lemonita Splashita
+	Leprechaun Lucky Block
+	Lerulerulerule
+	Lionel Cactuseli
+	Lirilì Larilà
+	List List List Sahur
+	Los 25
+	Los 67
+	Los Admins  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Los Amigos
+	Los Bombinitos
+	Los Bros
+	Los Bunitos
+	Los Bunitos Egg
+	Los Burritos
+	Los Candies
+	Los Chicleteiras
+	Los Chihuaninis
+	Los Chillis  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Los Combinasionas
+	Los Cornis
+	Los Crocodillitos
+	Los Cucarachas
+	Los Cupids
+	Los Fruits
+	Los Gattitos
+	Los Hackers
+	Los Hotspotsitos
+	Los Jobcitos  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Los Jolly Combinasionas
+	Los Karkeritos
+	Los Lucky Blocks
+	Los Mariachis
+	Los Matteos
+	Los Mi Gatitos
+	Los Mobilis
+	Los Noobinis
+	Los Nooo My Hotspotsitos
+	Los Orcalitos  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Los Planitos
+	Los Primos
+	Los Puggies
+	Los Quesadillas
+	Los Secret Combinasionas
+	Los Sekolahs
+	Los Sigmas
+	Los Spaghettis
+	Los Spooky Combinasionas
+	Los Spyderinis  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Los Sweethearts
+	Los Taco Blocks
+	Los Tacoritas
+	Los Tangcitos
+	Los Tictacs
+	Los Tipi Tacos
+	Los Tortus
+	Los Tralaleritos
+	Los Trios
+	Los Tungtungtungcitos  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Love Love Bear
+	Love Love Love Sahur
+	Lovin Rose
+	Luck Luck Luck Sahur
+	Lucky Block
+	Lucky Block
+	Lucky Block
+	Lucky Block
+	Lucky Block
+	Lumaca Malefica  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Luv Luv Luv
+	Magi Ribbitini
+	Malame Amarele
+	Mangolini Parrocini
+	Mariachi Corazoni
+	Mastodontico Telepiedone
+	Matteo
+	Meowl
+	Mi Gatito
+	Mieteteira Bicicleteira  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Moby Bros
+	Money Money Bros
+	Money Money Man
+	Money Money Puggy
+	Money Money Reindeer
+	Mummio Rappitto
+	Mummy Ambalabu
+	Nacho Spyder
+	Nachorilla
+	Naughty Naughty  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Noo La Polizia
+	Noo my Candy
+	Noo my Eggs
+	Noo my Eggs Egg
+	Noo my Examen
+	Noo my Gold
+	Noo my Heart
+	Noo my Present
+	Noo my Resume
+	Noobini Pizzanini  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Noobini Santanini
+	Noodle Noodle Poodle
+	Nooo My Hotspot
+	Nuclearo Dinossauro
+	Octo Lucky Block
+	Octoball
+	Odin Din Din Dun
+	Ombrello Topolino
+	Orangutini Ananassini
+	Orbi Mochi  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Orcaledon
+	Orcalero Orcala
+	Orcalita Orcala
+	Pakrahmatmamat
+	Pakrahmatmatina
+	Pancake and Syrup
+	Pandaccini Bananini
+	Pandanini Frostini
+	Paradiso Axolottino
+	Patteo  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Pengolino Nuvoletto
+	Penguin Tree
+	Penguino Cocosino
+	Perochello Lemonchello
+	Perrito Burrito
+	Peschito Machito
+	Pi Pi Watermelon
+	Piccione Macchina
+	Piccionetta Macchina
+	Pinealotto Fruttarino  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Pineaplino
+	Pipi Avocado
+	Pipi Corni
+	Pipi Kiwi
+	Pipi Potato
+	Pirulitoita Bicicleteira
+	Pizza and Ranch
+	Please my Present
+	Pogo Pogo Penguin
+	Polaroidini  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Pop Pop Sahur
+	Popcuru and Fizzuru
+	Pot Hotspot
+	Pot Pumpkin
+	Premium Egg Lucky Block
+	Premium Festive Lucky Block
+	Premium Heart Lucky Block
+	Premium Leprechaun Lucky Block
+	Premium Octo Lucky Block
+	Pretzo Robo  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Puffaball
+	Pumpkini Spyderini
+	Quackalena
+	Quackini Snackini
+	Quackini Snackini Egg
+	Quackula
+	Queen Bee
+	Quesadilla Crocodila
+	Quesadillo Vampiro
+	Quivioli Ameleonni  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Raccooni Jandelini
+	Rang Ring Bus
+	Ref Ref Ref Sahur
+	Reindeer Tralala
+	Reinito Sleighito
+	Rhino Helicopterino
+	Rhino Toasterino
+	Rico Dinero
+	Robo Grafito
+	Rocco Disco  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Rocketini Frostini
+	Rosetti Tualetti
+	Rosey and Teddy
+	Rubiko and Kubiko
+	Rubrikiko
+	S'more Serat
+	Salamino Penguino
+	Sammyni Cakini
+	Sammyni Fattini
+	Sammyni Spyderini  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Sammyni Truckini
+	Sand Sand Sand
+	Santa Hotspot
+	Santteo
+	Scorpino Coasterino
+	Sealo Regalo
+	Serafinna Medusella
+	Seraphino Gruyero
+	Sigma Boy
+	Sigma Girl  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Signore Carapace
+	Skibidi Toilet
+	Skull Skull Skull
+	Snailenzo
+	Snailo Clovero
+	Spaghetti Tualetti
+	Spinny Hammy
+	Spioniro Golubiro
+	Spongini Quackini
+	Spooky Lucky Block  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Spooky and Pumpky
+	Spyder Elephant
+	Squalanana
+	Steakini Fattini
+	Stoppo Luminino
+	Strawberrelli Flamingelli
+	Strawberrita
+	Strawberry Elephant
+	Sundrilla Sundae
+	Sushi Inu  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Svinina Bombardino
+	Swag Soda
+	Swaggy Bros
+	Ta Ta Ta Ta Sahur
+	Tacorillo Crocodillo
+	Tacorita Bicicleta
+	Tacoturbo Tacorito
+	Talpa Di Fero
+	Tang Tang Keletang
+	Tartaragno  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Tartaruga Cisterna
+	Te Te Te Sahur
+	Telemorte
+	Tenini Ballini
+	Tentacolo Tecnico
+	Ti Ti Ti Sahur
+	Tic Tic Ribbit
+	Tictac Sahur
+	Tigrilini Watermelini
+	Tigroligre Frutonni  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Tim Cheese
+	Tipi Topi Taco
+	Tirilikalika Tirilikalako
+	To to to Sahur
+	Tob Tobi Tobi
+	Toiletto Focaccino
+	Tootini Shrimpini
+	Toro Españolo
+	Torrtuginni Dragonfrutini
+	Tortuginni Sandcastlini  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Tracoducotulu Delapeladustuz
+	Tractoro Dinosauro
+	Tralaledon
+	Tralalero Tralala
+	Tralalita Tralala
+	Tree Tree Tree Sahur
+	Trenostruzzo Turbo 3000
+	Trenostruzzo Turbo 4000
+	Trenotubo Axolotrico 9000
+	Tric Trac Baraboom  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Trickolino
+	Triplito Tralaleritos
+	Trippi Troppi
+	Trippi Troppi Troppa Trippa
+	Trulimero Trulicina
+	Tuff Toucan
+	Tukanno Bananno
+	Unclito Samito
+	Urubini Flamenguini
+	Vampira Cappucina  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Var Var Var
+	Ventoliero Pavonero
+	Venuspino
+	Vulturino Skeletono
+	W or L
+	Wombo Rollo
+	Yess my Examen
+	Yess my Resume
+	Yeti Claus
+	Yetimatic  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Zibra Zubra Zibralini
+	Zombie Tralala
+]]
+
+_G.__RiddlerShippedMeta = [[T	1 Year
+	T	10B
+	T	26
+	T	:3
+	T	Algeria
+	T	Argentina
+	T	Aura Shades  -- LEAKED BY SLICED | discord.gg/pubmethod
+	T	Australia
+	T	Austria
+	T	Ball
+	T	Bee
+	T	Belgium
+	T	Blue Balloon
+	T	Blue Egg
+	T	Bosnia
+	T	Brazil
+	T	Bubblegum  -- LEAKED BY SLICED | discord.gg/pubmethod
+	T	Bull
+	T	Bunny Ears
+	T	Burger
+	T	Canada
+	T	Cape Verde
+	T	Chocolate
+	T	Claws
+	T	Colombia
+	T	Comet-struck
+	T	Croatia  -- LEAKED BY SLICED | discord.gg/pubmethod
+	T	Curacao
+	T	Czechia
+	T	DR Congo
+	T	Disco
+	T	Ecuador
+	T	Egypt
+	T	England
+	T	Explosive
+	T	Fire
+	T	Fire Bee  -- LEAKED BY SLICED | discord.gg/pubmethod
+	T	Fireworks
+	T	France
+	T	Galactic
+	T	Germany
+	T	Ghana
+	T	Glitched
+	T	Granny
+	T	Green Balloon
+	T	Green Egg
+	T	Haiti  -- LEAKED BY SLICED | discord.gg/pubmethod
+	T	Halo
+	T	Ice Bee
+	T	Indonesia
+	T	Iran
+	T	Iraq
+	T	Ivory Coast
+	T	Jackolantern Pet
+	T	Japan
+	T	Job Application
+	T	John Pork  -- LEAKED BY SLICED | discord.gg/pubmethod
+	T	Jordan
+	T	Lightning
+	T	Lucky
+	T	Matteo Hat
+	T	Meowl
+	T	Mexico
+	T	Morocco
+	T	Netherlands
+	T	New Zealand
+	T	Norway  -- LEAKED BY SLICED | discord.gg/pubmethod
+	T	Nyan
+	T	Orange Balloon
+	T	Orange Egg
+	T	Paint
+	T	Panama
+	T	Paraguay
+	T	Pink Balloon
+	T	Pink Egg
+	T	Portugal
+	T	Qatar  -- LEAKED BY SLICED | discord.gg/pubmethod
+	T	Queen Bee
+	T	RIP Gravestone
+	T	Rainbow Balloon
+	T	Red Balloon
+	T	Reindeer Pet
+	T	Rose
+	T	Santa Hat
+	T	Saudi Arabia
+	T	Scotland
+	T	Senegal  -- LEAKED BY SLICED | discord.gg/pubmethod
+	T	Shark Fin
+	T	Skeleton
+	T	Skibidi
+	T	Sleepy
+	T	Snowy
+	T	Sombrero
+	T	South Africa
+	T	South Korea
+	T	Spain
+	T	Spider  -- LEAKED BY SLICED | discord.gg/pubmethod
+	T	Strawberry
+	T	Sun
+	T	Sweden
+	T	Switzerland
+	T	Taco
+	T	Tie
+	T	Tunisia
+	T	Turkey
+	T	UFO
+	T	United States  -- LEAKED BY SLICED | discord.gg/pubmethod
+	T	Uruguay
+	T	Uzbekistan
+	T	Wet
+	T	Witch Hat
+	T	Zombie
+	M	Bloodrot
+	M	Candy
+	M	Crystal
+	M	Cursed
+	M	Cyber  -- LEAKED BY SLICED | discord.gg/pubmethod
+	M	Diamond
+	M	Divine
+	M	Galaxy
+	M	Gold
+	M	Lava
+	M	Phantom
+	M	Radioactive
+	M	Rainbow
+	M	YinYang
+	L	Admin Lucky Block  -- LEAKED BY SLICED | discord.gg/pubmethod
+	L	Brainrot God Lucky Block
+	L	Egg Lucky Block
+	L	Festive Lucky Block
+	L	Heart Lucky Block
+	L	Leprechaun Lucky Block
+	L	Los Lucky Blocks
+	L	Los Taco Blocks
+	L	Mythic Lucky Block
+	L	Octo Lucky Block
+	L	Premium Egg Lucky Block  -- LEAKED BY SLICED | discord.gg/pubmethod
+	L	Premium Festive Lucky Block
+	L	Premium Heart Lucky Block
+	L	Premium Leprechaun Lucky Block
+	L	Premium Octo Lucky Block
+	L	Secret Lucky Block
+	L	Spooky Lucky Block
+	L	Taco Lucky Block
+	S	All Seeing Sentry
+	S	Attack Doge
+	S	Bee Launcher  -- LEAKED BY SLICED | discord.gg/pubmethod
+	S	BeeHive
+	S	Body Swap Potion
+	S	Boogie Bomb
+	S	Coil Combo
+	S	Dark Matter Slap
+	S	Diamond Slap
+	S	Emerald Slap
+	S	Flame Slap
+	S	Flash Teleport
+	S	Galaxy Slap  -- LEAKED BY SLICED | discord.gg/pubmethod
+	S	Giant Potion
+	S	Glitched Slap
+	S	Gold Slap
+	S	Grapple Hook
+	S	Gravity Coil
+	S	Grief Shield
+	S	Gummy Bear
+	S	Heart Balloon
+	S	Heatseeker
+	S	Invisibility Cloak  -- LEAKED BY SLICED | discord.gg/pubmethod
+	S	Iron Slap
+	S	Laser Cape
+	S	Magnet
+	S	Medusa's Head
+	S	Megaphone
+	S	Nuclear Slap
+	S	Paintball Gun
+	S	Quantum Cloner
+	S	Rage Table
+	S	Rainbowrath Sword  -- LEAKED BY SLICED | discord.gg/pubmethod
+	S	Ruby Slap
+	S	Slap
+	S	Speed Coil
+	S	Splatter Slap
+	S	Subspace Mine
+	S	Taser Gun
+	S	Trap
+	S	Web Slinger
+	E	1x1x1x1
+	E	3 Roads  -- LEAKED BY SLICED | discord.gg/pubmethod
+	E	4th of July
+	E	Ay Mi Gatito
+	E	Backrooms
+	E	Bee
+	E	Bloodmoon
+	E	Bombardiro Crocodilo
+	E	Brazil
+	E	Bubblegum
+	E	Candy
+	E	Caylus Base  -- LEAKED BY SLICED | discord.gg/pubmethod
+	E	Caylus Snap
+	E	Chicleteira Bicicleteira
+	E	Concert
+	E	Crab Rave
+	E	Crystal
+	E	Cursed
+	E	Cyber
+	E	Divine
+	E	Dul Dul Dul
+	E	Easter  -- LEAKED BY SLICED | discord.gg/pubmethod
+	E	Egg City
+	E	Egg Lucky Block
+	E	Eggrot Hunt
+	E	Eid
+	E	Extinct
+	E	FatSammy
+	E	Fishing
+	E	Galaxy
+	E	Gingerbread Town
+	E	Glitch  -- LEAKED BY SLICED | discord.gg/pubmethod
+	E	Graveyard
+	E	Indonesia
+	E	Japan Snap
+	E	Job Job Job Sahur
+	E	John Pork
+	E	Karkerkar Kurkur
+	E	La Vacca Saturno Saturnita
+	E	Laser City
+	E	Los Matteos
+	E	Lucky Base  -- LEAKED BY SLICED | discord.gg/pubmethod
+	E	Matteo
+	E	Meowl
+	E	Mexico
+	E	Molten
+	E	Mygame43
+	E	North Pole
+	E	Nyan Cats
+	E	Phantom
+	E	Radioactive
+	E	Rain  -- LEAKED BY SLICED | discord.gg/pubmethod
+	E	Rainbow
+	E	Raining Burgers
+	E	Raining Tacos
+	E	Rap Concert
+	E	Rip My Granny
+	E	Rusty Snap
+	E	Rusty's Base
+	E	Sammy Snap
+	E	Sammy's Base
+	E	Sammyni Spyderini  -- LEAKED BY SLICED | discord.gg/pubmethod
+	E	Skibidi
+	E	Snow
+	E	Soccer
+	E	Solar Flare
+	E	Spain
+	E	Speed
+	E	St Patricks
+	E	Starfall
+	E	Steak Snap
+	E	Steak's Base  -- LEAKED BY SLICED | discord.gg/pubmethod
+	E	Strawberry
+	E	Summer
+	E	Summer Base
+	E	Summer Hour
+	E	Taco Base
+	E	Taco Merchant
+	E	Trick or Treat
+	E	UFO
+	E	Valentines
+	E	Water  -- LEAKED BY SLICED | discord.gg/pubmethod
+	E	Winter Hour
+	E	Witching Hour
+	E	YinYang
+	G	Agarrini Shovel
+	G	Alien Slap
+	G	All Seeing Sentry
+	G	Attack Doge
+	G	Bambu Runcing
+	G	Ban Hammer
+	G	Bat  -- LEAKED BY SLICED | discord.gg/pubmethod
+	G	Blackhole Bomb
+	G	Blackhole Slap
+	G	Bloodmoon Hammer
+	G	Bloodmoon Slap
+	G	BlowDryer
+	G	Body Swap Potion
+	G	Boogie Bomb
+	G	Cake Trap
+	G	Candy Bomb
+	G	Candy Coils  -- LEAKED BY SLICED | discord.gg/pubmethod
+	G	Candy Launcher
+	G	Candy Sentry
+	G	Candy Slap
+	G	Candycane Bow
+	G	Christmas Coils
+	G	Christmas Launcher
+	G	Classic Trowel
+	G	Coil Combo
+	G	Compass
+	G	Confetti Cannon  -- LEAKED BY SLICED | discord.gg/pubmethod
+	G	Crescendo Sword
+	G	Crystal Hammer
+	G	Crystal Slap
+	G	Cupid's Wings
+	G	Cursed Slap
+	G	Cyber Slap
+	G	Dark Matter Slap
+	G	Dark Spellbook Of The Forgotten
+	G	Dart Trap
+	G	Decoy Deploy  -- LEAKED BY SLICED | discord.gg/pubmethod
+	G	Delete Hammer
+	G	Demon's Head
+	G	Dev Doge Attack
+	G	Dev Slap
+	G	Diamond Slap
+	G	Divine Slap
+	G	Donut Teleport
+	G	Emerald Slap
+	G	Epic Sauce
+	G	Fire Extinguisher  -- LEAKED BY SLICED | discord.gg/pubmethod
+	G	Fire Hand
+	G	Fishing Rod
+	G	Flame Slap
+	G	Flash Teleport
+	G	Flashbang
+	G	Flying Carpet
+	G	Freeze Ray
+	G	Frostbrand
+	G	Galaxy Slap
+	G	Ghost Invisibility Elixir  -- LEAKED BY SLICED | discord.gg/pubmethod
+	G	Giant Potion
+	G	Glitched Slap
+	G	Gold Slap
+	G	Grapple Hook
+	G	Gravity Coil
+	G	Gravity Gun
+	G	Grief Shield
+	G	Gummy Bear
+	G	Heart Balloon
+	G	Heatseeker  -- LEAKED BY SLICED | discord.gg/pubmethod
+	G	Holo Decoy
+	G	Huge Tree
+	G	Hunter Crossbow
+	G	Ice Staff
+	G	Invisibility Cloak
+	G	Iron Slap
+	G	Jelly Gun
+	G	Laser Cape
+	G	Laser Gun
+	G	Lava Blaster  -- LEAKED BY SLICED | discord.gg/pubmethod
+	G	Lava Slap
+	G	Lollipop
+	G	Lotus Trap
+	G	Magnet
+	G	Medium Tree
+	G	Medusa's Head
+	G	Megaphone
+	G	Microbe Launcher
+	G	Ninja Potion
+	G	Nuclear Slap  -- LEAKED BY SLICED | discord.gg/pubmethod
+	G	Overseer Mace
+	G	Paintball Gun
+	G	Phantom Slap
+	G	Phoenix Pet
+	G	Poisioned Phoenix
+	G	Poisonous Cake
+	G	Polarity Coil
+	G	Pumpkin Launcher
+	G	Quantum Cloner
+	G	Radioactive Airstrike  -- LEAKED BY SLICED | discord.gg/pubmethod
+	G	Radioactive Slap
+	G	Rage Table
+	G	Rainbow Hammer
+	G	Rainbow Huge Tree
+	G	Rainbow Medium Tree
+	G	Rainbow Slap
+	G	Rainbow Small Tree
+	G	Rainbowrath Sword
+	G	Remote Mine
+	G	Ruby Slap  -- LEAKED BY SLICED | discord.gg/pubmethod
+	G	Sabuk Bepak
+	G	Sandal Jepit
+	G	Santa's Sleigh
+	G	Sapu Lidi
+	G	Sarung
+	G	Shield Remote
+	G	Skeleton Bomb
+	G	Skeleton Scythe
+	G	Slap
+	G	Slingshot  -- LEAKED BY SLICED | discord.gg/pubmethod
+	G	Small Tree
+	G	Snowball
+	G	Snowball Cannon
+	G	Sound Horeg
+	G	Speed Coil
+	G	Splatter Slap
+	G	Steampunk Glove
+	G	Subspace Mine
+	G	Summer Soaker
+	G	Super-GLS33  -- LEAKED BY SLICED | discord.gg/pubmethod
+	G	Sweet Scythe
+	G	Taser Gun
+	G	Trap
+	G	Tripple Plungers
+	G	Victrola
+	G	Violin Strike
+	G	Waverider
+	G	Web Slinger
+	G	Witch's Broom
+	G	Wormhole Tunneler  -- LEAKED BY SLICED | discord.gg/pubmethod
+	G	Yin Yang Lamp
+	G	Yin Yang Slap
+	G	Zen Orb
+	G	Zombie Blaster
+	G	Zombie Grip Bomb
+	R	Admin
+	R	Brainrot God
+	R	Common
+	R	Easter
+	R	Epic  -- LEAKED BY SLICED | discord.gg/pubmethod
+	R	Festive
+	R	Honey
+	R	Legendary
+	R	Mythic
+	R	OG
+	R	Rare
+	R	Secret
+	R	Spooky
+	R	St Patrick's
+	R	Summer  -- LEAKED BY SLICED | discord.gg/pubmethod
+	R	Taco
+	R	Valentines
+	F	Fiery Rod
+	F	Frozen Rod
+	F	Radioactive Rod
+	F	Starter Rod
+]]
+
+_G.__RiddlerPrimedExists = _G.__RiddlerPrimedExists or false
+
+_G.__RiddlerPrimeExistCounts = function()
+	if _G.__RiddlerPrimedExists then  -- LEAKED BY SLICED | discord.gg/pubmethod
+		return
+	end
+	_G.__RiddlerPrimedExists = true
+
+	if not pcall(function()
+		local playerGui2 = localPlayer:FindFirstChild("PlayerGui")
+		if not playerGui2 then
+			return
+		end
+		local sliced99 = playerGui2:FindFirstChild("Index")
+		local index = sliced99 and sliced99:FindFirstChild("Index")  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local leftCenter = playerGui2:FindFirstChild("LeftCenter")
+		local leftCenter2 = leftCenter and leftCenter:FindFirstChild("LeftCenter")
+		leftCenter2 = leftCenter2 and leftCenter2:FindFirstChild("Buttons")
+		leftCenter2 = leftCenter2 and leftCenter2:FindFirstChild("Index")
+		if not (sliced99 and index and leftCenter2 and getconnections_) then
+			return
+		end
+		local enabled = sliced99.Enabled
+		local visible = index.Visible
+		local tbl19 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local currentCamera = workspace.CurrentCamera
+
+		for _, sliced100 in ipairs({ game:GetService("Lighting"), currentCamera }) do
+			if sliced100 then
+				for _, child in ipairs(sliced100:GetChildren()) do
+					if child:IsA("BlurEffect") or child:IsA("DepthOfFieldEffect") then
+						tbl19[child] = child.Enabled
+						child.Enabled = false
+					end
+				end
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+
+		sliced99.Enabled = false
+		local flag24 = true
+
+		local connection = sliced87.RenderStepped:Connect(function()
+			if not flag24 then
+				return
+			end
+
+			if sliced99.Enabled then
+				sliced99.Enabled = false
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			local currentCamera2 = workspace.CurrentCamera
+
+			for _, sliced100 in ipairs({ game:GetService("Lighting"), currentCamera2 }) do
+				if sliced100 then
+					for _, child in ipairs(sliced100:GetChildren()) do
+						if (child:IsA("BlurEffect") or child:IsA("DepthOfFieldEffect")) and child.Enabled then
+							if tbl19[child] == nil then
+								tbl19[child] = true
+							end
+
+							child.Enabled = false
+						end  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+				end
+			end
+		end)
+
+		local function slicedfn60()
+			for _, sliced100 in ipairs(getconnections_(leftCenter2.Activated)) do
+				pcall(function()
+					sliced100:Fire()
+				end)
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+
+		slicedfn60()
+
+		task.spawn(function()
+			for i = 1, 20 do
+				task.wait(0.25)
+				local sliced100 = _G.__RiddlerExistCounts()
+				if not (sliced100 and #sliced100 > 0) then
+					continue
+				end
+				break  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			pcall(function()
+				if index.Visible ~= visible then
+					slicedfn60()
+					task.wait(0.35)
+				end
+
+				index.Visible = visible
+			end)
+
+			flag24 = false
+			connection:Disconnect()  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			pcall(function()
+				sliced99.Enabled = enabled
+
+				for k, sliced100 in pairs(tbl19) do
+					if k and k.Parent then
+						k.Enabled = sliced100
+					end
+				end
+			end)
+		end)
+	end) then  -- LEAKED BY SLICED | discord.gg/pubmethod
+		pcall(function()
+			local playerGui2 = localPlayer:FindFirstChild("PlayerGui")
+			local index = playerGui2 and playerGui2:FindFirstChild("Index")
+
+			if index then
+				index.Enabled = true
+			end
+		end)
+	end
+end
+
+_G.__RiddlerKeepLive = function(riddlerLastLive)  -- LEAKED BY SLICED | discord.gg/pubmethod
+	_G.RiddlerLastLive = riddlerLastLive
+	return riddlerLastLive
+end
+
+_G.__RiddlerNYTime = function()
+	local now2 = os.time()
+	local num = tonumber(os.date("!%Y", now2))
+
+	local function slicedfn60(arg, arg2)
+		local slicedn34 = 1
+		local slicedn35 = 0
+
+		while slicedn34 <= 31 do  -- LEAKED BY SLICED | discord.gg/pubmethod
+			if tonumber(os.date("!%w", os.time({ year = num, month = arg, day = slicedn34, hour = 12 }))) == 0 then
+				slicedn35 += 1
+				if slicedn35 == arg2 then
+					return slicedn34
+				end
+			end
+
+			slicedn34 += 1
+		end
+
+		return 1
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	local now3 = os.time({ year = num, month = 3, day = slicedfn60(3, 2), hour = 7 })
+	local now4 = os.time({ year = num, month = 11, day = slicedfn60(11, 1), hour = 6 })
+	return now2 + (now2 >= now3 and now2 < now4 and -4 or -5) * 3600
+end
+
+_G.__RiddlerFold = function(arg)
+	local tbl19 = {
+		["à"] = "a",
+		["á"] = "a",
+		["â"] = "a",
+		["ä"] = "a",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		["ã"] = "a",
+		["è"] = "e",
+		["é"] = "e",
+		["ê"] = "e",
+		["ë"] = "e",
+		["ì"] = "i",
+		["í"] = "i",
+		["î"] = "i",
+		["ï"] = "i",
+		["ò"] = "o",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		["ó"] = "o",
+		["ô"] = "o",
+		["ö"] = "o",
+		["õ"] = "o",
+		["ù"] = "u",
+		["ú"] = "u",
+		["û"] = "u",
+		["ü"] = "u",
+		["ñ"] = "n",
+		["ç"] = "c",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		["À"] = "a",
+		["Á"] = "a",
+		["È"] = "e",
+		["É"] = "e",
+		["Ì"] = "i",
+		["Í"] = "i",
+		["Ò"] = "o",
+		["Ó"] = "o",
+		["Ù"] = "u",
+		["Ú"] = "u",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		["Ñ"] = "n",
+	}
+
+	return tostring(arg or ""):gsub("[À-ß][\u{80}-¿]", function(arg2)
+		return tbl19[arg2] or ""
+	end):lower()
+end
+
+_G.__RiddlerAnimalNamesCache = nil
+
+_G.__RiddlerAnimalNames = function()
+	if _G.__RiddlerAnimalNamesCache then
+		return _G.__RiddlerAnimalNamesCache  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end
+	local riddlerAnimalNamesCache = {}
+	local ok, result = pcall(require, sliced86:FindFirstChild("Datas") and sliced86.Datas:FindFirstChild("Animals"))
+
+	if ok and type(result) == "table" then
+		for _, sliced99 in pairs(result) do
+			if type(sliced99) == "table" and type(sliced99.DisplayName) == "string" and sliced99.DisplayName:find("%a%a%a") then
+				riddlerAnimalNamesCache[#riddlerAnimalNamesCache + 1] = {
+					name = sliced99.DisplayName,
+					flat = " " .. _G.__RiddlerFold(sliced99.DisplayName):gsub("[^%w]+", " "):gsub("^%s+", ""):gsub("%s+$", "") .. " ",
+				}  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+		end
+
+		table.sort(riddlerAnimalNamesCache, function(arg, arg2)
+			return #arg.flat > #arg2.flat
+		end)
+
+		if #riddlerAnimalNamesCache > 0 then
+			_G.__RiddlerAnimalNamesCache = riddlerAnimalNamesCache
+		end
+	end
+
+	return riddlerAnimalNamesCache  -- LEAKED BY SLICED | discord.gg/pubmethod
+end
+
+_G.__RiddlerFindAnimals = function(arg)
+	local str8 = " " .. _G.__RiddlerFold(arg):gsub("[^%w]+", " ") .. " "
+	local sliced99 = pairs
+	local riddlerAliases = _G.__RiddlerAliases or {}
+
+	for k, riddlerAliase in sliced99(riddlerAliases) do
+		str8 = str8:gsub(" " .. k .. " ", " " .. riddlerAliase .. " ")
+	end
+
+	local tbl19 = {}
+	local tbl20 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	for _, sliced100 in ipairs(_G.__RiddlerAnimalNames()) do
+		local str9 = sliced100.flat:sub(1, -2)
+		local flag24 = not tbl20[sliced100.name]
+
+		if flag24 then
+			flag24 = str8:find(sliced100.flat, 1, true) or str8:find(str9 .. "s ", 1, true) or str8:find(str9 .. "es ", 1, true)
+		end
+
+		if flag24 then
+			local sliced101 = false
+
+			for _, sliced102 in ipairs(tbl19) do
+				if (" " .. sliced102:lower() .. " "):find(str9, 1, true) then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					sliced101 = true
+					break
+				end
+			end
+
+			if not sliced101 then
+				tbl20[sliced100.name] = true
+				tbl19[#tbl19 + 1] = sliced100.name
+			end
+		end
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	return tbl19
+end
+
+_G.__RiddlerAliases = {
+	drag = "dragon cannelloni",
+	drags = "dragon cannelloni",
+}
+
+_G.__RiddlerFindAnimal = function(arg)
+	local str8 = " " .. _G.__RiddlerFold(arg):gsub("[^%w]+", " ") .. " "
+
+	for k, riddlerAliase in pairs(_G.__RiddlerAliases) do
+		str8 = str8:gsub(" " .. k .. " ", " " .. riddlerAliase .. " ")  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end
+
+	for _, sliced99 in ipairs(_G.__RiddlerAnimalNames()) do
+		local str9 = sliced99.flat:sub(1, -2)
+		if str8:find(sliced99.flat, 1, true) or str8:find(str9 .. "s ", 1, true) or str8:find(str9 .. "es ", 1, true) then
+			return sliced99.name
+		end
+	end
+
+	return nil
+end
+
+_G.__RiddlerCodeName = function(arg)  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local str8 = tostring(arg or "")
+
+	local tbl19 = {
+		["à"] = "a",
+		["á"] = "a",
+		["â"] = "a",
+		["ä"] = "a",
+		["ã"] = "a",
+		["è"] = "e",
+		["é"] = "e",
+		["ê"] = "e",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		["ë"] = "e",
+		["ì"] = "i",
+		["í"] = "i",
+		["î"] = "i",
+		["ï"] = "i",
+		["ò"] = "o",
+		["ó"] = "o",
+		["ô"] = "o",
+		["ö"] = "o",
+		["õ"] = "o",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		["ù"] = "u",
+		["ú"] = "u",
+		["û"] = "u",
+		["ü"] = "u",
+		["ñ"] = "n",
+		["ç"] = "c",
+		["À"] = "A",
+		["Á"] = "A",
+		["È"] = "E",
+		["É"] = "E",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		["Ì"] = "I",
+		["Í"] = "I",
+		["Ò"] = "O",
+		["Ó"] = "O",
+		["Ù"] = "U",
+		["Ú"] = "U",
+		["Ñ"] = "N",
+	}
+
+	return str8:gsub("[À-ß][\u{80}-¿]", function(arg2)
+		return tbl19[arg2] or ""  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end):gsub("[^%w]", ""):upper()
+end
+
+_G.__RiddlerColours = nil
+_G.__RiddlerColoursFolded = nil
+
+_G.__RiddlerColourOf = function(arg)
+	if not _G.__RiddlerColours then
+		local riddlerColours = {}
+		local riddlerColoursFolded = {}
+
+		for match, match2 in ("1x1x1x1=BLACK;25=GREEN;4th bros=RED;67=CYAN;abyssaloco=PURPLE;agarrini la palini=GRAY;alessio=WHITE;anpali babel=BLACK;antonio=GREEN;appelini=BLACK;aquanaut=WHITE;aquarino=YELLOW;arcadopus=RED;arcadragon=RED;astrolero cervalero=WHITE;bacuru and egguru=RED;ballerina peppermintina=GREEN;ballerino lololo=WHITE;bambu bambu sahur=GREEN;bananito=YELLOW;baskito=BROWN;bearito cabinito=BROWN;beavo potto=ORANGE;belula beluga=WHITE;berryno=BLACK;bisonte giuppitere=BROWN;blackhole goat=BLACK;boatito auratito=BROWN;boba panda=BLACK;bombardini tortinii=YELLOW;bombardiro vaccariro=WHITE;boppin bunny=PINK;brasilini berimbini=ORANGE;brr brr patapim=GREEN;brr es teh patipum=ORANGE;brunito marsito=GREEN;bufalino boomberino=BROWN;buho de noelo=GREEN;buho de volto=GRAY;bulbito bandito traktorito=GREEN;bumbatron=YELLOW;bunito bunito spinito=PINK;bunny and eggy=WHITE;bunny bunny bunny sahur=WHITE;bunny tralala=WHITE;bunnyman=WHITE;buntteo=PINK;burguro and fryuro=ORANGE;burrito bandito=BLACK;burrito bat=BROWN;cacasito satalito=WHITE;camera ramena=GRAY;candini fluffini=CYAN;cangurato gelato=ORANGE;capi taco=BROWN;capitano americano=WHITE;capitano gullini=WHITE;capitano moby=BLACK;cappuccino clownino=WHITE;cash or card=GREEN;caylusaurus=RED;celestial pegasus=PURPLE;celularcini viciosini=BROWN;cerberus=RED;chachechi=RED;chicleteira bicicleteira=RED;chicleteira champeona=RED;chicleteira cupideira=WHITE;chicleteira noelteira=RED;chicleteira surfeiteira=RED;chicleteirina bicicleteirina=PINK;chicli chicla=YELLOW;chihuanini taconini=YELLOW;chill puppy=BLUE;chillin chili=RED;chimnino=BROWN;chimpanzini bananini=YELLOW;chipso and queso=YELLOW;chrismasmamat=RED;churrito bunnito=BROWN;cigno fulgoro=WHITE;cloverat clapat=GREEN;clovkur kurkur=GREEN;coco and mango=BROWN;cocoa assassino=BROWN;cocofanto elefanto=GRAY;cola cat=BROWN;conetto morsetto=YELLOW;cooki and milki=ORANGE;corn corn corn sahur=GREEN;crabbo limonetta=ORANGE;craburger=ORANGE;cuadramat and pakrahmatmamat=PURPLE;cupid cupid sahur=PINK;cupid hotspot=WHITE;deputy leopard=ORANGE;digi narwhal=BLUE;divino platypio=CYAN;dj panda=BLACK;dolphini jetskini=BLUE;donkeyturbo express=RED;dragon aquanini=CYAN;dragon cannelloni=YELLOW;dragon gingerini=ORANGE;dug dug dug=RED;duggy bros=RED;dul dul dul=BROWN;dumborino miracello=PINK;easter easter easter sahur=PINK;eggdin egg egg dun=YELLOW;eid eid eid sahur=YELLOW;elefanto frigo=WHITE;esok goala=WHITE;esok sekolah=BROWN;espresso signora=WHITE;eviledon=RED;examen bros=WHITE;extinct ballerina=PINK;extinct matteo=BROWN;extinct tralalero=BLUE;festive 67=GREEN;fishboard=BLUE;fishino clownino=ORANGE;flancito=YELLOW;flipa sandala=YELLOW;flippo marino=YELLOW;fortunu and cashuru=GREEN;foxini lanternini=ORANGE;fragola la la la=RED;fragrama and chocrama=WHITE;frankentteo=GREEN;frio ninja=WHITE;frullato framingo=PINK;futbolini skatini=WHITE;garama and madundung=GRAY;gattatino nyanino=GRAY;gattino hydrantino=RED;gattito tacoto=BROWN;gelatina volatina=PINK;gelato lumacho=CYAN;giftini spyderini=GREEN;ginger cisterna=BROWN;ginger gerat=ORANGE;ginger globo=BROWN;girafa celestre=GREEN;girafini raftini=YELLOW;glaciator=BLUE;globa steppa=BLUE;goat=BROWN;gobblino uniciclino=BLUE;gold and diamond=YELLOW;gold egg=YELLOW;gold elf=YELLOW;gold gold gold=BLACK;grabatron=BLUE;graipuss medussi=PURPLE;granchiello spiritell=BLUE;granny=GRAY;griffin=YELLOW;gub=BROWN;guerriro digitale=WHITE;guest 666=BLACK;gym bros=ORANGE;headless horseman=PURPLE;hippo golazo=PURPLE;hippo jacuzzo=PURPLE;ho ho ho sahur=RED;honey honey bear=YELLOW;honey honey narwhal=BLUE;hopilikalika hopilikalako=PINK;horegini boom=BLUE;hydra bunny=PINK;hydra dragon cannelloni=YELLOW;hydra serpent=GREEN;jacko jack jack=ORANGE;jackorilla=GRAY;jelly moby=RED;job job job sahur=WHITE;john doe=RED;john pork=PINK;jolly jolly sahur=BROWN;kalika bros=PINK;karker sahur=BLUE;karkerheart luvkur=RED;karkerkar kurkur=GREEN;ketchuru and musturu=RED;ketupat bros=GREEN;ketupat kepat=GREEN;koala parabala=WHITE;kraken=RED;krupuk pagi pagi=YELLOW;la anniversary grande=PINK;la breakfast combinasion=YELLOW;la casa boo=GREEN;la craft machine=PURPLE;la cucaracha=BROWN;la easter grande=WHITE;la extinct grande=WHITE;la food combinasion=YELLOW;la fuse machine=BLUE;la ginger sekolah=BROWN;la grande combinasion=ORANGE;la jolly grande=RED;la karkerkar combinasion=GREEN;la lucky grande=GREEN;la romantic grande=RED;la sahur combinasion=ORANGE;la secret combinasion=WHITE;la spooky grande=ORANGE;la summer grande=ORANGE;la supreme combinasion=ORANGE;la taco combinasion=BROWN;la vacca jacko linterino=ORANGE;la vacca lepre lepreino=BLACK;la vacca prese presente=GREEN;la vacca saturno saturnita=BROWN;las capuchinas=PINK;las sis=PINK;las tralaleritas=PINK;las vaquitas saturnitas=CYAN;lavadorito spinito=WHITE;lazy ducky=YELLOW;lemonita splashita=YELLOW;lirilì larilà=GREEN;list list list sahur=GREEN;los 25=RED;los 67=BLUE;los admins=RED;los amigos=BROWN;los bombinitos=WHITE;los bros=BLUE;los bunitos=PINK;los burritos=BLACK;los candies=RED;los chicleteiras=RED;los chihuaninis=YELLOW;los chillis=RED;los combinasionas=ORANGE;los cornis=BROWN;los crocodillitos=ORANGE;los cucarachas=BROWN;los cupids=PINK;los dragons=YELLOW;los fruits=BLACK;los gattitos=GRAY;los hackers=BLACK;los hotspotsitos=YELLOW;los jobcitos=WHITE;los jolly combinasionas=BROWN;los karkeritos=GREEN;los mariachis=CYAN;los matteos=BROWN;los mi gatitos=GRAY;los mobilis=BROWN;los nooo my hotspotsitos=BROWN;los orcalitos=WHITE;los planitos=BROWN;los primos=WHITE;los puggies=BROWN;los quesadillas=BROWN;los secret combinasionas=BROWN;los sekolahs=BROWN;los sigmas=BLACK;los spaghettis=WHITE;los spooky combinasionas=ORANGE;los spyderinis=BLACK;los sweethearts=PINK;los tacoritas=YELLOW;los tangcitos=WHITE;los tictacs=ORANGE;los tipi tacos=PINK;los tortus=PINK;los tralaleritos=BLUE;los trios=WHITE;los tungtungtungcitos=ORANGE;love love bear=RED;love love love sahur=RED;lovin rose=RED;luck luck luck sahur=GREEN;lumaca malefica=BROWN;luv luv luv=PINK;mariachi corazoni=CYAN;mastodontico telepiedone=BROWN;matteo=BROWN;meowl=BROWN;mi gatito=YELLOW;mieteteira bicicleteira=BLACK;moby bros=WHITE;money money bros=BROWN;money money man=PURPLE;money money puggy=GREEN;money money reindeer=BROWN;motorino bumbino=YELLOW;mummy ambalabu=BROWN;nacho spyder=YELLOW;nachorilla=YELLOW;naughty naughty=WHITE;noo la polizia=BLUE;noo my candy=ORANGE;noo my eggs=YELLOW;noo my examen=WHITE;noo my gold=BLACK;noo my heart=RED;noo my present=RED;noo my resume=WHITE;noobini pizzanini=YELLOW;noodle noodle poodle=WHITE;nooo my hotspot=YELLOW;nuclearo dinossauro=BROWN;octoball=BLUE;odin din din dun=ORANGE;ombrello topolino=BLUE;orcaledon=BLACK;orcalero orcala=BLACK;orcalita orcala=PINK;orchidox=PINK;pakrahmatmamat=YELLOW;pakrahmatmatina=PINK;pancake and syrup=YELLOW;panda popanda=ORANGE;pandanini frostini=WHITE;paradiso axolottino=PINK;patteo=GREEN;pelican pachetto=CYAN;perrito burrito=BROWN;peschito machito=CYAN;piccione macchina=GRAY;pineaplino=YELLOW;pirulitoita bicicleteira=BLUE;pizza and ranch=YELLOW;please my present=GREEN;pogo pogo penguin=BLACK;polaroidini=WHITE;pop pop petalini=GREEN;pop pop sahur=BROWN;popcuru and fizzuru=WHITE;pot hotspot=BROWN;pot pumpkin=YELLOW;pretzo robo=ORANGE;puffino builderino=WHITE;pumpkini spyderini=ORANGE;quackalena=YELLOW;quackini snackini=WHITE;queen bee=YELLOW;quesadilla crocodila=BROWN;quesadillo vampiro=YELLOW;rang ring bus=BLACK;ref ref ref sahur=WHITE;reindeer tralala=BROWN;reinito sleighito=BROWN;rico dinero=BROWN;robo grafito=GRAY;rocco disco=WHITE;rocketini frostini=RED;rosatops triceratino=GREEN;rosetti tualetti=WHITE;rosey and teddy=BROWN;rubiko and kubiko=WHITE;rubrikiko=RED;s'more serat=BROWN;sammyni cakini=RED;sammyni fattini=RED;sammyni spyderini=RED;sammyni truckini=RED;sand sand sand=GREEN;santa hotspot=RED;santteo=RED;scorpino coasterino=PURPLE;serafinna medusella=CYAN;signore carapace=BLUE;sir mangus=BLUE;skibidi toilet=WHITE;skull skull skull=WHITE;snailenzo=BROWN;snailo clovero=GREEN;spaghetti tualetti=WHITE;spinny hammy=WHITE;spooky and pumpky=WHITE;spyder elephant=WHITE;squalanana=YELLOW;steakini fattini=WHITE;strawberrita=RED;strawberry elephant=RED;sundrilla sundae=BROWN;sushi inu=ORANGE;svinina bombardino=PINK;swag soda=BLUE;swaggy bros=BLUE;syrup samurai=BLACK;tacorillo crocodillo=GREEN;tacorita bicicleta=YELLOW;tacoturbo tacorito=YELLOW;tang tang keletang=BROWN;tartaruga cisterna=GREEN;telemorte=BROWN;tenini ballini=GREEN;tentacolo tecnico=BLUE;tictac sahur=ORANGE;tigroligre frutonni=YELLOW;tim cheese=BLACK;tipi topi taco=PINK;tirilikalika tirilikalako=WHITE;to to to sahur=GRAY;tootini shrimpini=ORANGE;toro españolo=BLACK;torrtuginni dragonfrutini=PINK;tortuginni sandcastlini=YELLOW;tractoro dinosauro=GREEN;tralaledon=BLUE;tralalero tralala=BLUE;tralalita tralala=PINK;trenostruzzo turbo 3000=BLACK;trenostruzzo turbo 4000=WHITE;trenotubo axolotrico 9000=GRAY;trickolino=PURPLE;triplito tralaleritos=BROWN;trippi troppi troppa trippa=BROWN;tuff toucan=YELLOW;tukanno bananno=YELLOW;unclito samito=BLUE;urubini flamenguini=BLACK;vampira cappucina=WHITE;var var var=BLACK;ventoliero pavonero=CYAN;venuspino=GREEN;vulturino skeletono=WHITE;w or l=GREEN;yess my examen=WHITE;yess my resume=WHITE;yeti claus=RED;yetimatic=WHITE;zebrino pianino=WHITE;zombie tralala=GREEN;"):gmatch("([^;=]+)=([^;]+)") do
+			riddlerColours[match] = match2  -- LEAKED BY SLICED | discord.gg/pubmethod
+			riddlerColoursFolded[_G.__RiddlerCodeName(match):lower()] = match2
+		end
+
+		local sliced99 = _G
+		_G.__RiddlerColours = riddlerColours
+		sliced99.__RiddlerColoursFolded = riddlerColoursFolded
+	end
+
+	local sliced99 = _G.__RiddlerColours[tostring(arg or ""):lower()]
+	if sliced99 then
+		return sliced99
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+	return _G.__RiddlerColoursFolded[_G.__RiddlerCodeName(arg):lower()]
+end
+
+_G.__RiddlerSubjectOf = function(arg)
+	local str8 = " " .. tostring(arg or ""):lower():gsub("[^%w]+", " ") .. " "
+	local riddlerFindAnimal = _G.__RiddlerFindAnimal and _G.__RiddlerFindAnimal(arg)
+	if riddlerFindAnimal then
+		return riddlerFindAnimal, false
+	end
+	local pos = str8:find(" the brainrot ", 1, true) or str8:find(" the prize ", 1, true) or str8:find(" the reward ", 1, true) or str8:find(" that brainrot ", 1, true) or str8:find(" this brainrot ", 1, true) or str8:find(" the pet ", 1, true) or str8:find(" the one ", 1, true) or str8:find(" of this brainrot ", 1, true) or str8:find(" of the pet ", 1, true) or str8:find(" that one ", 1, true) or str8:find(" its ", 1, true) or str8:find(" the animal ", 1, true)
+
+	if not pos then  -- LEAKED BY SLICED | discord.gg/pubmethod
+		for _, sliced99 in ipairs({ " the prizes ", " the loot ", " the rewards " }) do
+			local pos2 = str8:find(sliced99, 1, true)
+
+			if pos2 then
+				local match = str8:sub(pos2 + #sliced99):match("^(%a+)") or ""
+				if match:find("^colou?r") or match == "colour" or match == "rarity" or match == "income" or match:find("^mutation") or match:find("^exist") or match:find("^trait") or match == "Test" or match == "exist" or match == "count" then
+					pos = true
+					break
+				end
+			end
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end
+
+	if not pos then
+		return nil, false
+	end
+	local now2 = os.time()
+	local riddlerPrize = _G.__RiddlerPrize
+	local riddlerSubject = _G.__RiddlerSubject
+	local sliced99 = "table"
+	local flag24 = type(riddlerPrize) == sliced99
+	local flag25  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	if flag24 then
+		flag25 = now2 - (riddlerPrize.t or 0) > 5400
+	else
+		flag25 = flag24
+	end
+
+	if flag25 then
+		riddlerPrize = nil
+	end
+
+	local flag26 = type(riddlerSubject) == "table"
+
+	if flag26 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+		flag26 = now2 - (riddlerSubject.t or 0) > 3600
+	end
+
+	if flag26 then
+		riddlerSubject = nil
+	end
+
+	if str8:find(" the prize ", 1, true) or str8:find(" the answer ", 1, true) or str8:find(" the prizes ", 1, true) or str8:find(" codes are for ", 1, true) or str8:find(" code is for ", 1, true) or str8:find(" codes for ", 1, true) or str8:find(" code for ", 1, true) or str8:find(" giving away ", 1, true) or str8:find(" of the ", 1, true) then
+		riddlerPrize = riddlerPrize or riddlerSubject
+	elseif riddlerPrize and riddlerSubject then
+		riddlerPrize = (riddlerSubject.t or 0) >= (riddlerPrize.t or 0) and riddlerSubject or riddlerPrize
+	else  -- LEAKED BY SLICED | discord.gg/pubmethod
+		riddlerPrize = riddlerPrize or riddlerSubject
+	end
+
+	if riddlerPrize then
+		return riddlerPrize.name, true, riddlerPrize
+	end
+	return nil, false
+end
+
+_G.__RiddlerCacheKey = function(arg)
+	local str8 = tostring(arg or "")
+	local sliced99, sliced100 = _G.__RiddlerSubjectOf(str8)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	if sliced100 and sliced99 then
+		str8 ..= "|pin=" .. sliced99
+	end
+
+	local str9 = str8:lower()
+
+	if str9:find("today", 1, true) or str9:find("date", 1, true) or str9:find("month", 1, true) or str9:find("year", 1, true) or str9:find("%f[%a]days?%f[%A]") or str9:find(" today ", 1, true) or str9:find("yesterday", 1, true) then
+		str8 ..= "|ny=" .. os.date("!%Y-%m-%d", _G.__RiddlerNYTime())
+	end
+
+	return str8
+end
+
+_G.__RiddlerPickMemory = function(arg, arg2, arg3, arg4)  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local sliced99 = "table"
+	if type(arg2) ~= sliced99 or #arg2 == 0 then
+		return {}, "none"
+	end
+	arg4 = arg4 or {}
+	local str8 = tostring(arg or "")
+	local str9 = " " .. str8:lower():gsub("[^%w']+", " "):gsub("'", "") .. " "
+	local str10 = str8:lower():gsub("%s+", " ")
+
+	local tbl19 = {
+		the = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		a = 1,
+		an = 1,
+		["and"] = 1,
+		["or"] = 1,
+		of = 1,
+		to = 1,
+		["in"] = 1,
+		on = 1,
+		at = 1,
+		["for"] = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		is = 1,
+		are = 1,
+		was = 1,
+		were = 1,
+		be = 1,
+		been = 1,
+		it = 1,
+		its = 1,
+		this = 1,
+		that = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		these = 1,
+		those = 1,
+		i = 1,
+		im = 1,
+		me = 1,
+		my = 1,
+		you = 1,
+		your = 1,
+		he = 1,
+		we = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		they = 1,
+		them = 1,
+		there = 1,
+		here = 1,
+		what = 1,
+		whats = 1,
+		which = 1,
+		who = 1,
+		whos = 1,
+		when = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		where = 1,
+		how = 1,
+		why = 1,
+		["OG"] = 1,
+		does = 1,
+		did = 1,
+		have = 1,
+		has = 1,
+		had = 1,
+		will = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		would = 1,
+		can = 1,
+		just = 1,
+		like = 1,
+		gonna = 1,
+		about = 1,
+		with = 1,
+		from = 1,
+		["then"] = 1,
+		than = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		into = 1,
+		some = 1,
+		only = 1,
+		also = 1,
+		so = 1,
+		lol = 1,
+		btw = 1,
+		rn = 1,
+		ngl = 1,
+		now = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		up = 1,
+		out = 1,
+		code = 1,
+		codes = 1,
+		riddle = 1,
+		answer = 1,
+		redeem = 1,
+		plus = 1,
+		minus = 1,
+		times = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		said = 1,
+		say = 1,
+		says = 1,
+		told = 1,
+		earlier = 1,
+		before = 1,
+		mentioned = 1,
+		remember = 1,
+		today = 1,
+		many = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		much = 1,
+		number = 1,
+		thing = 1,
+		one = 1,
+		guys = 1,
+		everyone = 1,
+		more = 1,
+		all = 1,
+		get = 1,
+		got = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		go = 1,
+		lets = 1,
+		ok = 1,
+		okay = 1,
+		very = 1,
+		really = 1,
+		lowkey = 1,
+		obviously = 1,
+		actually = 1,
+		know = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		u = 1,
+		ur = 1,
+	}
+
+	local tbl20 = {
+		gave = "give",
+		giving = "give",
+		given = "give",
+		gives = "give",
+		picked = "pick",
+		picking = "pick",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		chose = "choose",
+		chosen = "choose",
+		spawned = "spawn",
+		spawning = "spawn",
+		spawns = "spawn",
+		raining = "rain",
+		rained = "rain",
+		rains = "rain",
+		favourite = "fav",
+		favorite = "fav",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		fave = "fav",
+		favs = "fav",
+		multiplier = "boost",
+		mult = "boost",
+		boosted = "boost",
+		boosting = "boost",
+		cats = "cat",
+		kitty = "cat",
+		kitten = "cat",
+		typed = "type",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		wrote = "write",
+		written = "write",
+		best = "best",
+		secrets = "secret",
+		ogs = "og",
+		mutations = "mutation",
+		mutaion = "mutation",
+		exist = "exist",
+		exists = "exist",
+		existing = "exist",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		money = "cash",
+		cash = "cash",
+		dollars = "cash",
+		coins = "cash",
+		brainrots = "brainrot",
+		brainrot = "brainrot",
+	}
+
+	local function slicedfn60(arg5)
+		local str11 = arg5:lower():gsub("'", "")
+		if tbl20[str11] then  -- LEAKED BY SLICED | discord.gg/pubmethod
+			return tbl20[str11]
+		end
+		local flag24 = #str11 > 5
+
+		if flag24 then
+			local sliced100 = "ing"
+			flag24 = str11:sub(-3) == sliced100
+		end
+
+		if flag24 then
+			str11 = str11:sub(1, -4)
+		else  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local flag25 = #str11 > 4
+
+			if flag25 then
+				local sliced100 = "income"
+				flag25 = str11:sub(-2) == sliced100
+			end
+
+			if flag25 then
+				str11 = str11:sub(1, -3)
+			elseif #str11 > 4 and str11:sub(-2) == "es" then
+				str11 = str11:sub(1, -3)
+			else  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local flag26 = #str11 > 3
+
+				if flag26 then
+					local sliced100 = "rarity"
+					flag26 = str11:sub(-1) == sliced100
+				end
+
+				if flag26 then
+					local sliced100 = "income"
+					flag26 = str11:sub(-2) ~= sliced100
+				end
+
+				if flag26 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					str11 = str11:sub(1, -2)
+				end
+			end
+		end
+
+		return tbl20[str11] or str11
+	end
+
+	local function slicedfn61(arg5, arg6)
+		local slicedn34 = #arg5
+		local slicedn35 = #arg6
+		if math.abs(slicedn34 - slicedn35) > 1 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+			return false
+		end
+		local slicedn36 = 1
+		local slicedn37 = 1
+		local slicedn38 = 0
+
+		while slicedn36 <= slicedn34 and slicedn37 <= slicedn35 do
+			if arg5:sub(slicedn36, slicedn36) == arg6:sub(slicedn37, slicedn37) then
+				slicedn36 += 1
+				slicedn37 += 1
+				continue  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			slicedn38 += 1
+			if slicedn38 > 1 then
+				return false
+			end
+
+			if slicedn35 < slicedn34 then
+				slicedn36 += 1
+			elseif slicedn34 < slicedn35 then
+				slicedn37 += 1
+			else  -- LEAKED BY SLICED | discord.gg/pubmethod
+				slicedn36 += 1
+				slicedn37 += 1
+			end
+		end
+
+		return slicedn38 + slicedn34 - slicedn36 + 1 + slicedn35 - slicedn37 + 1 <= 1
+	end
+
+	local function slicedfn62(arg5, arg6)
+		if arg5 == arg6 then
+			return true
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		if #arg5 >= 4 and #arg6 >= 4 and (arg5:sub(1, #arg6) == arg6 or arg6:sub(1, #arg5) == arg5) then
+			return true
+		end
+
+		if #arg5 >= 5 and #arg6 >= 5 and slicedfn61(arg5, arg6) then
+			return true
+		end
+		return false
+	end
+
+	local function slicedfn63(arg5)
+		local tbl21 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local sliced100 = " "
+		local sliced101 = " "
+
+		for match in (sliced100 .. arg5:lower():gsub("[^%w']+", " "):gsub("'", "") .. sliced101):gmatch("%a+") do
+			if #match >= 3 and not tbl19[match] then
+				tbl21[#tbl21 + 1] = slicedfn60(match)
+			end
+		end
+
+		return tbl21
+	end
+
+	local tbl21 = {  -- LEAKED BY SLICED | discord.gg/pubmethod
+		one = 1,
+		two = 2,
+		three = 3,
+		four = 4,
+		five = 5,
+		six = 6,
+		seven = 7,
+		eight = 8,
+		nine = 9,
+		ten = 10,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		eleven = 11,
+		twelve = 12,
+		thirteen = 13,
+		fourteen = 14,
+		fifteen = 15,
+		sixteen = 16,
+		seventeen = 17,
+		eighteen = 18,
+		nineteen = 19,
+		twenty = 20,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		thirty = 30,
+		forty = 40,
+		fifty = 50,
+		sixty = 60,
+		seventy = 70,
+		eighty = 80,
+		ninety = 90,
+		hundred = 100,
+		thousand = 1000,
+		million = 1000000,  -- LEAKED BY SLICED | discord.gg/pubmethod
+	}
+
+	local tbl22 = {
+		min = 1,
+		mins = 1,
+		minute = 1,
+		minutes = 1,
+		sec = 1,
+		secs = 1,
+		second = 1,
+		seconds = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		hour = 1,
+		hours = 1,
+		hr = 1,
+		hrs = 1,
+		h = 1,
+		m = 1,
+		s = 1,
+		pm = 1,
+		am = 1,
+		x = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+	}
+
+	local function slicedfn64(arg5)
+		local tbl23 = {}
+
+		for match in arg5:lower():gmatch("[%w']+") do
+			tbl23[#tbl23 + 1] = match:gsub("'", "")
+		end
+
+		local tbl24 = {}
+		local sliced100 = 1
+
+		while sliced100 <= #tbl23 do
+			local sliced101 = tbl23[sliced100]  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local match, sliced102, sliced103 = sliced101:match("^(%a*)(%d+)(%a*)$")
+
+			if sliced102 then
+				local str11 = tbl23[sliced100 + 1] or ""
+				local str12 = tbl23[sliced100 + 2] or ""
+				local tbl25 = { value = sliced102, unit = "", kind = "count" }
+
+				if match == "times" or sliced103 == "x" or str11 == "x" then
+					tbl25.kind = "mult"
+				elseif sliced103 == "m" or sliced103 == "k" or sliced103 == "b" or sliced103 == "t" then
+					tbl25.kind = "money"
+					tbl25.unit = slicedfn60(str11)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				elseif sliced103 ~= "" and tbl22[sliced103] then
+					tbl25.kind = "add"
+				elseif sliced103 ~= "" then
+					tbl25.unit = slicedfn60(sliced103)
+				elseif tbl22[str11] then
+					tbl25.kind = "time"
+				elseif (str11 == "more" or str11 == "extra") and tbl22[str12] then
+					tbl25.kind = "add"
+				elseif str11 == "soon" or str11 == "upcoming" then
+					tbl25.kind = "soon"  -- LEAKED BY SLICED | discord.gg/pubmethod
+					tbl25.unit = slicedfn60(str12)
+				else
+					tbl25.unit = slicedfn60(str11)
+				end
+
+				tbl24[#tbl24 + 1] = tbl25
+				sliced100 += 1
+			elseif tbl21[sliced101] then
+				local sliced104 = 0
+				local slicedn34 = 0
+
+				while tbl23[sliced100] and (tbl21[tbl23[sliced100]] or tbl23[sliced100] == "and") do  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local sliced105 = tbl21[tbl23[sliced100]]
+
+					if sliced105 then
+						if sliced105 == 100 then
+							slicedn34 = (slicedn34 == 0 and 1 or slicedn34) * 100
+						elseif sliced105 >= 1000 then
+							sliced104 += (slicedn34 == 0 and 1 or slicedn34) * sliced105
+							slicedn34 = 0
+						else
+							slicedn34 += sliced105
+						end  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+
+					sliced100 += 1
+				end
+
+				local slicedn35 = sliced104 + slicedn34
+
+				if 0 < slicedn35 then
+					tbl24[#tbl24 + 1] = { value = tostring(slicedn35), unit = slicedfn60(tbl23[sliced100] or ""), kind = "count" }
+				end
+			else
+				sliced100 += 1
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+
+		return tbl24
+	end
+
+	local flag24 = false
+
+	for _, sliced100 in ipairs({
+		" i said ",
+		" he said ",
+		" you said ",
+		" said ",
+		" i say ",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		" did i say ",
+		" earlier ",
+		" before ",
+		" earlier said ",
+		" that prize ",
+		" mentioned ",
+		" i mentioned ",
+		" told ",
+		" remember ",
+		" last message ",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		" announced ",
+		" the one i ",
+		" that one ",
+		" that brainrot ",
+		" the prize ",
+		" the reward ",
+		" that brainrot ",
+		" of that ",
+		" did i ",
+		" i gave ",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		" i give ",
+		" i spawned ",
+		" i spawn ",
+		" i picked ",
+		" the color ",
+		" i was ",
+		" i typed ",
+		" i type ",
+		" just type",
+		" i wrote ",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		" talking about ",
+		" stated ",
+		" of the reward ",
+		" i did ",
+		" i just ",
+		" last thing ",
+	}) do
+		if str9:find(sliced100, 1, true) then
+			flag24 = true
+			break  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+	end
+
+	local pos = str9:find(" last message ", 1, true) or str9:find(" just type", 1, true) or str9:find(" just said ", 1, true) or str9:find(" just say ", 1, true) or str9:find(" just wrote ", 1, true) or str9:find(" last thing ", 1, true)
+	local pos2 = str9:find(" the prize ", 1, true) or str9:find(" the reward ", 1, true) or str9:find(" codes are for ", 1, true) or str9:find(" code is for ", 1, true) or str9:find(" codes for ", 1, true) or str9:find("prize", 1, true) or str9:find(" prize ", 1, true)
+	local flag25 = str9:find(" per ", 1, true) ~= nil
+	local flag26 = str9:find(" og ", 1, true) ~= nil
+	local pos3 = str9:find(" how many ", 1, true) or str9:find(" how much ", 1, true) or str9:find(" how old ", 1, true) or str9:find(" how long ", 1, true) or str9:find(" amount ", 1, true)
+	local tbl23 = {}
+	local tbl24 = {}
+	local sliced100 = ipairs  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local findAnimals = arg4.findAnimals and arg4.findAnimals(str8) or {}
+
+	for _, findAnimal in sliced100(findAnimals) do
+		tbl23[findAnimal] = true
+		tbl24[#tbl24 + 1] = findAnimal
+	end
+
+	if arg4.subjectOf then
+		local sliced101, sliced102 = arg4.subjectOf(str8)
+
+		if sliced101 and sliced102 then
+			tbl23[sliced101] = true
+			tbl24[#tbl24 + 1] = sliced101  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+	end
+
+	local sliced101 = slicedfn63(str8)
+	local tbl25 = {}
+
+	for _, sliced102 in ipairs(tbl24) do
+		local sliced103 = ipairs
+		local sliced104 = slicedfn63(sliced102)
+
+		for _, sliced105 in sliced103(sliced104) do
+			tbl25[sliced105] = true
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end
+
+	local tbl26 = {}
+
+	for _, sliced102 in ipairs(sliced101) do
+		if not tbl25[sliced102] then
+			tbl26[#tbl26 + 1] = sliced102
+		end
+	end
+
+	local flag27 = (str9:find(" mythic ", 1, true) or str9:find(" secret ", 1, true) or str9:find(" og ", 1, true)) and #tbl24 == 0
+	local match = str9:match(" how many (%a+) ") or str9:match(" number of (%a+) ") or str9:match(" amount of (%a+) ") or str9:match(" how much (%a+) ")
+	local flag28 = match and not tbl19[match] and slicedfn60(match) or nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local tbl27 = {}
+
+	for match2, match22 in str9:gmatch("(%a*) ?(%d+)") do
+		if match2 ~= "plus" and match2 ~= "minus" and match2 ~= "times" and match2 ~= "x" and match2 ~= "divided" and match2 ~= "over" then
+			tbl27[match22] = true
+		end
+	end
+
+	local tbl28 = {}
+
+	for match2 in str9:gmatch(" my (%a+)") do
+		if not tbl19[match2] then
+			tbl28[#tbl28 + 1] = slicedfn60(match2)  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+	end
+
+	local pos4 = str9:find(" minute", 1, true) or str9:find(" second", 1, true) or str9:find(" hour", 1, true)
+	local pos5 = str9:find(" luck ", 1, true) or str9:find(" boost", 1, true) or str9:find(" multiplier", 1, true) or str9:find(" x ", 1, true)
+
+	if not (#tbl24 > 0 and not flag24 and not pos2) then
+		local function slicedfn65(arg5)
+			local str11 = arg5:lower()
+			return str11:find(" pet", 1, true) or str11:find(" egg", 1, true) or str11:find("^egg")
+		end
+
+		local riddlerPickIndex = _G.__RiddlerPickIndex  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		if arg4.names then
+			local sliced102 = arg4.names()
+
+			if not riddlerPickIndex or riddlerPickIndex.n ~= #sliced102 then
+				riddlerPickIndex = { n = #sliced102, byKey = {} }
+
+				for _, sliced103 in ipairs(sliced102) do
+					if not slicedfn65(sliced103) then
+						for match2 in sliced103:lower():gmatch("%a+") do
+							if #match2 >= 5 then
+								local str11 = match2:sub(1, 3)
+								riddlerPickIndex.byKey[str11] = riddlerPickIndex.byKey[str11] or {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+								table.insert(riddlerPickIndex.byKey[str11], { tok = match2, name = sliced103 })
+							end
+						end
+					end
+				end
+
+				_G.__RiddlerPickIndex = riddlerPickIndex
+			end
+		end
+
+		local function slicedfn66(arg5)
+			local tbl29 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local sliced102 = ipairs
+			local findAnimals2 = arg4.findAnimals and arg4.findAnimals(arg5) or {}
+
+			for _, sliced103 in sliced102(findAnimals2) do
+				local flag29 = not slicedfn65(sliced103)
+				local pos6
+
+				if flag29 then
+					pos6 = sliced103 ~= sliced103:upper() or arg5:find(sliced103, 1, true)
+				else
+					pos6 = flag29
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				if pos6 then
+					tbl29[#tbl29 + 1] = sliced103
+				end
+			end
+
+			if #tbl29 > 0 or not riddlerPickIndex then
+				return tbl29
+			end
+			local tbl30 = {}
+
+			for match2 in arg5:lower():gmatch("%a+") do
+				if 6 <= #match2 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local sliced103 = ipairs
+					local tbl31 = riddlerPickIndex.byKey[match2:sub(1, 3)] or {}
+
+					for _, sliced104 in sliced103(tbl31) do
+						if sliced104.tok == match2 or sliced104.tok:sub(1, #match2) == match2 and #match2 >= 0.7 * #sliced104.tok then
+							tbl30[sliced104.name] = tbl30[sliced104.name] or {}
+							tbl30[sliced104.name][sliced104.tok] = true
+						elseif slicedfn61(match2, sliced104.tok) then
+							tbl30[sliced104.name] = tbl30[sliced104.name] or {}
+							tbl30[sliced104.name][sliced104.tok] = "typo"
+						end  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+				end
+			end
+
+			local tbl31 = {}
+
+			for k, sliced103 in pairs(tbl30) do
+				local sliced104 = 0
+				local sliced105 = 0
+				local slicedn34 = 0
+
+				for match2 in k:lower():gmatch("%a+") do
+					if #match2 >= 5 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						sliced104 += 1
+
+						if sliced103[match2] then
+							sliced105 += 1
+
+							if sliced103[match2] == true then
+								slicedn34 += 1
+							end
+						end
+					end
+				end
+
+				if sliced104 > 0 and sliced105 == sliced104 and slicedn34 > 0 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					tbl31[#tbl31 + 1] = k
+				end
+			end
+
+			return tbl31
+		end
+
+		local tbl29 = {
+			common = 1,
+			rare = 1,
+			epic = 1,
+			legendary = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+			mythic = 1,
+			secret = 1,
+			og = 1,
+			god = 1,
+			admin = 1,
+		}
+
+		local function slicedfn67(arg5)
+			return (arg5:find(" for ", 1, true) or arg5:find(":", 1, true)) and (arg5:find("code", 1, true) or arg5:find("riddle", 1, true)) or arg5:find(" for ", 1, true) or arg5:find("reward", 1, true) or arg5:find("riddle", 1, true) or arg5:find("code", 1, true)
+		end
+
+		local tbl30 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local tbl31 = {}
+
+		for _, sliced102 in ipairs(arg2) do
+			local flag29 = type(sliced102) == "table"
+
+			if flag29 then
+				local sliced103 = "string"
+				flag29 = type(sliced102.text) == sliced103
+			end
+
+			if flag29 then
+				flag29 = arg3 - (sliced102.t or 0) <= 3600
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			if flag29 then
+				tbl31[#tbl31 + 1] = sliced102
+			end
+		end
+
+		for i, sliced102 in ipairs(tbl31) do
+			sliced102.__k = i
+		end
+
+		table.sort(tbl31, function(arg5, arg6)
+			if (arg5.t or 0) ~= (arg6.t or 0) then
+				return (arg5.t or 0) < (arg6.t or 0)  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+			return arg5.__k < arg6.__k
+		end)
+
+		local tbl32 = {
+			gg = 1,
+			lol = 1,
+			ok = 1,
+			okay = 1,
+			brb = 1,
+			back = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+			lmao = 1,
+			xd = 1,
+			nice = 1,
+			w = 1,
+			l = 1,
+			yes = 1,
+			no = 1,
+		}
+
+		local slicedn34 = 1
+
+		while slicedn34 <= #tbl31 do  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local sliced102 = tbl31[slicedn34]
+			local text = sliced102.text
+			local t = sliced102.t
+			local str11 = sliced102.text:lower()
+
+			if str11:find("%.%.%.%s*$") or str11:find(":%s*$") or str11:find("%sis%s*$") or str11:find("?%s*$") then
+				for i = slicedn34 + 1, math.min(slicedn34 + 3, #tbl31) do
+					local sliced103 = tbl31[i]
+
+					if not ((sliced103.t or 0) - (sliced102.t or 0) > 90) then
+						local sliced104 = 0
+
+						for match2 in sliced103.text:gmatch("[%w']+") do  -- LEAKED BY SLICED | discord.gg/pubmethod
+							sliced104 += 1
+						end
+
+						if not (sliced104 > 3) then
+							if not tbl32[sliced103.text:lower():match("^%s*(%a+)%s*$") or ""] then
+								text = sliced102.text .. " " .. sliced103.text
+								t = sliced103.t
+								sliced103.__merged = true
+								break
+							else
+								continue  -- LEAKED BY SLICED | discord.gg/pubmethod
+							end
+						end
+					end
+
+					break
+				end
+			end
+
+			if not sliced102.__merged then
+				tbl30[#tbl30 + 1] = { text = text, t = t }
+			end
+
+			slicedn34 += 1  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+
+		local tbl33 = {}
+		local pos6 = str9:find(" the reward ", 1, true) or str9:find(" the reward ", 1, true)
+		local pos7 = str9:find(" codes are for ", 1, true) or str9:find(" code is for ", 1, true) or str9:find(" codes for ", 1, true) or str9:find(" code for ", 1, true)
+		local flag29 = false
+		local sliced102 = nil
+
+		for i = #tbl30, 1, -1 do
+			local sliced103 = tbl30[i]
+			local sliced104 = " "
+			local str11 = " " .. sliced103.text:lower():gsub("[^%w'?]+", " "):gsub("'", "") .. sliced104  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			if sliced103.text:lower():gsub("%s+", " ") ~= str10 then
+				local sliced105 = slicedfn66(sliced103.text)
+				local sliced106 = slicedfn64(sliced103.text)
+				local sliced107 = slicedfn63(sliced103.text)
+				local sliced108 = slicedfn67(str11)
+				local pos8 = sliced103.text:find("?", 1, true)
+				local pos9
+
+				if pos8 then
+					local sliced109 = 0
+					pos9 = #slicedfn63(sliced103.text:sub(pos8 + 1)) > sliced109 or sliced103.text:sub(pos8 + 1):find("%d")  -- LEAKED BY SLICED | discord.gg/pubmethod
+				else
+					pos9 = pos8
+				end
+
+				local match2 = str11:match("^%s*(%a+)")
+				local flag30 = pos8 and not pos9
+
+				if not flag30 then
+					flag30 = (match2 == "what" or match2 == "whats" or match2 == "what" or match2 == "which" or match2 == "who" or match2 == "whos" or match2 == "when" or match2 == "where") and not pos8
+				end
+
+				local flag31 = (arg4.classify and arg4.classify(sliced103.text) or nil) == "riddle" and str11:find(" code", 1, true) ~= nil and not sliced108
+				local tbl34 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				for _, sliced109 in ipairs(sliced106) do
+					local flag32 = sliced109.kind == "count" or sliced109.kind == "money" or sliced109.kind == "add" and pos4
+					local flag33
+
+					if flag32 then
+						flag33 = flag32
+					else
+						flag33 = sliced109.kind == "mult" and pos5
+					end
+
+					flag33 = flag33 or sliced109.kind == "soon" and flag28 and slicedfn62(sliced109.unit, flag28)
+
+					if flag33 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						tbl34[#tbl34 + 1] = sliced109
+					end
+				end
+
+				local flag32 = #sliced107 <= 1 and #sliced105 == 0 and #tbl34 == 0
+				local flag33 = not flag31
+
+				if flag33 then
+					flag33 = not (flag30 and not sliced108)
+				end
+
+				if flag33 then
+					local slicedn35 = 0  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local flag34 = false
+
+					for _, sliced109 in ipairs(sliced105) do
+						if tbl23[sliced109] then
+							slicedn35 += 10
+							flag34 = true
+						end
+					end
+
+					if #tbl24 > 0 and not flag34 and not pos2 then
+						slicedn35 = -1
+					else  -- LEAKED BY SLICED | discord.gg/pubmethod
+						local tbl35 = {}
+
+						for _, sliced109 in ipairs(tbl26) do
+							for _, sliced110 in ipairs(sliced107) do
+								if not tbl35[sliced109] and slicedfn62(sliced109, sliced110) then
+									slicedn35 += sliced109 == "brainrot" and 1 or 3
+									tbl35[sliced109] = true
+									break
+								end
+							end
+						end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+						for i2 = 1, #tbl26 - 1 do
+							local flag35 = false
+
+							for i3 = 1, #sliced107 - 1 do
+								local sliced109 = slicedfn62(tbl26[i2], sliced107[i3]) and slicedfn62(tbl26[i2 + 1], sliced107[i3 + 1])
+								local sliced110
+
+								if sliced109 then
+									sliced110 = sliced109
+								else
+									sliced110 = slicedfn62(tbl26[i2], sliced107[i3 + 1]) and slicedfn62(tbl26[i2 + 1], sliced107[i3])
+								end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+								if sliced110 then
+									flag35 = true
+									break
+								end
+							end
+
+							if flag35 then
+								slicedn35 += 3
+							end
+						end
+
+						for _, sliced109 in ipairs(tbl26) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+							if str11:find(" the " .. sliced109, 1, true) or str11:find(" a " .. sliced109, 1, true) then
+								slicedn35 += 2
+								break
+							end
+						end
+
+						for _, sliced109 in ipairs(tbl28) do
+							for match3 in str11:gmatch(" my (%a+)") do
+								if slicedfn62(slicedfn60(match3), sliced109) then
+									slicedn35 += 4
+									break  -- LEAKED BY SLICED | discord.gg/pubmethod
+								end
+							end
+						end
+
+						if flag25 and (str11:find(" im %d+", 1) or str11:find(" i am %d+", 1) or str11:find(" %d+ years", 1) or str11:find(" turn%a* %d+", 1)) then
+							slicedn35 += 8
+						end
+
+						if flag26 then
+							for match3 in str11:gmatch("%a+") do
+								if tbl29[match3] then
+									slicedn35 += 5  -- LEAKED BY SLICED | discord.gg/pubmethod
+									break
+								end
+							end
+						end
+
+						if flag28 then
+							for _, sliced109 in ipairs(tbl34) do
+								if sliced109.unit ~= "" and slicedfn62(sliced109.unit, flag28) then
+									slicedn35 += 6
+									break
+								end  -- LEAKED BY SLICED | discord.gg/pubmethod
+							end
+
+							local exitTo = nil
+
+							for _, sliced109 in ipairs(tbl24) do
+								if sliced109:lower():find(flag28, 1, true) then
+									exitTo = 1
+									break
+								end
+							end
+
+							if exitTo == 1 then
+								for _, sliced109 in ipairs(tbl34) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+									if sliced109.unit ~= "" then
+										slicedn35 += 4
+										break
+									end
+								end
+							end
+						end
+
+						for _, sliced109 in ipairs(sliced106) do
+							if tbl27[sliced109.value] then
+								slicedn35 += 8  -- LEAKED BY SLICED | discord.gg/pubmethod
+								break
+							end
+						end
+
+						if pos3 and #tbl34 > 0 then
+							slicedn35 += 2
+						end
+
+						if pos2 and sliced108 and #tbl24 == 0 then
+							slicedn35 += 5
+
+							if str11:find(" prize", 1, true) or str11:find(" reward", 1, true) then
+								slicedn35 += 8  -- LEAKED BY SLICED | discord.gg/pubmethod
+							end
+
+							if pos7 and str11:find("code", 1, true) and str11:find("is", 1, true) then
+								slicedn35 += 4
+							end
+
+							if pos6 and not flag29 then
+								slicedn35 += 4
+								flag29 = true
+							end
+						end
+
+						if flag27 and #sliced105 > 0 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+							slicedn35 += 5
+						end
+					end
+
+					local slicedn36 = arg3 - (sliced103.t or arg3)
+
+					if slicedn35 >= 0 then
+						tbl33[#tbl33 + 1] = {
+							e = sliced103,
+							score = slicedn35,
+							age = slicedn36,
+							prize = sliced108,  -- LEAKED BY SLICED | discord.gg/pubmethod
+							names = sliced105,
+							realNums = tbl34,
+							fact = (#sliced105 > 0 or #tbl34 > 0 or #sliced107 >= 2) and not flag32,
+						}
+
+						if pos and not flag32 and not sliced102 then
+							sliced102 = tbl33[#tbl33]
+						end
+					end
+				end
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+
+		if sliced102 then
+			local sliced103 = 0
+
+			sliced102.score = sliced102.score + 6
+		end
+
+		local function slicedfn68(arg5)
+			return {
+				when = arg5.age < 90 and "just now" or arg5.age < 180 and "a while ago" or "earlier this event",
+				text = arg5.e.text,
+				t = arg5.e.t,  -- LEAKED BY SLICED | discord.gg/pubmethod
+			}
+		end
+
+		table.sort(tbl33, function(arg5, arg6)
+			if arg5.score ~= arg6.score then
+				return arg5.score > arg6.score
+			end
+			return arg5.age < arg6.age
+		end)
+
+		local slicedn35 = flag24 and 3 or 5
+		local tbl34 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local score = tbl33[1] and tbl33[1].score or 0
+		local sliced103 = false
+
+		for _, sliced104 in ipairs(tbl33) do
+			if not (sliced104.score < slicedn35 or sliced104.score < score * 0.9) then
+				if not (pos2 and sliced104.prize and sliced103) then
+					tbl34[#tbl34 + 1] = slicedfn68(sliced104)
+
+					if pos2 and sliced104.prize then
+						sliced103 = true
+					end
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				if not (#tbl34 >= 3) then
+					continue
+				end
+			end
+
+			break
+		end
+
+		local str11 = "relevant"
+
+		if #tbl34 == 0 then
+			if not flag24 then
+				return {}, "none"  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			if pos3 then
+				local sliced104 = nil
+
+				for _, sliced105 in ipairs(tbl33) do
+					if #sliced105.realNums > 0 and (not sliced104 or sliced105.age < sliced104.age) then
+						sliced104 = sliced105
+					end
+				end
+
+				if sliced104 then
+					tbl34[1] = slicedfn68(sliced104)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+			end
+
+			if #tbl34 == 0 then
+				local tbl35 = {}
+
+				for _, sliced104 in ipairs(tbl33) do
+					if sliced104.fact then
+						tbl35[#tbl35 + 1] = sliced104
+					end
+				end
+
+				table.sort(tbl35, function(arg5, arg6)  -- LEAKED BY SLICED | discord.gg/pubmethod
+					return arg5.age < arg6.age
+				end)
+
+				for i = 1, math.min(3, #tbl35) do
+					tbl34[#tbl34 + 1] = slicedfn68(tbl35[i])
+				end
+			end
+
+			str11 = "fallback"
+
+			if #tbl34 == 0 then
+				str11 = "none"
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+
+		table.sort(tbl34, function(arg5, arg6)
+			return (arg5.t or 0) < (arg6.t or 0)
+		end)
+
+		return tbl34, str11
+	end
+
+	return {}, "specific"
+end
+
+_G.__RiddlerResolvePrizeParts = function(arg)
+	local str8 = tostring(arg or ""):lower():gsub("^%s*the code is%s*", ""):gsub("^%s*code is%s*", ""):gsub("^%s*the code will be%s*", "")  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local sliced99 = _G.__RiddlerSubjectOf(str8)
+	_G.RiddlerLastPrizeDbg = "subject=" .. tostring(sliced99)
+	if not sliced99 then
+		return nil
+	end
+
+	if #_G.__RiddlerFindAnimals(str8) > 1 then
+		_G.RiddlerLastPrizeDbg = "two names"
+		return nil
+	end
+	local pos = str8:find(",", 1, true) or str8:find(" and ", 1, true) or str8:find(" plus ", 1, true) or str8:find("+", 1, true)  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local sliced100 = " "
+	local str9 = " " .. str8:gsub("[^%w]+", " ") .. sliced100
+	local flag24 = (str9:find(" how many ", 1, true) or str9:find(" how much ", 1, true)) and not _G.__RiddlerFindAnimal(str8)
+	if not (pos or flag24) then
+		_G.RiddlerLastPrizeDbg = "not a list"
+		return nil
+	end
+	local tbl19 = {}
+
+	for match in (str8 .. ","):gmatch("(.-)[,+]") do
+		for match2 in (match .. " and "):gmatch("(.-)%s+and%s+") do  -- LEAKED BY SLICED | discord.gg/pubmethod
+			for match3 in (match2 .. " plus "):gmatch("(.-)%s+plus%s+") do
+				local str10 = match3:gsub("^%s+", ""):gsub("%s+$", "")
+
+				if str10 ~= "" then
+					tbl19[#tbl19 + 1] = str10
+				end
+			end
+		end
+	end
+
+	if #tbl19 < 1 or #tbl19 < 2 and not flag24 then
+		_G.RiddlerLastPrizeDbg = "parts=" .. #tbl19  -- LEAKED BY SLICED | discord.gg/pubmethod
+		return nil
+	end
+	local sliced101 = nil
+
+	pcall(function()
+		for _, sliced102 in pairs(require(sliced86.Datas.Animals)) do
+			if type(sliced102) == "table" and sliced102.DisplayName == sliced99 then
+				sliced101 = sliced102
+				break
+			end
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end)
+
+	local sliced102 = _G.__RiddlerNYTime()
+	local sliced103 = _G.__RiddlerCodeName(sliced99)
+	local tbl20 = {}
+	local tbl21 = {}
+
+	for match in _G.__RiddlerFold(sliced99):gmatch("%a+") do
+		tbl21[match] = true
+	end
+
+	local tbl22 = {
+		the = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		of = 1,
+		a = 1,
+		an = 1,
+		is = 1,
+		it = 1,
+		its = 1,
+		this = 1,
+		that = 1,
+		one = 1,
+		brainrot = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		brainrots = 1,
+		prize = 1,
+		reward = 1,
+		pet = 1,
+		code = 1,
+		what = 1,
+		whats = 1,
+		["over"] = 1,
+		["in"] = 1,
+		caps = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		all = 1,
+		colour = 1,
+		color = 1,
+		colours = 1,
+		colors = 1,
+		rarity = 1,
+		income = 1,
+		name = 1,
+		exist = 1,
+		exists = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		count = 1,
+		how = 1,
+		many = 1,
+		much = 1,
+		number = 1,
+		per = 1,
+		second = 1,
+		make = 1,
+		makes = 1,
+		earn = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		earns = 1,
+		generation = 1,
+		s = 1,
+		plus = 1,
+		called = 1,
+		does = 1,
+		have = 1,
+		has = 1,
+		his = 1,
+		her = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		their = 1,
+		main = 1,
+		body = 1,
+	}
+
+	local function slicedfn60(arg2)
+		for match in arg2:gmatch("%a+") do
+			if not tbl22[match] and not tbl21[match] then
+				return false
+			end
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		return true
+	end
+
+	local flag25 = nil
+
+	for _, sliced104 in ipairs(tbl19) do
+		local str10 = " " .. _G.__RiddlerFold(sliced104):gsub("[^%w]+", " ") .. " "
+		local str11 = nil
+
+		if str10:find(" sammy ", 1, true) then
+			str11 = "SAMMY"
+		elseif str10:find(" my age ", 1, true) then
+			str11 = "AGE"  -- LEAKED BY SLICED | discord.gg/pubmethod
+		elseif str10:find(" my cat", 1, true) then
+			str11 = "NOVA"
+		elseif str10:find(" my favou?rite colou?r", 1) or str10:find(" my fav colou?r", 1) then
+			str11 = "BLUE"
+		elseif str10:find(" colou?r", 1) then
+			if slicedfn60(str10) then
+				str11 = _G.__RiddlerColourOf(sliced99)
+			else
+				local tbl23 = {
+					grass = "GREEN",  -- LEAKED BY SLICED | discord.gg/pubmethod
+					leaves = "GREEN",
+					leaf = "GREEN",
+					trees = "GREEN",
+					tree = "GREEN",
+					frog = "GREEN",
+					sky = "BLUE",
+					ocean = "BLUE",
+					sea = "BLUE",
+					water = "BLUE",
+					sun = "YELLOW",  -- LEAKED BY SLICED | discord.gg/pubmethod
+					banana = "YELLOW",
+					bananas = "YELLOW",
+					lemon = "YELLOW",
+					cheese = "YELLOW",
+					snow = "WHITE",
+					clouds = "WHITE",
+					cloud = "WHITE",
+					milk = "WHITE",
+					paper = "WHITE",
+					blood = "RED",  -- LEAKED BY SLICED | discord.gg/pubmethod
+					fire = "RED",
+					tomato = "RED",
+					strawberry = "RED",
+					apple = "RED",
+					rose = "RED",
+					night = "BLACK",
+					coal = "BLACK",
+					orange = "ORANGE",
+					oranges = "ORANGE",
+					carrot = "ORANGE",  -- LEAKED BY SLICED | discord.gg/pubmethod
+					pumpkin = "ORANGE",
+					chocolate = "BROWN",
+					dirt = "BROWN",
+					mud = "BROWN",
+					wood = "BROWN",
+					pig = "PINK",
+					flamingo = "PINK",
+					grape = "PURPLE",
+					grapes = "PURPLE",
+					lavender = "PURPLE",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				}
+
+				for match in str10:gmatch("%a+") do
+					if tbl23[match] then
+						str11 = tbl23[match]
+						break
+					end
+				end
+
+				if not str11 then
+					return nil
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+		elseif str10:find(" rarity ", 1, true) then
+			if not slicedfn60(str10) then
+				return nil
+			end
+			local str12
+
+			if sliced101 then
+				str12 = tostring(sliced101.Rarity):gsub("[^%w]", ""):upper()
+			else
+				str12 = sliced101  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			str11 = str12 or nil
+		elseif str10:find(" date ", 1, true) or str10:find(" day ", 1, true) then
+			str11 = tostring(tonumber(os.date("!%d", sliced102)))
+		elseif str10:find(" month ", 1, true) then
+			str11 = os.date("!%B", sliced102):upper()
+		elseif str10:find(" year ", 1, true) then
+			str11 = os.date("!%Y", sliced102)
+		elseif str10:find(" income ", 1, true) or str10:find(" per second ", 1, true) or str10:find(" make", 1, true) or str10:find(" earn", 1, true) then
+			if not slicedfn60(str10) then  -- LEAKED BY SLICED | discord.gg/pubmethod
+				return nil
+			end
+			str11 = sliced101 and sliced101.Generation and ("%d"):format(sliced101.Generation) or nil
+		else
+			local pos2 = str10:find(" exist", 1) or str10:find(" count", 1, true) or str10:find(" how many ", 1, true)
+
+			if pos2 then
+				local function slicedfn61()
+					local ok, result = pcall(_G.__RiddlerExistCounts)
+					if not (ok and type(result) == "table") then
+						return false  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+
+					for _, sliced105 in ipairs(result) do
+						if sliced105.name == sliced99 and type(sliced105.muts) == "table" then
+							for k, mut in pairs(sliced105.muts) do
+								local str12 = tostring(k):lower()
+								if str12 ~= "its" and str10:find(" " .. str12 .. " ", 1, true) and type(mut) == "number" then
+									str11 = tostring(mut)
+									return true
+								end
+							end  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+					end
+
+					return false
+				end
+
+				pos2 = slicedfn61()
+			end
+
+			if not pos2 then
+				if str10:find(" how many ", 1, true) or str10:find(" how much ", 1, true) or str10:find(" how many ", 1) or str10:find(" the number ", 1, true) then
+					local riddlerSubject = _G.__RiddlerSubject
+					local match = type(riddlerSubject) == "table" and riddlerSubject.name == sliced99 and not riddlerSubject.prize and tostring(riddlerSubject.text):match("(%d[%d,]*)") or nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					if match then
+						str11 = match:gsub(",", "")
+					else
+						local ok, result = pcall(_G.__RiddlerExistCounts)
+
+						if ok and type(result) == "table" then
+							for _, sliced105 in ipairs(result) do
+								if sliced105.name == sliced99 then
+									str11 = tostring(sliced105.n)
+									break
+								end  -- LEAKED BY SLICED | discord.gg/pubmethod
+							end
+						end
+					end
+				elseif str10:find(" name ", 1, true) or str10:find(" called ", 1, true) then
+					if not slicedfn60(str10) then
+						return nil
+					end
+					str11 = sliced103
+				else
+					local pos3 = str10:find(" the brainrot ", 1, true) or str10:find(" the reward ", 1, true) or str10:find(" it ", 1, true) or str10:find(" that one ", 1, true)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					if pos3 then
+						local function slicedfn61()
+							local tbl23 = {
+								what = 1,
+								is = 1,
+								im = 1,
+								i = 1,
+								am = 1,
+								doing = 1,
+								the = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+								code = 1,
+								codes = 1,
+								["for"] = 1,
+								of = 1,
+								it = 1,
+								its = 1,
+								this = 1,
+								that = 1,
+								he = 1,
+								his = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+								one = 1,
+								prize = 1,
+								brainrot = 1,
+								giving = 1,
+								away = 1,
+								which = 1,
+								a = 1,
+								an = 1,
+								gonna = 1,
+								be = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+								are = 1,
+								we = 1,
+								you = 1,
+								u = 1,
+								ur = 1,
+								my = 1,
+								to = 1,
+							}
+
+							for match in str10:gmatch("%a+") do
+								if not tbl23[match] then  -- LEAKED BY SLICED | discord.gg/pubmethod
+									return false
+								end
+							end
+
+							return true
+						end
+
+						pos3 = slicedfn61()
+					end
+
+					if pos3 then
+						str11 = sliced103
+					elseif str10:match("^%s*(%d+)%s*$") then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						str11 = str10:match("(%d+)")
+					end
+				end
+			end
+		end
+
+		if not str11 and str10:find(" colou?r", 1) and not flag25 then
+			str11 = "[COLOUR]"
+			flag25 = true
+		end
+
+		if not str11 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+			_G.RiddlerLastPrizeDbg = "unresolved part: " .. sliced104
+			_G.__RiddlerPrizeTemplate = nil
+			return nil
+		end
+
+		tbl20[#tbl20 + 1] = str11
+	end
+
+	if flag25 then
+		_G.__RiddlerPrizeTemplate = { name = sliced99, code = table.concat(tbl20), t = os.time(), riddle = arg }
+		_G.RiddlerLastPrizeDbg = "colour gap: " .. table.concat(tbl20)
+		return nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end
+
+	_G.__RiddlerPrizeTemplate = nil
+	local str10 = table.concat(tbl20)
+	_G.RiddlerLastPrizeParts = ("%s -> %s"):format(arg, str10)
+	return str10
+end
+
+_G.__RiddlerModelColour = function(arg)
+	local function slicedfn60(arg2)
+		local sliced99, sliced100, sliced101 = arg2:ToHSV()
+		if sliced101 < 0.16 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+			return "black"
+		end
+
+		if sliced100 < 0.18 then
+			return sliced101 > 0.8 and "white" or "gray"
+		end
+		local slicedn34 = sliced99 * 360
+		if slicedn34 < 15 or slicedn34 >= 345 then
+			return "red"
+		end
+
+		if slicedn34 < 45 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+			return "orange"
+		end
+
+		if slicedn34 < 68 then
+			return "yellow"
+		end
+
+		if slicedn34 < 170 then
+			return "green"
+		end
+
+		if slicedn34 < 195 then
+			return "cyan"  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+
+		if slicedn34 < 255 then
+			return "blue"
+		end
+
+		if slicedn34 < 290 then
+			return "purple"
+		end
+		return "pink"
+	end
+
+	local sliced99 = nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	for _, descendant in ipairs(workspace:GetDescendants()) do
+		if descendant:IsA("Model") and descendant.Name == arg then
+			sliced99 = descendant
+			break
+		else
+			sliced99 = nil
+		end
+	end
+
+	if not sliced99 then
+		return nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end
+	local tbl19 = {}
+	local slicedn34 = 0
+
+	for _, descendant in ipairs(sliced99:GetDescendants()) do
+		if descendant:IsA("BasePart") and descendant.Transparency < 0.5 and descendant.Name ~= "HumanoidRootPart" then
+			local slicedn35 = descendant.Size.X * descendant.Size.Y * descendant.Size.Z
+			local sliced100 = slicedfn60(descendant.Color)
+			tbl19[sliced100] = (tbl19[sliced100] or 0) + slicedn35
+			slicedn34 += slicedn35
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end
+
+	local sliced100, sliced101, sliced102 = pairs(tbl19)
+	local slicedn35 = 0
+	local sliced103 = nil
+
+	for k, sliced104 in sliced100, sliced101, sliced102 do
+		if slicedn35 < sliced104 then
+			slicedn35 = sliced104
+			sliced103 = k
+		end
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	if not sliced103 or slicedn34 <= 0 or slicedn35 / slicedn34 < 0.45 then
+		return nil
+	end
+	return sliced103, math.floor(slicedn35 / slicedn34 * 100)
+end
+
+_G.__RiddlerExpandUnits = function(arg)
+	if type(arg) ~= "string" then
+		return arg
+	end
+	local str8 = arg:gsub("%s*per%s+sec%w*", ""):gsub("%s*/%s*s$", "")  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local tbl19 = { K = 1000, M = 1000000, B = 1000000000, T = 1e12 }
+	local match, sliced99, sliced100, sliced101 = str8:match("^(.-)(%d+%.?%d*)%s*([KMBTkmbt])(%d*)$")
+
+	if not sliced99 then
+		match, sliced99, sliced100, sliced101 = str8:match("^(.-)(%d+%.?%d*)%s*([KMBTkmbt])(%a+)$")
+		if not sliced99 then
+			return arg
+		end
+
+		local tbl20 = {
+			SAMMY = 1,
+			SPYDERSAMMY = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+			NOVA = 1,
+			JANUARY = 1,
+			FEBRUARY = 1,
+			MARCH = 1,
+			APRIL = 1,
+			MAY = 1,
+			JUNE = 1,
+			JULY = 1,
+			AUGUST = 1,
+			SEPTEMBER = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+			OCTOBER = 1,
+			NOVEMBER = 1,
+			DECEMBER = 1,
+		}
+
+		if not (sliced99:find(".", 1, true) or tbl20[sliced101:upper()]) then
+			return arg
+		end
+	end
+
+	local sliced102 = tbl19[sliced100:upper()]
+	local num = tonumber(sliced99)  -- LEAKED BY SLICED | discord.gg/pubmethod
+	if not sliced102 or not num then
+		return arg
+	end
+	local str9 = match .. ("%d"):format(math.floor(num * sliced102 + 0.5)) .. sliced101
+
+	if str9 ~= arg then
+		_G.RiddlerLastUnitExpand = arg .. " -> " .. str9
+	end
+
+	return str9
+end
+
+_G.__RiddlerNameHit = function(arg, arg2)  -- LEAKED BY SLICED | discord.gg/pubmethod
+	if #arg2 < 5 then
+		return false
+	end
+
+	if arg:find(arg2, 1, true) then
+		return true
+	end
+	local str8 = arg2:gsub("es$", ""):gsub("s$", "")
+	return #str8 >= 4 and arg:find(str8, 1, true) ~= nil
+end
+
+_G.__RiddlerExistCounts = function()  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local ok, result = pcall(require, sliced86.Packages:FindFirstChild("Replion"))
+	if not ok or type(result) ~= "table" then
+		return nil
+	end
+	local value = rawget(result, "GetGlobalData")
+	if type(value) ~= "function" then
+		return nil
+	end
+	local getupvalue_ = debug and debug.getupvalue or getupvalue
+	if type(getupvalue_) ~= "function" then  -- LEAKED BY SLICED | discord.gg/pubmethod
+		return nil
+	end
+	local flag24 = nil
+
+	for i = 1, 13 do
+		local ok2, result2, result3 = pcall(getupvalue_, value, i)
+		flag24 = nil
+
+		if ok2 then
+			flag24 = result3 ~= nil and result3 or result2
+			if not (type(flag24) == "table" and rawget(flag24, "PublicExistCounts") ~= nil) then
+				flag24 = nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+				continue
+			end
+		end
+
+		break
+	end
+
+	if type(flag24) ~= "table" then
+		return nil
+	end
+	local value2 = rawget(flag24, "PublicExistCounts")
+	if type(value2) ~= "table" then  -- LEAKED BY SLICED | discord.gg/pubmethod
+		return nil
+	end
+	local value3 = rawget(value2, "Data")
+	local sliced99 = "table"
+	local value4 = type(value3) == sliced99 and rawget(value3, "Value") or nil
+	local sliced100 = "table"
+	if type(value4) ~= sliced100 then
+		return nil
+	end
+	local tbl19 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	for k, sliced101 in pairs(value4) do
+		local value5 = type(sliced101) == "table" and rawget(sliced101, "total_exists") or nil
+
+		if type(value5) == "number" and type(k) == "string" then
+			tbl19[#tbl19 + 1] = {
+				name = k,
+				n = value5,
+				muts = rawget(sliced101, "mutations"),
+				owners = rawget(sliced101, "unique_owners"),
+			}
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end
+
+	if #tbl19 == 0 then
+		return _G.__RiddlerExistCache and _G.__RiddlerExistCache() or nil
+	end
+
+	table.sort(tbl19, function(arg, arg2)
+		return arg.n < arg2.n
+	end)
+
+	if writefile then
+		local tbl20 = { ("#%d"):format(os.time()) }
+
+		for _, sliced101 in ipairs(tbl19) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+			tbl20[#tbl20 + 1] = sliced101.name .. "\t" .. tostring(sliced101.n)
+		end
+
+		local concat = table.concat
+		pcall(writefile, ("riddler_exists_%s.txt"):format(tostring(game.PlaceId)), concat(tbl20, "\n"))
+	end
+
+	return tbl19
+end
+
+_G.__RiddlerExistCache = function()
+	if readfile and isfile then
+		local str8 = ("riddler_exists_%s.txt"):format(tostring(game.PlaceId))  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		local ok, result = pcall(function()
+			if isfile(str8) then
+				return readfile(str8)
+			end
+		end)
+
+		if not ok or type(result) ~= "string" or result == "" then
+			return nil
+		end
+		local tbl19 = {}
+		local cachedAt = nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		for match in result:gmatch("[^\n]+") do
+			local match2 = match:match("^#(%d+)$")
+
+			if match2 then
+				cachedAt = tonumber(match2)
+			else
+				local match3, sliced99 = match:match("^(.-)\t(%d+)$")
+
+				if match3 and sliced99 then
+					tbl19[#tbl19 + 1] = { name = match3, n = tonumber(sliced99) }
+				end
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+
+		if #tbl19 == 0 then
+			return nil
+		end
+
+		if cachedAt and os.time() - cachedAt > 2592000 then
+			return nil
+		end
+
+		table.sort(tbl19, function(arg, arg2)
+			return arg.n < arg2.n
+		end)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		tbl19.cachedAt = cachedAt
+		return tbl19
+	end
+
+	return nil
+end
+
+_G.__RiddlerSnapshotMeta = function()
+	local sliced99 = sliced86:FindFirstChild("Datas")
+	local tbl19 = {}
+
+	local function slicedfn60(arg, arg2, arg3)
+		local sliced100 = slicedfn34(sliced99 and sliced99:FindFirstChild(arg2))  -- LEAKED BY SLICED | discord.gg/pubmethod
+		if type(sliced100) ~= "table" then
+			return
+		end
+
+		for k, sliced101 in pairs(sliced100) do
+			local flag24 = type(sliced101) == "table"
+
+			if flag24 then
+				flag24 = tostring(sliced101[arg3] or sliced101.Name or k)
+			end
+
+			flag24 = flag24 or tostring(k)
+
+			if flag24 ~= "" then  -- LEAKED BY SLICED | discord.gg/pubmethod
+				tbl19[arg .. "\t" .. flag24] = true
+			end
+		end
+	end
+
+	slicedfn60("T", "Traits", "Display")
+	slicedfn60("M", "Mutations", "Display")
+	slicedfn60("L", "LuckyBlocks", "Display")
+	slicedfn60("S", "ShopItems", "Name")
+	slicedfn60("R", "Rarities", "Name")
+	slicedfn60("F", "RodsShopItems", "Name")  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local items = sliced86:FindFirstChild("Items")
+
+	if items then
+		for _, child in ipairs(items:GetChildren()) do
+			if child:IsA("Tool") then
+				tbl19["G\t" .. child.Name] = true
+			end
+		end
+	end
+
+	local controllers = sliced86:FindFirstChild("Controllers")
+	controllers = controllers and controllers:FindFirstChild("EventController")  -- LEAKED BY SLICED | discord.gg/pubmethod
+	controllers = controllers and controllers:FindFirstChild("Events")
+
+	if controllers then
+		for _, child in ipairs(controllers:GetChildren()) do
+			tbl19["E\t" .. child.Name] = true
+		end
+	end
+
+	if next(tbl19) == nil then
+		return {}
+	end
+	local str8 = ("riddler_seen_meta_%s.txt"):format(tostring(game.PlaceId))  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local tbl20 = {}
+
+	if readfile and isfile then
+		local ok, result = pcall(function()
+			if isfile(str8) then
+				return readfile(str8)
+			end
+		end)
+
+		if ok then
+			local sliced100 = "string"
+			ok = type(result) == sliced100  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+
+		if ok then
+			for match in result:gmatch("[^\n]+") do
+				local match2, sliced100 = match:match("^(.-\t.-)\t(.*)$")
+
+				if match2 then
+					tbl20[match2] = tonumber(sliced100) or 0
+				end
+			end
+		end
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	if type(_G.__RiddlerShippedMeta) == "string" then
+		for match in _G.__RiddlerShippedMeta:gmatch("[^\n]+") do
+			local match2 = match:match("^%s*(.-)%s*$")
+
+			if match2 ~= "" and match2:find("\t") and tbl20[match2] == nil then
+				tbl20[match2] = 0
+			end
+		end
+	end
+
+	local flag24 = next(tbl20) ~= nil
+
+	local tbl21 = {  -- LEAKED BY SLICED | discord.gg/pubmethod
+		T = "trait",
+		M = "mutation",
+		L = "lucky block",
+		S = "shop item",
+		E = "event",
+		G = "gear",
+		R = "rarity",
+		F = "fishing rod",
+	}
+
+	local tbl22 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local now2 = os.time()
+
+	if flag24 then
+		for k in pairs(tbl19) do
+			local sliced100 = tbl20[k]
+
+			if sliced100 == nil or sliced100 > 0 and now2 - sliced100 < 604800 then
+				local match, sliced101 = k:match("^(.-)\t(.*)$")
+				tbl22[#tbl22 + 1] = { kind = tbl21[match] or match, name = sliced101, firstSeen = sliced100 or now2 }
+			end
+		end
+
+		table.sort(tbl22, function(arg, arg2)  -- LEAKED BY SLICED | discord.gg/pubmethod
+			if arg.kind ~= arg2.kind then
+				return arg.kind < arg2.kind
+			end
+			return arg.name < arg2.name
+		end)
+	end
+
+	if writefile then
+		local tbl23 = {}
+
+		for k in pairs(tbl19) do
+			local sliced100 = tbl20[k]  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			if sliced100 == nil then
+				sliced100 = flag24 and now2 or 0
+			end
+
+			tbl23[#tbl23 + 1] = k .. "\t" .. tostring(sliced100)
+		end
+
+		for k, sliced100 in pairs(tbl20) do
+			if not tbl19[k] then
+				tbl23[#tbl23 + 1] = k .. "\t" .. tostring(sliced100 or 0)
+			end
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		table.sort(tbl23)
+		pcall(writefile, str8, table.concat(tbl23, "\n"))
+	end
+
+	return tbl22, flag24
+end
+
+_G.__RiddlerSnapshotNew = function()
+	local tbl19 = {}
+	local datas = sliced86:FindFirstChild("Datas")
+	local sliced99 = slicedfn34(datas and datas:FindFirstChild("Animals"))
+	if type(sliced99) ~= "table" then  -- LEAKED BY SLICED | discord.gg/pubmethod
+		return tbl19
+	end
+	local tbl20 = {}
+
+	for _, sliced100 in pairs(sliced99) do
+		if type(sliced100) == "table" and sliced100.DisplayName then
+			tbl20[tostring(sliced100.DisplayName)] = tonumber(sliced100.Generation) or 0
+		end
+	end
+
+	local str8 = ("riddler_seen_%s.txt"):format(tostring(game.PlaceId))
+	local tbl21 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	if readfile and isfile then
+		local ok, result = pcall(function()
+			if isfile(str8) then
+				return readfile(str8)
+			end
+		end)
+
+		if ok and type(result) == "string" then
+			for match in result:gmatch("[^\n]+") do
+				local match2, sliced100, sliced101 = match:match("^(.-)\t([^\t]*)\t?(.*)$")
+				match = match2 or match  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				if match ~= "" then
+					tbl21[match] = tonumber(sliced101) or 0
+				end
+			end
+		end
+	end
+
+	if next(tbl21) == nil and type(_G.__RiddlerShippedBaseline) == "string" then
+		for match in _G.__RiddlerShippedBaseline:gmatch("[^\n]+") do
+			local match2 = match:match("^%s*(.-)%s*$")
+
+			if match2 ~= "" then  -- LEAKED BY SLICED | discord.gg/pubmethod
+				tbl21[match2] = 0
+			end
+		end
+
+		local flag24 = next(tbl21) ~= nil
+	end
+
+	local flag24 = next(tbl21) ~= nil
+	local now2 = os.time()
+
+	if flag24 then
+		for k, sliced100 in pairs(tbl20) do
+			if tbl21[k] == nil then  -- LEAKED BY SLICED | discord.gg/pubmethod
+				tbl19[#tbl19 + 1] = { name = k, gen = sliced100, firstSeen = now2, ageHours = 0 }
+			elseif tbl21[k] > 0 and now2 - tbl21[k] < 604800 then
+				tbl19[#tbl19 + 1] = {
+					name = k,
+					gen = sliced100,
+					firstSeen = tbl21[k],
+					ageHours = math.floor((now2 - tbl21[k]) / 3600),
+				}
+			end
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		table.sort(tbl19, function(arg, arg2)
+			if (arg.firstSeen or 0) == (arg2.firstSeen or 0) then
+				return (arg.gen or 0) > (arg2.gen or 0)
+			end
+
+			return (arg.firstSeen or 0) > (arg2.firstSeen or 0)
+		end)
+	end
+
+	if writefile then
+		local tbl22 = {}
+
+		for k, sliced100 in pairs(tbl20) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local slicedn34
+
+			if tbl21[k] ~= nil then
+				slicedn34 = tbl21[k]
+			elseif flag24 then
+				slicedn34 = now2
+			else
+				slicedn34 = 0
+			end
+
+			tbl22[#tbl22 + 1] = k .. "\t" .. tostring(sliced100) .. "\t" .. tostring(slicedn34)
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		for k, sliced100 in pairs(tbl21) do
+			if tbl20[k] == nil then
+				local slicedn34 = #tbl22 + 1
+				local sliced101 = tostring
+				sliced100 = sliced100 or 0
+				tbl22[slicedn34] = k .. "\t0\t" .. sliced101(sliced100)
+			end
+		end
+
+		table.sort(tbl22)
+		pcall(writefile, str8, table.concat(tbl22, "\n"))  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end
+
+	return tbl19, flag24
+end
+
+_G.__RiddlerCurrentUpdate = function()
+	local shared = sliced86:FindFirstChild("Shared")
+	local sliced99 = _G.__RiddlerRequireIfLoaded(shared and shared:FindFirstChild("Updates"))
+	if type(sliced99) ~= "table" then
+		return nil
+	end
+	local value = rawget(sliced99, "List")  -- LEAKED BY SLICED | discord.gg/pubmethod
+	if type(value) ~= "table" then
+		return nil
+	end
+	local sliced100 = nil
+	local str8 = nil
+
+	for k, sliced101 in pairs(value) do
+		local num = type(sliced101) == "table" and tonumber(rawget(sliced101, "UnixTimeStamp")) or nil
+
+		if not sliced100 or num and num > sliced100 then
+			str8 = tostring(k)
+			sliced100 = num  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+	end
+
+	return str8, sliced100
+end
 
 task.spawn(function()
-    while DateTimeLabel and DateTimeLabel.Parent do
-        pcall(function()
-            DateTimeLabel.Text = os.date("%H:%M:%S  ·  %d/%m/%Y")
-        end)
-        task.wait(0.5)
-    end
+	local tbl19 = {}
+
+	while true do
+		task.wait(5)
+
+		if not pcall(function()
+			local activeEvents = playerGui:FindFirstChild("ActiveEvents")  -- LEAKED BY SLICED | discord.gg/pubmethod
+			activeEvents = activeEvents and activeEvents:FindFirstChild("ActiveEvents")
+			if not activeEvents then
+				return
+			end
+
+			for _, riddlerDevBaseEvent in ipairs(_G.__RiddlerDevBaseEvents) do
+				local sliced99 = activeEvents:FindFirstChild(riddlerDevBaseEvent)
+
+				if sliced99 and sliced99.Visible and not tbl19[riddlerDevBaseEvent] then
+					tbl19[riddlerDevBaseEvent] = true
+					local tbl20 = { "=== " .. riddlerDevBaseEvent .. " @ " .. os.date("%Y-%m-%d %H:%M:%S") .. " ===" }
+					local plots = sliced88:FindFirstChild("Plots")  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					if plots then
+						for _, child in ipairs(plots:GetChildren()) do
+							local tbl21 = {}
+
+							for k, sliced100 in pairs(child:GetAttributes()) do
+								tbl21[#tbl21 + 1] = tostring(k) .. "=" .. tostring(sliced100)
+							end
+
+							table.sort(tbl21)
+							tbl20[#tbl20 + 1] = "plot " .. child.Name:sub(1, 8) .. ": " .. table.concat(tbl21, ",")
+						end
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					for _, child in ipairs(sliced88:GetChildren()) do
+						local str8 = child.Name:lower()
+
+						if str8:find("sammy") or str8:find("caylus") or str8:find("steak") or str8:find("rusty") or str8:find("base") then
+							local tbl21 = {}
+
+							for k, sliced100 in pairs(child:GetAttributes()) do
+								tbl21[#tbl21 + 1] = tostring(k) .. "=" .. tostring(sliced100)
+							end
+
+							table.sort(tbl21)
+							tbl20[#tbl20 + 1] = "ws " .. child.Name .. " (" .. child.ClassName .. "): " .. table.concat(tbl21, ",")
+						end  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+
+					if writefile and appendfile then
+						if isfile and isfile("riddler_devbase_capture.txt") then
+							pcall(appendfile, "riddler_devbase_capture.txt", "\n" .. table.concat(tbl20, "\n"))
+						else
+							pcall(writefile, "riddler_devbase_capture.txt", table.concat(tbl20, "\n"))
+						end
+					end
+				elseif sliced99 and not sliced99.Visible then
+					tbl19[riddlerDevBaseEvent] = nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+			end
+		end) then
+			task.wait(30)
+		end
+	end
 end)
 
-local AvatarImage = Instance.new("ImageLabel")
-AvatarImage.Name = "PlayerHeadshot"
-AvatarImage.Size = UDim2.fromOffset(34, 34)
-AvatarImage.Position = UDim2.new(1, -42, 0, 4)
-AvatarImage.BackgroundColor3 = COLORS.Control
-AvatarImage.BorderSizePixel = 0
-AvatarImage.ZIndex = 5
-AvatarImage.ScaleType = Enum.ScaleType.Crop
-AvatarImage.Parent = Header
-addCorner(AvatarImage, 17)
-addStroke(AvatarImage, COLORS.Accent, 1.2, 0.35)
+_G.__RiddlerReadUpdateItems = function()
+	local tbl19 = {}
+	local datas = sliced86:FindFirstChild("Datas")  -- LEAKED BY SLICED | discord.gg/pubmethod
+	if not datas then
+		return tbl19
+	end
+	local riddlerGetConstants = _G.__RiddlerGetConstants
+	if not riddlerGetConstants then
+		return tbl19
+	end
+
+	for _, sliced99 in ipairs({ "ShopItems", "Shop", "Items", "MerchShopData", "RodsShopItems" }) do
+		local sliced100 = datas:FindFirstChild(sliced99)
+
+		if sliced100 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local sliced101 = _G.__RiddlerRequireIfLoaded(sliced100)
+			local sliced102 = "table"
+
+			if type(sliced101) == sliced102 then
+				for k, sliced103 in pairs(sliced101) do
+					local sliced104 = "table"
+
+					if type(sliced103) == sliced104 and type(sliced103.IsEnabled) == "function" then
+						local ok, result = pcall(riddlerGetConstants, sliced103.IsEnabled)
+						ok = ok and type(result) == "table"
+						local sliced105 = nil
+
+						if ok then  -- LEAKED BY SLICED | discord.gg/pubmethod
+							sliced105 = nil
+
+							for _, sliced106 in pairs(result) do
+								if type(sliced106) == "string" and sliced106:match("^Update%-") then
+									sliced105 = sliced106
+									break
+								else
+									sliced105 = nil
+								end
+							end
+						end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+						if sliced105 then
+							local tbl20 = {}
+
+							if sliced103.Price then
+								tbl20[#tbl20 + 1] = _G.__RiddlerShortNum(sliced103.Price) .. " " .. tostring(sliced103.Currency or "cash")
+							end
+
+							if sliced103.RebirthRequired then
+								tbl20[#tbl20 + 1] = "needs rebirth " .. tostring(sliced103.RebirthRequired)
+							end
+
+							if sliced103.Description then
+								tbl20[#tbl20 + 1] = tostring(sliced103.Description):sub(1, 60)  -- LEAKED BY SLICED | discord.gg/pubmethod
+							end
+
+							tbl19[#tbl19 + 1] = {
+								source = sliced100.Name,
+								name = tostring(sliced103.Name or sliced103.DisplayName or k),
+								facts = tbl20,
+								stamp = sliced105,
+							}
+						end
+					end
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+		end
+	end
+
+	return tbl19
+end
+
+_G.__RiddlerTraitIncome = function(arg)
+	local str8 = tostring(arg or ""):lower()
+	if str8 == "" then
+		return nil
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local datas = sliced86:FindFirstChild("Datas")
+	local sliced99 = slicedfn34(datas and datas:FindFirstChild("Animals"))
+	local sliced100 = slicedfn34(datas and datas:FindFirstChild("Traits"))
+	local flag24 = type(sliced99) ~= "table"
+
+	if not flag24 then
+		local sliced101 = "table"
+		flag24 = type(sliced100) ~= sliced101
+	end
+
+	if flag24 then
+		return nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end
+
+	local function slicedfn60(arg2)
+		return (tostring(arg2):lower():gsub("[^%w]", ""))
+	end
+
+	local function slicedfn61(arg2, arg3, arg4)
+		local sliced101 = slicedfn60(arg2)
+		local tbl19 = nil
+		local sliced102 = nil
+
+		local function slicedfn62(arg5, arg6, arg7, arg8)
+			if not sliced102 or arg8 > sliced102 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+				tbl19 = { key = arg6, data = arg7, name = arg5 }
+				sliced102 = arg8
+			end
+		end
+
+		for k, sliced103 in pairs(arg3) do
+			local sliced104 = arg4(k, sliced103)
+			local sliced105 = "string"
+
+			if type(sliced104) == sliced105 and #sliced104 >= 3 then
+				local sliced106 = slicedfn60(sliced104)
+
+				if 3 <= #sliced106 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					if sliced101:find(sliced106, 1, true) then
+						slicedfn62(sliced104, k, sliced103, #sliced106 + 100)
+					else
+						local slicedn34 = 0
+
+						for i = 1, math.max(1, #sliced101 - 5) do
+							local slicedn35 = 0
+
+							while slicedn35 < #sliced106 and sliced101:sub(i + slicedn35, i + slicedn35) == sliced106:sub(slicedn35 + 1, slicedn35 + 1) do
+								slicedn35 += 1
+							end
+
+							if slicedn35 > slicedn34 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+								slicedn34 = slicedn35
+							end
+						end
+
+						if 6 <= slicedn34 then
+							slicedfn62(sliced104, k, sliced103, slicedn34)
+						end
+					end
+				end
+			end
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		return tbl19
+	end
+
+	local tbl19 = slicedfn61(str8, sliced99, function(arg2, arg3)
+		local flag25 = type(arg3) == "table"
+
+		if flag25 then
+			flag25 = tostring(arg3.DisplayName or arg2)
+		end
+
+		return flag25 or nil
+	end)
+
+	if not tbl19 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local riddlerNameCandidates = _G.__RiddlerNameCandidates and _G.__RiddlerNameCandidates(arg)
+
+		if riddlerNameCandidates and #riddlerNameCandidates > 0 then
+			for k, sliced101 in pairs(sliced99) do
+				local sliced102 = "table"
+				local flag25 = type(sliced101) == sliced102
+
+				if flag25 then
+					flag25 = tostring(sliced101.DisplayName or k) == riddlerNameCandidates[1]
+				end
+
+				if flag25 then
+					tbl19 = { key = k, data = sliced101, name = riddlerNameCandidates[1] }  -- LEAKED BY SLICED | discord.gg/pubmethod
+					break
+				end
+			end
+		end
+	end
+
+	if tbl19 and (str8:find("new", 1, true) or str8:find("latest", 1, true) or str8:find("came out", 1, true) or str8:find("just added", 1, true)) then
+		local tbl20 = {}
+		local sliced101 = ipairs
+		local riddlerSnapshotNew = _G.__RiddlerSnapshotNew and _G.__RiddlerSnapshotNew() or {}
+
+		for _, sliced102 in sliced101(riddlerSnapshotNew) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+			tbl20[sliced102.name] = true
+		end
+
+		if not tbl20[tbl19.name] then
+			local riddlerNameCandidates = _G.__RiddlerNameCandidates and _G.__RiddlerNameCandidates(arg)
+			local sliced102 = ipairs
+			local tbl21 = riddlerNameCandidates or {}
+			local exitTo = nil
+
+			for _, sliced103 in sliced102(tbl21) do
+				if tbl20[sliced103] then
+					exitTo = 1  -- LEAKED BY SLICED | discord.gg/pubmethod
+					break
+				end
+			end
+
+			if exitTo == 1 then
+				for k, sliced103 in pairs(sliced99) do
+					local flag25 = type(sliced103) == "table"
+
+					if flag25 then
+						flag25 = tostring(sliced103.DisplayName or k) == s15
+					end
+
+					if flag25 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						tbl19 = { key = k, data = sliced103, name = s15 }
+						break
+					end
+				end
+			end
+		end
+	end
+
+	if not tbl19 then
+		return nil
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local sliced101 = 1
+	local pos = str8:find(tbl19.name:lower(), sliced101, true)
+
+	if pos then
+		local sliced102 = " "
+		str8 = str8:sub(1, pos - 1) .. sliced102 .. str8:sub(pos + #tbl19.name)
+	end
+
+	local tbl20 = {}
+	local tbl21 = {}
+	local str9 = str8
+
+	for i = 1, 4 do  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local sliced102 = slicedfn61(str9, sliced100, function(arg2, arg3)
+			local flag25 = type(arg3) == "table"
+
+			if flag25 then
+				flag25 = tostring(arg3.Display or arg2)
+			end
+
+			return flag25 or tostring(arg2)
+		end)
+
+		if not (not sliced102 or tbl21[sliced102.name]) then
+			tbl21[sliced102.name] = true
+			tbl20[#tbl20 + 1] = sliced102  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local pos2 = str9:find(sliced102.name:lower(), 1, true)
+
+			if pos2 then
+				local sliced103 = " "
+				str9 = str9:sub(1, pos2 - 1) .. sliced103 .. str9:sub(pos2 + #sliced102.name)
+				continue
+			end
+		end
+
+		break
+	end
+
+	local sliced102 = slicedfn34(datas and datas:FindFirstChild("Mutations"))  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local sliced103 = nil
+
+	if type(sliced102) == "table" then
+		sliced103 = slicedfn61(str8, sliced102, function(arg2)
+			return tostring(arg2)
+		end)
+	end
+
+	local num = tonumber(tbl19.data.Generation)
+	if not num then
+		return nil
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	if #tbl20 == 0 and not sliced103 then
+		return ("%s earns %s per second with no trait or mutation applied. Answer with that figure."):format(tbl19.name, _G.__RiddlerShortNum(num))
+	end
+	local tbl22 = {}
+	local num2 = sliced103 and type(sliced103.data) == "table" and tonumber(sliced103.data.Modifier)
+	local slicedn34 = 1
+
+	if num2 then
+		slicedn34 = 1 + tonumber(sliced103.data.Modifier)
+		tbl22[#tbl22 + 1] = ("%s mutation +%s"):format(sliced103.name, tostring(sliced103.data.Modifier))
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	local flag25 = false
+
+	for _, sliced104 in ipairs(tbl20) do
+		if sliced104.name == "Sleepy" then
+			tbl22[#tbl22 + 1] = "Sleepy halves it"
+			flag25 = true
+		else
+			local num3 = tonumber(sliced104.data and sliced104.data.MultiplierModifier)
+
+			if num3 then
+				slicedn34 += num3
+				tbl22[#tbl22 + 1] = ("%s +%s"):format(sliced104.name, tostring(num3))  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+		end
+	end
+
+	local slicedn35 = num * slicedn34
+
+	if flag25 then
+		slicedn35 *= 0.5
+	end
+
+	local riddlerShortNum = _G.__RiddlerShortNum
+	return ("%s base income is %s. With %s the multiplier is 1 + %s = %s, giving %s. Answer with the figure only - never append \"/s\" or any unit."):format(tbl19.name, _G.__RiddlerShortNum(num), table.concat(tbl22, ", "), tostring(slicedn34 - 1), tostring(slicedn34), riddlerShortNum(slicedn35))
+end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+do
+	local tbl19 = {
+		event = {
+			"event",
+			"mutation",
+			"running",
+			"right now",
+			"active",
+			"currently",
+			"we are in",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"we're in",
+			"happening",
+			"going on",
+			"live",
+		},
+		luck = {
+			"luck",
+			"multiplier",
+			"boost",
+			"odds",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"chance",
+		},
+		trait = { "trait" },
+		new = {
+			"new",
+			"newest",
+			"added",
+			"update",
+			"latest",
+			"just came",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"just got",
+			"recently",
+			"rng machine",
+			"this week",
+			"came out",
+			"come out",
+			"comes out",
+			"dropped",
+			"just drop",
+			"released",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"release",
+			"shipped",
+			"this update",
+			"out today",
+		},
+		rebirth = { "rebirth", "rebirths" },
+		base = { "base", "skin", "plot" },
+		income = {
+			"per second",
+			"per sec",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"produce",
+			"produces",
+			"produced",
+			"make",
+			"makes",
+			"earn",
+			"earns",
+			"earning",
+			"generat",
+			"income",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"how much",
+			"a second",
+			"each second",
+			"every second",
+			"money per",
+			"cash per",
+		},
+		count = {
+			"how many",
+			"how much are there",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"total number",
+			"count of",
+		},
+		describe = {
+			"looks like",
+			"looks-like",
+			"shaped like",
+			"resembles",
+			"which brainrot is",
+			"what brainrot is",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"brainrot that",
+			"wearing",
+			"holding",
+			"made of",
+			"mixed with",
+			"crossed with",
+		},
+		exist = {
+			"exist",
+			"exists",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"exist count",
+			"how many exist",
+			"1 of 1",
+			"one of one",
+			"1/1",
+			"one-of-one",
+			"one of a kind",
+			"badge",
+			"rarest",
+			"rarity",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"least common",
+			"hardest to find",
+			"lowest exist",
+			"fewest",
+			"how many are there",
+			"own a",
+			"owns a",
+			"owners",
+			"how many people",
+			"how many players",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"total",
+			"combined",
+			"add up",
+			"altogether",
+			"sum",
+			"mutated",
+			"no mutation",
+			"without a mutation",
+			"with a mutation",
+			"unmutated",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		},
+		traitrank = {
+			"best trait",
+			"strongest trait",
+			"highest trait",
+			"worst trait",
+			"lowest trait",
+			"weakest trait",
+			"which trait",
+			"what trait gives",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"trait multiplier",
+			"top trait",
+		},
+	}
+
+	_G.__RiddlerWordTopics = { income = { "mps", "gen", "gens" } }
+
+	_G.__RiddlerNowWords = {
+		"now",
+		"current",
+		"today",
+		"at the moment",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		"this second",
+	}
+
+	local tbl20 = {
+		"mutation",
+		"trait",
+		"event",
+		"luck",
+		"multiplier",
+		"boost",
+		"weather",  -- LEAKED BY SLICED | discord.gg/pubmethod
+		"gear",
+		"tool",
+		"rarity",
+		"rarities",
+		"fishing",
+		"rebirth",
+	}
+
+	slicedfn59 = function(arg, arg2)
+		local str8 = tostring(arg or ""):lower()
+		if str8 == "" then  -- LEAKED BY SLICED | discord.gg/pubmethod
+			return true
+		end
+
+		if arg2 == "new" then
+			for _, sliced99 in ipairs(tbl20) do
+				if str8:find(sliced99, 1, true) then
+					return false
+				end
+			end
+
+			local sliced99 = " "
+			local str9 = " " .. str8:gsub("[^%w]", " ") .. sliced99  -- LEAKED BY SLICED | discord.gg/pubmethod
+			if str9:find(" rod ", 1, true) or str9:find(" rods ", 1, true) then
+				return false
+			end
+		end
+
+		local sliced99 = ipairs
+		local tbl21 = tbl19[arg2] or {}
+
+		for _, sliced100 in sliced99(tbl21) do
+			if str8:find(sliced100, 1, true) then
+				return true
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			if sliced100:find(" ", 1, true) then
+				local slicedn34 = 1
+				local flag24 = true
+
+				for match in sliced100:gmatch("%S+") do
+					local pos = str8:find(match, slicedn34, true)
+
+					if not pos then
+						flag24 = false
+						break
+					else
+						slicedn34 = pos + #match  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+				end
+
+				if flag24 then
+					return true
+				end
+			end
+		end
+
+		local riddlerWordTopics = _G.__RiddlerWordTopics and _G.__RiddlerWordTopics[arg2]
+
+		if riddlerWordTopics then
+			local sliced100 = " "  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local str9 = " " .. str8:gsub("[%.%-/]", ""):gsub("[^%w]", " ") .. sliced100
+
+			for _, riddlerWordTopic in ipairs(riddlerWordTopics) do
+				if str9:find(" " .. riddlerWordTopic .. " ", 1, true) then
+					return true
+				end
+			end
+		end
+
+		if arg2 == "event" then
+			for _, riddlerNowWord in ipairs(_G.__RiddlerNowWords) do
+				if str8:find(riddlerNowWord, 1, true) then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					return true
+				end
+			end
+		end
+
+		return false
+	end
+
+	slicedfn56 = function(arg)
+		local tbl21 = {}
+		local sliced99 = slicedfn59(arg, "event")
+		local sliced100 = slicedfn59(arg, "luck")  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local sliced101 = slicedfn59(arg, "trait")
+		local sliced102 = slicedfn59(arg, "new")
+		local sliced103 = slicedfn59(arg, "rebirth")
+		local sliced104 = slicedfn59(arg, "base")
+		local sliced105 = slicedfn59(arg, "income")
+		local sliced106 = slicedfn59(arg, "count")
+		local sliced107 = slicedfn59(arg, "traitrank")
+		local sliced108 = slicedfn59(arg, "describe")
+		local sliced109 = sliced105 and _G.__RiddlerTraitIncome(arg) or nil
+
+		if sliced102 and not sliced109 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local sliced110 = _G.__RiddlerReadNewContent()
+			local tbl22 = {}
+
+			for _, sliced111 in ipairs(sliced110) do
+				if sliced111.enabled then
+					local gen = sliced111.gen
+					local str8 = "?"
+
+					if gen then
+						if gen >= 1e9 then
+							str8 = ("%.4gB"):format(gen / 1e9)
+						elseif gen >= 1000000 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+							str8 = ("%.4gM"):format(gen / 1000000)
+						elseif gen >= 1000 then
+							str8 = ("%.4gK"):format(gen / 1000)
+						else
+							str8 = tostring(gen)
+						end
+					end
+
+					tbl22[#tbl22 + 1] = ("%s (%s/s, %s%s%s)"):format(sliced111.name, str8, sliced111.rarity, sliced111.source and ", from the " .. sliced111.source or "", sliced111.stamp and ", " .. sliced111.stamp or "")
+				end
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			if #tbl22 > 0 then
+				tbl21[#tbl21 + 1] = "BRAINROTS ADDED IN THE NEWEST UPDATE: " .. table.concat(tbl22, "; ") .. "  <- these are the ONLY brainrots added in the current update. Any question about \"the new brainrot\", what was \"just added\", or what is new in the RNG machine is answered from THIS line and nowhere else. Match on the income figure when the question names one. If the question DESCRIBES one of these instead of naming it (the new dinosaur, the new flower, the new narwhal), first pick its NAME from this list, then answer with THAT entry's income figure copied digit for digit - never round it and never invent a number not on this line."
+			end
+		end
+
+		if sliced102 and not sliced109 then
+			local str8 = " " .. arg:lower():gsub("[^%w]", " ") .. " "
+			local sliced110 = nil
+
+			for _, sliced111 in ipairs({ "brainrot god", "secret", "mythic", "legendary", "epic", "rare", "common", "og" }) do
+				if str8:find(" " .. sliced111 .. " ", 1, true) then
+					sliced110 = sliced111  -- LEAKED BY SLICED | discord.gg/pubmethod
+					break
+				else
+					sliced110 = nil
+				end
+			end
+
+			if sliced110 then
+				local sliced111 = _G.__RiddlerReadNewContent()
+				local tbl22 = {}
+
+				for _, sliced112 in ipairs(sliced111) do
+					local enabled = sliced112.enabled  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					if enabled then
+						enabled = tostring(sliced112.rarity or ""):lower() == sliced110
+					end
+
+					if enabled then
+						local gen = sliced112.gen
+						local str9 = "?"
+
+						if gen then
+							if gen >= 1e9 then
+								str9 = ("%.4gB"):format(gen / 1e9)
+							elseif gen >= 1000000 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+								str9 = ("%.4gM"):format(gen / 1000000)
+							elseif gen >= 1000 then
+								str9 = ("%.4gK"):format(gen / 1000)
+							else
+								str9 = tostring(gen)
+							end
+						end
+
+						tbl22[#tbl22 + 1] = { n = sliced112.name, g = gen or 0, t = str9 }
+					end
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				table.sort(tbl22, function(arg2, arg3)
+					return arg2.g > arg3.g
+				end)
+
+				if 0 < #tbl22 then
+					local tbl23 = {}
+
+					for _, sliced112 in ipairs(tbl22) do
+						tbl23[#tbl23 + 1] = ("%s (%s/s)"):format(sliced112.n, sliced112.t)
+					end
+
+					table.insert(tbl21, 1, ("NEW %s BRAINROTS IN THE NEWEST UPDATE (highest income first): %s.  <- \"the new/newest %s\" is answered from THIS line only; the first entry is the top one."):format(sliced110:upper(), table.concat(tbl23, "; "), sliced110))
+				else  -- LEAKED BY SLICED | discord.gg/pubmethod
+					table.insert(tbl21, 1, ("NO %s BRAINROT WAS ADDED IN THE NEWEST UPDATE. Do not answer \"the new %s\" with a brainrot of another tier; name the most recently added %s you are sure of and offer an ALT."):format(sliced110:upper(), sliced110, sliced110))
+				end
+			end
+		end
+
+		if sliced102 and not sliced109 then
+			local sliced110, sliced111 = _G.__RiddlerSnapshotNew()
+
+			if #sliced110 > 0 then
+				local tbl22 = {}
+
+				for _, sliced112 in ipairs(sliced110) do
+					local ageHours = sliced112.ageHours or 0  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local str8
+
+					if ageHours <= 0 then
+						str8 = "just now"
+					elseif ageHours < 24 then
+						str8 = tostring(ageHours) .. "h ago"
+					else
+						local slicedn34 = math.floor(ageHours / 24)
+						str8 = tostring(slicedn34) .. (slicedn34 == 1 and " day ago" or " days ago")
+					end
+
+					tbl22[#tbl22 + 1] = ("%s (%s/s, first seen %s)"):format(sliced112.name, _G.__RiddlerShortNum(sliced112.gen), str8)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				local sliced112 = nil
+
+				for _, sliced113 in ipairs(sliced110) do
+					local flag24 = not sliced112
+
+					if not flag24 then
+						flag24 = (sliced113.gen or 0) > (sliced112.gen or 0)
+					end
+
+					if flag24 then
+						sliced112 = sliced113
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				tbl21[#tbl21 + 1] = "BRAINROTS THAT CAME OUT RECENTLY, NEWEST FIRST: " .. table.concat(tbl22, "; ") .. ("  BEST OF THESE (highest income among the new ones) = %s at %s/s."):format(sliced112.name, _G.__RiddlerShortNum(sliced112.gen)) .. "  <- HOW TO READ THIS LINE, IN THIS ORDER: (1) IF THE RIDDLE DESCRIBES THE BRAINROT AT ALL - an animal, a job, an object, a colour, anything - MATCH THAT DESCRIPTION TO A NAME IN THIS LIST FIRST. The names are literal: a narwhal is Honey Honey Narwhal, a samurai is Syrup Samurai, a dinosaur is Rosatops Triceratino (triceratops), a motorbike is Motorino Bumbino. Never fall back to the highest earner when the riddle described something - that is a DIFFERENT question. (2) ONLY IF the riddle asks for the \"best\", \"strongest\" or \"highest\" with NO description, use the BEST OF THESE value. (3) \"Newest\" or \"latest\" with no description = the FIRST listed. (4) If the riddle asks HOW MUCH one makes, this list is NOT the answer - use the EXACT INCOME line and reply with its number. In all cases \"came out today\" / \"just released\" / \"new brainrot\" means ONLY the ones listed here."
+			elseif not sliced111 then
+				tbl21[#tbl21 + 1] = "NEW-BRAINROT BASELINE NOT SET YET (first run on this client - nothing can be reported as new)"
+			end
+
+			local updateTheServerIsRunning = _G.__RiddlerCurrentUpdate()
+
+			if updateTheServerIsRunning then
+				tbl21[#tbl21 + 1] = "UPDATE THE SERVER IS RUNNING: " .. updateTheServerIsRunning
+			end
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		local str8 = tostring(arg or ""):lower()
+		local flag24 = str8 == ""
+
+		if not flag24 then
+			for _, sliced110 in ipairs(tbl19.new) do
+				if str8:find(sliced110, 1, true) then
+					flag24 = true
+					break
+				end
+			end
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		if flag24 then
+			local sliced110 = _G.__RiddlerSnapshotMeta()
+
+			if sliced110 and #sliced110 > 0 then
+				local tbl22 = {}
+
+				for _, sliced111 in ipairs(sliced110) do
+					tbl22[#tbl22 + 1] = ("%s (%s)"):format(sliced111.name, sliced111.kind)
+				end
+
+				tbl21[#tbl21 + 1] = "NEW SINCE THE LAST UPDATE (not brainrots): " .. table.concat(tbl22, "; ") .. "  <- newly added traits / mutations / lucky blocks / shop items / events / gears / rarities / fishing rods. \"The new trait\", \"the newest mutation\", \"the new event\", \"the new gear / tool / flying gear\" are answered from THIS line, never from the brainrot list."
+			end
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		if sliced103 or sliced102 then
+			local sliced110 = _G.__RiddlerReadNewRebirth()
+
+			for _, sliced111 in ipairs(sliced110) do
+				local tbl22 = {}
+
+				if sliced111.cash then
+					tbl22[#tbl22 + 1] = _G.__RiddlerShortNum(sliced111.cash) .. " cash"
+				end
+
+				if #sliced111.chars > 0 then
+					tbl22[#tbl22 + 1] = table.concat(sliced111.chars, " + ")
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				tbl21[#tbl21 + 1] = ("NEWEST REBIRTH: %s (rebirth number %s%s). TO REBIRTH YOU NEED: %s.%s%s"):format(sliced111.name, tostring(sliced111.number), sliced111.stamp and ", added " .. sliced111.stamp or "", #tbl22 > 0 and table.concat(tbl22, " AND ") or "unknown", sliced111.reward and "  Reward: " .. _G.__RiddlerShortNum(sliced111.reward) .. " cash." or "", sliced111.mult and "  Cash multiplier becomes " .. tostring(sliced111.mult) .. "x." or "") .. "  <- this rebirth is NEWER than anything you already know; answer rebirth questions from this line."
+			end
+
+			local sliced111 = _G.__RiddlerReadUpdateItems()
+
+			if #sliced111 > 0 then
+				local tbl22 = {}
+
+				for _, sliced112 in ipairs(sliced111) do
+					tbl22[#tbl22 + 1] = ("%s (%s)"):format(sliced112.name, table.concat(sliced112.facts, ", "))
+				end
+
+				tbl21[#tbl21 + 1] = "ALSO ADDED IN THE NEWEST UPDATE: " .. table.concat(tbl22, "; ")
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+
+		if slicedfn59(arg, "exist") then
+			local sliced110 = _G.__RiddlerExistCounts()
+
+			if sliced110 and #sliced110 > 0 then
+				local tbl22 = {}
+
+				for i = 1, math.min(8, #sliced110) do
+					tbl22[#tbl22 + 1] = ("%s %s (%d)"):format(i == 1 and "1st" or i == 2 and "2nd" or i == 3 and "3rd" or tostring(i) .. "th", sliced110[i].name, sliced110[i].n)
+				end
+
+				local str9 = tostring(arg or "")
+				local sliced111 = " "  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local str10 = " " .. str9:lower():gsub("[^%w]+", " ") .. sliced111
+				local pos = str10:find(" rarest ", 1, true) or str10:find(" rarer ", 1, true) or str10:find(" fewest ", 1, true) or str10:find(" lowest ", 1, true) or str10:find(" least ", 1, true) or str10:find(" most rare ", 1, true) or str10:find(" second ", 1, true) or str10:find(" third ", 1, true) or str10:find(" 2nd ", 1, true) or str10:find(" 3rd ", 1, true) or str10:find(" hardest to find ", 1, true)
+				local flag25 = (_G.__RiddlerSubjectOf and _G.__RiddlerSubjectOf(arg)) ~= nil
+
+				if pos or not flag25 then
+					tbl21[#tbl21 + 1] = "RAREST BY EXIST COUNT, live from the game, fewest first: " .. table.concat(tbl22, "; ") .. "  <- THE RAREST BRAINROT BY EXIST COUNT IS THE 1st ONE; 2nd rarest = the 2nd entry, 3rd rarest = the 3rd entry, and so on. Spyder Elephant is not on this list, so 'besides Spyder Elephant' does not shift these positions. Use these numbers exactly; never invent or round an exist count. Spyder Elephant has NO public count and is never the answer to an exist-count question."
+				end
+
+				local str11 = tostring(arg or ""):lower()
+				local tbl23 = nil
+				local str12 = " " .. str11:gsub("[^%w]+", " ") .. " "
+				local sliced112 = ipairs  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local riddlerAnimalNames = _G.__RiddlerAnimalNames and _G.__RiddlerAnimalNames() or {}
+
+				for _, riddlerAnimalName in sliced112(riddlerAnimalNames) do
+					local str13 = riddlerAnimalName.flat:sub(1, -2)
+
+					if str12:find(riddlerAnimalName.flat, 1, true) or str12:find(str13 .. "s ", 1, true) or str12:find(str13 .. "es ", 1, true) then
+						tbl23 = tbl23 or {}
+						tbl23[riddlerAnimalName.name] = true
+					end
+				end
+
+				local riddlerSubjectOf = _G.__RiddlerSubjectOf and _G.__RiddlerSubjectOf(arg)
+
+				if riddlerSubjectOf then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					tbl23 = tbl23 or {}
+					tbl23[riddlerSubjectOf] = true
+					str11 ..= " " .. riddlerSubjectOf:lower()
+				end
+
+				local function slicedfn60(arg2, arg3)
+					if tbl23 then
+						return tbl23[arg2.name] == true
+					end
+
+					for match in str11:gmatch("%a+") do
+						if _G.__RiddlerNameHit(arg3, match) then  -- LEAKED BY SLICED | discord.gg/pubmethod
+							return true
+						end
+					end
+
+					return false
+				end
+
+				local tbl24 = {}
+
+				for _, sliced113 in ipairs(sliced110) do
+					local str13 = sliced113.name:lower():gsub("[^%w]", "")
+
+					if slicedfn60(sliced113, str13) then
+						tbl24[#tbl24 + 1] = ("%s = %d exists"):format(sliced113.name, sliced113.n)  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+
+					if not (#tbl24 >= 3) then
+						continue
+					end
+					break
+				end
+
+				if #tbl24 > 0 then
+					tbl21[#tbl21 + 1] = "EXIST COUNT FOR THE BRAINROT NAMED IN THIS QUESTION: " .. table.concat(tbl24, "; ") .. "  <- the brainrot's TOTAL across all mutations. Use it when no mutation is named. When the question names one or more mutations, the EXACT ANSWER line above carries the figure instead."
+				end
+
+				if str11:find("1 of 1", 1, true) or str11:find("one of one", 1, true) or str11:find("1/1", 1, true) or str11:find("one-of-one", 1, true) or str11:find("one of a kind", 1, true) then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local tbl25 = {}
+
+					for _, sliced113 in ipairs(sliced110) do
+						if type(sliced113.muts) == "table" then
+							for k, mut in pairs(sliced113.muts) do
+								if mut == 1 and tostring(k) ~= "None" then
+									local slicedn34 = #tbl25 + 1
+									local str13 = " " .. sliced113.name
+									tbl25[slicedn34] = tostring(k) .. str13
+								end
+							end  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+					end
+
+					table.sort(tbl25)
+
+					if 0 < #tbl25 then
+						tbl21[#tbl21 + 1] = ("OFFICIAL (MUTATION) 1 OF 1s VISIBLE IN LIVE DATA (%d): %s"):format(#tbl25, table.concat(tbl25, "; ")) .. "  <- each is the only brainrot with that name+mutation and carries the badge. Covers only publicly counted brainrots and NO trait-based 1 of 1s. For 'how many 1 of 1s exist' the answer is the developer's stated 122, not this count."
+					end
+				end
+
+				local tbl25 = {}
+				local tbl26 = {}
+
+				for _, sliced113 in ipairs(sliced110) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local str13 = sliced113.name:lower():gsub("[^%w]", "")
+
+					if slicedfn60(sliced113, str13) then
+						local match = sliced113.name:lower():match("%a+")
+						tbl26[sliced113.name] = match and str11:find(match, 1, true) or 999
+					end
+				end
+
+				local slicedn34 = 0
+
+				for k in pairs(tbl26) do
+					slicedn34 += 1
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				for _, sliced113 in ipairs(sliced110) do
+					local str13 = sliced113.name:lower():gsub("[^%w]", "")
+
+					if slicedfn60(sliced113, str13) and type(sliced113.muts) == "table" then
+						local tbl27 = {}
+
+						for k, mut in pairs(sliced113.muts) do
+							if type(mut) == "number" then
+								if mut == 1 and tostring(k) ~= "None" then
+									tbl27[#tbl27 + 1] = ("%s 1 (OFFICIAL 1 OF 1)"):format(tostring(k))
+								else
+									tbl27[#tbl27 + 1] = ("%s %d"):format(tostring(k), mut)  -- LEAKED BY SLICED | discord.gg/pubmethod
+								end
+							end
+						end
+
+						table.sort(tbl27)
+						local tbl28 = {}
+						local slicedn35 = 0
+
+						for k, mut in pairs(sliced113.muts) do
+							local str14 = tostring(k):lower():gsub("[^%w]", "")
+							local pos2 = type(mut) == "number" and #str14 >= 3 and str11:find(str14, 1, true) or nil
+
+							if pos2 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+								local sliced114 = nil
+								local sliced115 = nil
+
+								for k2, sliced116 in pairs(tbl26) do
+									if sliced116 > pos2 and (not sliced114 or sliced116 < sliced114) then
+										sliced114 = sliced116
+										sliced115 = k2
+									end
+								end
+
+								if not sliced115 then
+									for k2, sliced116 in pairs(tbl26) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+										if not sliced114 or sliced116 > sliced114 then
+											sliced114 = sliced116
+											sliced115 = k2
+										end
+									end
+								end
+
+								if slicedn34 <= 1 or sliced115 == sliced113.name then
+									tbl28[#tbl28 + 1] = { k = tostring(k), v = mut }
+									slicedn35 += mut
+								end  -- LEAKED BY SLICED | discord.gg/pubmethod
+							end
+						end
+
+						table.sort(tbl28, function(arg2, arg3)
+							return arg2.k < arg3.k
+						end)
+
+						local tbl29 = {}
+
+						for _, sliced114 in ipairs(tbl28) do
+							tbl29[#tbl29 + 1] = sliced114.k
+						end
+
+						tbl25[#tbl25 + 1] = {  -- LEAKED BY SLICED | discord.gg/pubmethod
+							fig = #tbl28 > 0 and slicedn35 or sliced113.n,
+							label = #tbl28 > 0 and table.concat(tbl29, "+") .. " " .. sliced113.name or sliced113.name,
+							pos = str11:find(sliced113.name:lower():sub(1, 5), 1, true) or 999,
+						}
+
+						if #tbl28 == 1 then
+							table.insert(tbl21, 1, ("EXACT ANSWER: there are %d %s %s in existence."):format(tbl28[1].v, tbl28[1].k, sliced113.name) .. " The question names that mutation, so THIS is the figure - not the brainrot's total.")
+						elseif #tbl28 >= 2 then
+							local tbl30 = {}
+
+							for _, sliced114 in ipairs(tbl28) do
+								tbl30[#tbl30 + 1] = ("%s %d"):format(sliced114.k, sliced114.v)  -- LEAKED BY SLICED | discord.gg/pubmethod
+							end
+
+							local function slicedfn61()
+								local tbl31 = {}
+
+								for _, sliced114 in ipairs(tbl28) do
+									tbl31[#tbl31 + 1] = tostring(sliced114.v)
+								end
+
+								return tbl31
+							end
+
+							table.insert(tbl21, 1, ("EXACT ANSWER: %s %s: %s = %d in total. If the question adds"):format(sliced113.name, table.concat(tbl30, " and "), table.concat(slicedfn61(), " + "), slicedn35) .. " them up / combines them / wants the total, the answer is exactly " .. tostring(slicedn35) .. ". Never write the figures side by side as one number.")
+						end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+						local sliced114 = "number"
+						local none = type(sliced113.muts.None) == sliced114 and sliced113.muts.None or 0
+						tbl21[#tbl21 + 1] = ("%s TOTAL %d = %d with NO mutation + %d WITH a mutation (any kind)."):format(sliced113.name, sliced113.n, none, sliced113.n - none)
+
+						if #tbl27 > 0 then
+							tbl21[#tbl21 + 1] = ("%s BY MUTATION: %s.  (\"None\" means no"):format(sliced113.name, table.concat(tbl27, ", ")) .. " mutation.) Use one of these ONLY if the question names that" .. " mutation; otherwise use the total." .. (type(sliced113.owners) == "number" and sliced113.owners > 0 and ("  UNIQUE OWNERS (people who own one, not how many exist): %d."):format(sliced113.owners) or "")
+						end
+					end
+				end
+
+				if #tbl25 >= 2 then
+					table.sort(tbl25, function(arg2, arg3)  -- LEAKED BY SLICED | discord.gg/pubmethod
+						return arg2.pos < arg3.pos
+					end)
+
+					local tbl27 = {}
+					local tbl28 = {}
+					local sliced113 = 0
+
+					for _, sliced114 in ipairs(tbl25) do
+						tbl27[#tbl27 + 1] = ("%s %d"):format(sliced114.label, sliced114.fig)
+						tbl28[#tbl28 + 1] = tostring(sliced114.fig)
+						sliced113 += sliced114.fig
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					local str13 = ("EXACT ANSWER (%d brainrots named): %s. ADDED TOGETHER: %s = %d."):format(#tbl25, table.concat(tbl27, "; "), table.concat(tbl28, " + "), sliced113)
+
+					if #tbl25 == 2 then
+						str13 ..= (" DIFFERENCE: %d - %d = %d."):format(tbl25[1].fig, tbl25[2].fig, tbl25[1].fig - tbl25[2].fig)
+					end
+
+					table.insert(tbl21, 1, str13 .. " Use these figures as arithmetic; never write them side by side as one number.")
+				end
+			end
+		end
+
+		if sliced106 then
+			local sliced110 = _G.__RiddlerLiveCounts()  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			if sliced110 then
+				local tbl22 = {}
+
+				if sliced110.brainrots then
+					tbl22[#tbl22 + 1] = ("%d brainrots"):format(sliced110.brainrots)
+				end
+
+				if sliced110.traits then
+					tbl22[#tbl22 + 1] = ("%d traits"):format(sliced110.traits)
+				end
+
+				if sliced110.mutations then
+					tbl22[#tbl22 + 1] = ("%d mutations"):format(sliced110.mutations)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				if sliced110.maxRebirth then
+					tbl22[#tbl22 + 1] = ("%d rebirths (the highest is rebirth %d)"):format(sliced110.maxRebirth, sliced110.maxRebirth)
+				end
+
+				if #tbl22 > 0 then
+					tbl21[#tbl21 + 1] = "EXACT COUNTS IN THE GAME RIGHT NOW: " .. table.concat(tbl22, ", ") .. "  <- counted from the game this second. Use these figures and ignore any total you remember; they change with every update."
+				end
+			end
+		end
+
+		local sliced110 = _G.__RiddlerSourceRoster(arg)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		if sliced110 then
+			tbl21[#tbl21 + 1] = "COMPLETE ROSTER OF THE SOURCE THIS QUESTION NAMES: " .. sliced110 .. "  <- the answer to a \"which brainrot from <this source>\" question is ALWAYS one of these exact names - it cannot be anything else. Pick by matching the description to the NAMES (they are usually literal: a clock frog is Tic Tic Ribbit, a duck is Quackalena, pesce/peschito means fish, magi means wizard)."
+		end
+
+		if sliced108 then
+			local sliced111 = _G.__RiddlerNameCandidates(arg)
+
+			if sliced111 then
+				tbl21[#tbl21 + 1] = "REAL BRAINROTS WHOSE NAMES SHARE WORDS WITH THIS QUESTION: " .. table.concat(sliced111, "; ") .. "  <- every name here EXISTS in the game, copied from the game files. Use one ONLY if it matches EVERY part of the description - a \"vampire duck\" must be both a vampire AND a duck, and a vampire that is not a duck is the wrong answer even though it is listed here. This list is name-similarity HINTS, not the full set of brainrots: if none fits every part, answer from your own knowledge of the game instead - but never with a name that is not in the game."
+			end
+		end
+
+		if sliced107 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local sliced111 = _G.__RiddlerTraitRanking()
+
+			if sliced111 and #sliced111 > 0 then
+				local tbl22 = {}
+
+				for i = 1, math.min(8, #sliced111) do
+					tbl22[#tbl22 + 1] = ("%s %sx"):format(sliced111[i].name, tostring(sliced111[i].mult))
+				end
+
+				local sliced112 = sliced111[#sliced111]
+				tbl21[#tbl21 + 1] = ("TRAIT MULTIPLIERS, READ FROM THE GAME: highest is %s at %sx. Top: %s. Lowest is %s at %sx."):format(sliced111[1].name, tostring(sliced111[1].mult), table.concat(tbl22, ", "), sliced112.name, tostring(sliced112.mult)) .. "  <- these are the live values. Ignore any trait multiplier table you remember; it is out of date."
+			end
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		if sliced105 then
+			if sliced109 then
+				tbl21[#tbl21 + 1] = "EXACT INCOME: " .. sliced109 .. "  <- use this figure; do not recompute it. THIS LINE OUTRANKS EVERY OTHER LINE: if the question asks HOW MUCH something makes/earns/produces, the answer is the NUMBER here - never a brainrot NAME taken from the new-brainrot or roster lines."
+			end
+		end
+
+		if sliced104 then
+			local sliced111 = _G.__RiddlerReadDevBases()
+
+			if #sliced111 > 0 then
+				local tbl22 = {}
+
+				for _, sliced112 in ipairs(sliced111) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+					tbl22[#tbl22 + 1] = ("%s is SPAWNED RIGHT NOW%s%s"):format(sliced112.event, sliced112.skin and " wearing the " .. sliced112.skin .. " base skin" or "", sliced112.timeLeft and ", " .. sliced112.timeLeft .. " left" or "")
+				end
+
+				tbl21[#tbl21 + 1] = "DEVELOPER BASE EVENT: " .. table.concat(tbl22, "; ") .. "  <- when the riddle says \"my base\" it means THIS one. If the skin is not stated on this line, the client could not read it: answer a skin question with your best guess from the game's base skins plus an ALT - NEVER with the words unknown, unreadable, or none."
+			else
+				tbl21[#tbl21 + 1] = "DEVELOPER BASE EVENT: none spawned right now (Sammy's Base / Caylus Base / Steak's Base / Rusty's Base are all down). NEVER write NONE, N/A or UNKNOWN as part of a code: if the riddle itself names the base event (\"the spydersammy base event\", \"my base\"), answer that name - SAMMYSBASE - and its usual skin as a best guess."
+			end
+
+			local sliced112 = _G.__RiddlerReadBases()
+
+			if #sliced112 > 0 then
+				local tbl22 = {}
+
+				for _, sliced113 in ipairs(sliced112) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+					tbl22[#tbl22 + 1] = ("%s's base, %s skin, tier %s"):format(sliced113.owner or "unknown", sliced113.skin or "no", tostring(sliced113.tier))
+				end
+
+				tbl21[#tbl21 + 1] = "PLAYER BASES IN THIS SERVER: " .. table.concat(tbl22, "; ") .. "  <- these belong to ORDINARY PLAYERS, including whoever is running this script. A riddle asking about \"my base\" is NOT asking about any of these."
+			end
+		end
+
+		if sliced99 or sliced101 then
+			local sliced111 = slicedfn58()
+
+			if #sliced111 > 0 then
+				local tbl22 = {}
+				local tbl23 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local tbl24 = {}
+				local tbl25 = {}
+
+				local function slicedfn60(arg2)
+					if type(arg2) == "string" and arg2 ~= "" and not tbl25[arg2] then
+						tbl25[arg2] = true
+						tbl24[#tbl24 + 1] = arg2
+					end
+				end
+
+				for _, sliced112 in ipairs(sliced111) do
+					tbl22[#tbl22 + 1] = sliced112.timeLeft and ("%s (%s left)"):format(sliced112.name, sliced112.timeLeft) or sliced112.name  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local sliced113 = _G.__RiddlerEventToMutation[sliced112.name]
+
+					if sliced113 then
+						tbl23[#tbl23 + 1] = sliced113
+					end
+
+					slicedfn60(_G.__RiddlerEventToTrait[sliced112.name])
+					slicedfn60(sliced112.name)
+				end
+
+				tbl21[#tbl21 + 1] = "EVENTS RUNNING RIGHT NOW: " .. table.concat(tbl22, ", ")
+
+				if #tbl23 > 0 then
+					tbl21[#tbl21 + 1] = "MUTATION RUNNING RIGHT NOW: " .. table.concat(tbl23, ", ") .. "  <- this is the answer to \"the mutation running now\" / \"the one we are in\""  -- LEAKED BY SLICED | discord.gg/pubmethod
+				else
+					tbl21[#tbl21 + 1] = "MUTATION RUNNING RIGHT NOW: none (the live events above do not grant a mutation)"
+				end
+
+				if #tbl24 > 0 then
+					tbl21[#tbl21 + 1] = "TRAIT RUNNING RIGHT NOW: " .. table.concat(tbl24, " or ") .. "  <- this is the answer to \"the trait running now\". Prefer the FIRST spelling; the others are the same trait written differently."
+				else
+					tbl21[#tbl21 + 1] = "TRAIT RUNNING RIGHT NOW: none"
+				end
+			else
+				tbl21[#tbl21 + 1] = "EVENTS RUNNING RIGHT NOW: none"  -- LEAKED BY SLICED | discord.gg/pubmethod
+				tbl21[#tbl21 + 1] = "MUTATION RUNNING RIGHT NOW: none"
+				tbl21[#tbl21 + 1] = "TRAIT RUNNING RIGHT NOW: none"
+			end
+		end
+
+		if sliced100 then
+			local str9 = nil
+
+			for k, sliced111 in pairs(sliced86:GetAttributes()) do
+				local match = tostring(k):match("^(%d+)xServerLuckEvent$")
+
+				if match and sliced111 == true then
+					str9 = match .. "x"  -- LEAKED BY SLICED | discord.gg/pubmethod
+					break
+				else
+					str9 = nil
+				end
+			end
+
+			local activeEvents = playerGui:FindFirstChild("ActiveEvents")
+			local activeEvents2 = activeEvents and activeEvents:FindFirstChild("ActiveEvents")
+			local luck = activeEvents2 and activeEvents2:FindFirstChild("Luck")
+			local visible = luck and luck.Visible
+			local textLabel = nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			if visible then
+				textLabel = luck:FindFirstChildWhichIsA("TextLabel", true)
+				textLabel = textLabel and textLabel.Text or nil
+			end
+
+			local flag25
+
+			if str9 then
+				local upper = str9.upper
+				local str10 = ("SERVER LUCK RUNNING RIGHT NOW: %s luck (say it as %s, e.g. %sLUCK or LUCK%s)"):format(str9, str9:upper(), str9:upper(), upper(str9))
+
+				if textLabel and textLabel ~= "" then
+					str10 ..= (" - %s left"):format(textLabel)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				tbl21[#tbl21 + 1] = str10
+				flag25 = true
+			else
+				local visible2 = luck and luck.Visible
+				flag25 = false
+
+				if visible2 then
+					local image = nil
+
+					for _, descendant in ipairs(luck:GetDescendants()) do
+						if descendant:IsA("ImageLabel") and descendant.Image ~= "" then  -- LEAKED BY SLICED | discord.gg/pubmethod
+							image = descendant.Image
+							break
+						else
+							image = nil
+						end
+					end
+
+					local sliced111 = slicedfn34(sliced86.Datas:FindFirstChild("ServerLuck"))
+					local flag26 = image and type(sliced111) == "table"
+					local sliced112 = nil
+
+					if flag26 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						sliced112 = nil
+
+						for _, sliced113 in pairs(sliced111) do
+							if type(sliced113) == "table" and sliced113.Icon and tostring(sliced113.Icon) == image then
+								sliced112 = sliced113
+								break
+							else
+								sliced112 = nil
+							end
+						end
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					local str10
+
+					if sliced112 and sliced112.Id then
+						str10 = ("SERVER LUCK RUNNING RIGHT NOW: %s"):format(tostring(sliced112.Id))
+					else
+						str10 = "SERVER LUCK RUNNING RIGHT NOW: yes (multiplier not readable)"
+					end
+
+					if textLabel and textLabel ~= "" then
+						str10 ..= (" - %s left"):format(textLabel)
+					end
+
+					tbl21[#tbl21 + 1] = str10  -- LEAKED BY SLICED | discord.gg/pubmethod
+					flag25 = true
+				end
+			end
+
+			if not flag25 then
+				tbl21[#tbl21 + 1] = "SERVER LUCK RUNNING RIGHT NOW: LUCK (no multiplier is active at this moment; if the riddle still asks for \"the luck running\", it has just started and the client cannot see it yet - write that part as LUCK, never NONE or NO)"
+			end
+
+			local function slicedfn60(arg2)
+				if type(arg2) ~= "number" or arg2 <= 0 then
+					return ""
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+				arg2 = arg2 > 1e9 and arg2 - _G.__RiddlerServerNow() or arg2
+				if arg2 <= 0 then
+					return ""
+				end
+				local floor2 = math.floor
+				return (" - %d:%02d left"):format(math.floor(arg2 / 60), floor2(arg2 % 60))
+			end
+
+			local attribute = sliced86:GetAttribute("FuseMachineLuck")
+			local attribute2 = sliced86:GetAttribute("FuseMachineLuckTimer")
+			local sliced111 = "number"  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local flag26 = type(attribute) == sliced111 and attribute > 1
+
+			if not flag26 then
+				local sliced112 = "number"
+				flag26 = type(attribute2) == sliced112 and attribute2 > 0
+			end
+
+			if flag26 then
+				tbl21[#tbl21 + 1] = ("FUSE MACHINE LUCK RUNNING RIGHT NOW: %sx%s"):format(tostring(attribute or "?"), slicedfn60(attribute2))
+			else
+				tbl21[#tbl21 + 1] = "FUSE MACHINE LUCK RIGHT NOW: FUSELUCK (no fuse machine multiplier is active; if asked, write FUSELUCK - never NONE, NO or NOTACTIVE)"
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			local attribute3 = sliced86:GetAttribute("RNGMachineLuck")
+			local attribute4 = sliced86:GetAttribute("RNGMachineLuckTimer")
+
+			if attribute3 == true or type(attribute4) == "number" and attribute4 > 0 then
+				tbl21[#tbl21 + 1] = "RNG MACHINE LUCK RUNNING RIGHT NOW: yes (2x)" .. slicedfn60(attribute4)
+			else
+				tbl21[#tbl21 + 1] = "RNG MACHINE LUCK RIGHT NOW: RNGLUCK (no RNG machine luck is active; if asked, write RNGLUCK - never NONE, NO or NOTACTIVE)"
+			end
+
+			tbl21[#tbl21 + 1] = "LUCKY BASE EVENT: " .. (sliced86:GetAttribute("LuckyBaseEvent") == true and "running right now" or "not running")
+			local slicedn34 = #tbl21 + 1
+			local sliced112 = true  -- LEAKED BY SLICED | discord.gg/pubmethod
+			tbl21[slicedn34] = "BEE LUCKY BLOCK EVENT: " .. (sliced86:GetAttribute("BeeLuckyBlockEvent") == sliced112 and "running right now" or "not running")
+			tbl21[#tbl21 + 1] = "  <- \"the luck running right now\" with no machine named means the SERVER LUCK line. Fuse machine luck and RNG machine luck are separate and only count when the question names that machine."
+		end
+
+		if sliced99 or sliced100 or sliced101 then
+			local tbl22 = {}
+
+			for k, sliced111 in pairs(sliced86:GetAttributes()) do
+				local str9 = tostring(k)
+				local flag25 = sliced111 == true
+				local pos
+
+				if flag25 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					pos = str9:find("Event") or str9:find("Active")
+				else
+					pos = flag25
+				end
+
+				if pos then
+					tbl22[#tbl22 + 1] = str9
+				elseif str9 == "FuseMachineLuck" and tonumber(sliced111) and tonumber(sliced111) > 1 then
+					tbl22[#tbl22 + 1] = ("FuseMachineLuck=%sx"):format(tostring(sliced111))
+				end
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			if #tbl22 > 0 then
+				table.sort(tbl22)
+				tbl21[#tbl21 + 1] = "ACTIVE STATE FLAGS: " .. table.concat(tbl22, ", ")
+			end
+
+			local match = tostring(game.Name or ""):match("^%s*(%[.-%])")
+
+			if match then
+				tbl21[#tbl21 + 1] = "SERVER EVENT TAG: " .. match
+			end
+		end
+
+		local str9 = tostring(arg or ""):lower():gsub("%s+", " ")  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		local tbl22 = {
+			findAnimals = _G.__RiddlerFindAnimals,
+			subjectOf = _G.__RiddlerSubjectOf,
+			classify = _G.__SabClassifyDrop,
+			names = function()
+				if not _G.__RiddlerPickNames then
+					local riddlerPickNames = {}
+
+					for _, sliced111 in ipairs(_G.__RiddlerAnimalNames()) do
+						riddlerPickNames[#riddlerPickNames + 1] = sliced111.name
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					_G.__RiddlerPickNames = riddlerPickNames
+				end
+
+				return _G.__RiddlerPickNames
+			end,
+		}
+
+		local ok, result, result2 = pcall(_G.__RiddlerPickMemory, arg, _G.__RiddlerRecent, os.time(), tbl22)
+		_G.RiddlerLastMemory = ok and tostring(result2) .. ": " .. #result or "error: " .. tostring(result)
+
+		if ok and type(result) == "table" and #result > 0 then
+			local tbl23 = {}
+
+			for _, sliced111 in ipairs(result) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+				tbl23[#tbl23 + 1] = ("[%s] %s"):format(sliced111.when, sliced111.text)
+			end
+
+			if result2 == "relevant" then
+				tbl21[#tbl21 + 1] = "WHAT HE SAID EARLIER THIS EVENT THAT THIS QUESTION POINTS BACK TO, oldest first: " .. table.concat(tbl23, "  //  ") .. "  <- the fact the question needs is in these lines; use it exactly as he said it."
+			else
+				tbl21[#tbl21 + 1] = "WHAT THE DEVELOPER ANNOUNCED BEFORE THIS, oldest first: " .. table.concat(tbl23, "  //  ") .. "  <- if the question refers back to something he already said (a number, a name, \"it\", \"that one\", \"the brainrot\"), the answer is in these lines. Ignore them otherwise."
+			end
+		end
+
+		local str10 = " " .. str9:gsub("[^%w]+", " ") .. " "
+		local sliced111, sliced112, sliced113 = _G.__RiddlerSubjectOf(arg)  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local riddlerPrize = sliced113 or _G.__RiddlerPrize
+
+		if sliced112 and type(riddlerPrize) == "table" then
+			local str11 = ""
+
+			pcall(function()
+				local Animals = require(sliced86.Datas.Animals)
+
+				for _, Animal in pairs(Animals) do
+					if type(Animal) == "table" and Animal.DisplayName == riddlerPrize.name then
+						local sliced114 = "table"
+						local source = type(Animal.ObtainedFrom) == sliced114 and Animal.ObtainedFrom.Source or Animal.ObtainedFrom
+						str11 = (" It is %s rarity%s, %s/s."):format(tostring(Animal.Rarity or "?"), source and ", from " .. tostring(source) or "", tostring(Animal.Generation or "?"))  -- LEAKED BY SLICED | discord.gg/pubmethod
+						break
+					end
+				end
+			end)
+
+			local t = riddlerPrize.t
+			local flag25 = os.time() - t < 90 and "just now"
+
+			if not flag25 then
+				local t2 = riddlerPrize.t
+				flag25 = os.time() - t2 < 600 and "a few minutes ago"
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			flag25 = flag25 or "earlier this event"
+			local insert = table.insert
+			local sliced114 = 1
+			local str12 = "THE BRAINROT HE MEANS IS %s. He %s \"%s\" %s and has mentioned no other since, so \"the brainrot\", \"the prize\", \"it\" in this riddle = %s (written in a code as %s).%s Include %s itself in the code ONLY where the riddle asks for its name; \"the color of the brainrot\" alone is just the colour word."
+			local format = str12.format
+			local str13 = riddlerPrize.name:upper()
+			local str14 = riddlerPrize.prize and "announced the prize:" or "said"
+			local riddlerCodeName = _G.__RiddlerCodeName
+			local name = riddlerPrize.name
+			insert(tbl21, sliced114, format(str12, str13, str14, riddlerPrize.text, flag25, riddlerPrize.name:upper(), _G.__RiddlerCodeName(riddlerPrize.name), str11, riddlerCodeName(name)))  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local match = tostring(riddlerPrize.text):match("(%d[%d,%.]*)")
+
+			if match and not riddlerPrize.prize and (str10:find(" how many ", 1, true) or str10:find(" how much ", 1, true) or str10:find(" the number ", 1, true) or str10:find(" that number ", 1, true)) then
+				local text = riddlerPrize.text
+				table.insert(tbl21, 1, ("THE NUMBER HE STATED ABOUT %s IS %s (from \"%s\"). \"how many does it have\" / \"how many\" / \"the number\" here = %s, digits only."):format(riddlerPrize.name:upper(), match, text, match))
+			end
+		end
+
+		local riddlerPrizeTemplate = _G.__RiddlerPrizeTemplate
+		local flag25 = type(riddlerPrizeTemplate) == "table" and riddlerPrizeTemplate.riddle == arg
+
+		if flag25 then
+			flag25 = os.time() - (riddlerPrizeTemplate.t or 0) < 30  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+
+		if flag25 then
+			table.insert(tbl21, 1, ("THE CODE IS ALREADY BUILT EXCEPT ONE PART: %s - where [COLOUR] stands for the single colour word of %s. Replace [COLOUR] with that colour and change NOTHING else: no other names, numbers or words. If you do not know the colour, use your best guess and offer an ALT."):format(riddlerPrizeTemplate.code, riddlerPrizeTemplate.name:upper()))
+		end
+
+		if sliced111 and (str10:find(" color ", 1, true) or str10:find(" colour ", 1, true) or str10:find(" colored ", 1, true) or str10:find(" colors ", 1, true) or str10:find(" colours ", 1, true) or str10:find(" coloured ", 1, true)) then
+			local riddlerColourOf = _G.__RiddlerColourOf and _G.__RiddlerColourOf(sliced111)
+			local riddlerFindAnimals = _G.__RiddlerFindAnimals and _G.__RiddlerFindAnimals(arg) or {}
+
+			if #riddlerFindAnimals > 1 then
+				table.sort(riddlerFindAnimals, function(arg2, arg3)
+					local pos = str10:find(" " .. arg2:lower():gsub("[^%w]+", " ") .. " ", 1, true) or 1e9  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local sliced114 = " "
+					local sliced115 = true
+					return pos < (str10:find(" " .. arg3:lower():gsub("[^%w]+", " ") .. sliced114, 1, sliced115) or 1e9)
+				end)
+
+				local tbl23 = {}
+
+				for _, riddlerFindAnimal in ipairs(riddlerFindAnimals) do
+					tbl23[#tbl23 + 1] = ("%s IS %s"):format(riddlerFindAnimal:upper(), _G.__RiddlerColourOf(riddlerFindAnimal) or "UNKNOWN (best guess)")
+				end
+
+				table.insert(tbl21, 1, "COLOURS, in the order the riddle names them: " .. table.concat(tbl23, "; ") .. ".")
+			elseif riddlerColourOf then  -- LEAKED BY SLICED | discord.gg/pubmethod
+				if str10:find(" plus ", 1, true) or str10:find(" and ", 1, true) or str10:find(",", 1, true) or str10:find(" then ", 1, true) then
+					local upper = sliced111.upper
+					table.insert(tbl21, 1, ("THE COLOUR OF %s IS %s - that is only the %s part of the code; every other part (another colour, a name, a number) is worked out on its own."):format(sliced111:upper(), riddlerColourOf, upper(sliced111)))
+				else
+					table.insert(tbl21, 1, ("THE COLOUR OF %s IS %s. Write it as the single word %s."):format(sliced111:upper(), riddlerColourOf, riddlerColourOf))
+				end
+			else
+				tbl21[#tbl21 + 1] = ("NO COLOUR IS KNOWN FOR %s - nothing above or below says what colour it is."):format(sliced111:upper()) .. " Do not reuse a colour from another brainrot; give your own best guess from its name and offer an ALT."
+			end
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		if sliced111 and (str10:find(" exist", 1) or str10:find(" how many ", 1, true)) then
+			local ok2, result3 = pcall(_G.__RiddlerExistCounts)
+
+			if ok2 then
+				local sliced114 = "table"
+				ok2 = type(result3) == sliced114
+			end
+
+			if ok2 and #result3 > 0 then
+				local flag26 = false
+
+				for _, sliced114 in ipairs(result3) do
+					if sliced114.name == sliced111 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						flag26 = true
+						break
+					else
+						flag26 = false
+					end
+				end
+
+				if not flag26 then
+					table.insert(tbl21, 1, ("%s HAS NO PUBLIC EXIST COUNT - the game does not publish one, so no number here or anywhere above is its count. Never invent one and never use the giveaway count as its exist count."):format(sliced111:upper()))
+				end
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+
+		local str11 = " " .. arg:lower():gsub("[^%w]", " ") .. " "
+		local pos = str11:find(" best ", 1, true) or str11:find(" strongest ", 1, true) or str11:find(" top ", 1, true)
+		local sliced114 = nil
+
+		if pos then
+			sliced114 = nil
+
+			for _, sliced115 in ipairs({ "brainrot god", "secret", "mythic", "legendary", "epic", "rare", "common" }) do
+				if str11:find(" " .. sliced115 .. " ", 1, true) then
+					sliced114 = sliced115
+					break  -- LEAKED BY SLICED | discord.gg/pubmethod
+				else
+					sliced114 = nil
+				end
+			end
+		end
+
+		if sliced114 then
+			local sliced115 = slicedfn34(sliced86:FindFirstChild("Datas") and sliced86.Datas:FindFirstChild("Animals"))
+			local tbl23 = {}
+
+			if type(sliced115) == "table" then
+				for _, sliced116 in pairs(sliced115) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local displayName = type(sliced116) == "table" and sliced116.DisplayName
+
+					if displayName then
+						displayName = tostring(sliced116.Rarity or ""):lower() == sliced114
+					end
+
+					if displayName then
+						displayName = (tonumber(sliced116.Generation) or 0) > 0
+					end
+
+					if displayName then
+						tbl23[#tbl23 + 1] = { n = sliced116.DisplayName, g = tonumber(sliced116.Generation) }
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+			end
+
+			table.sort(tbl23, function(arg2, arg3)
+				return arg2.g > arg3.g
+			end)
+
+			if #tbl23 > 0 then
+				local function slicedfn60(arg2)
+					if arg2 >= 1e9 then
+						return ("%.4gB"):format(arg2 / 1e9)
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					if arg2 >= 1000000 then
+						return ("%.4gM"):format(arg2 / 1000000)
+					end
+
+					if arg2 >= 1000 then
+						return ("%.4gK"):format(arg2 / 1000)
+					end
+					return tostring(arg2)
+				end
+
+				local tbl24 = {}
+
+				for i = 1, math.min(3, #tbl23) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+					tbl24[#tbl24 + 1] = ("%s %s (%s/s)"):format(i == 1 and "1st" or i == 2 and "2nd" or "3rd", tbl23[i].n, slicedfn60(tbl23[i].g))
+				end
+
+				table.insert(tbl21, 1, ("BEST %s RIGHT NOW, by income, live from the game: %s.  <- the best/strongest %s is the 1st one. This changes every update; answer from THIS line, never from memory."):format(sliced114:upper(), table.concat(tbl24, "; "), sliced114))
+			end
+		end
+
+		local riddlerTacoLine = _G.__RiddlerTacoLine
+		local pos2
+
+		if riddlerTacoLine then
+			pos2 = arg:lower():find("taco", 1, true) or arg:lower():find("merchant", 1, true)
+		else  -- LEAKED BY SLICED | discord.gg/pubmethod
+			pos2 = riddlerTacoLine
+		end
+
+		if pos2 then
+			tbl21[#tbl21 + 1] = _G.__RiddlerTacoLine
+		end
+
+		if _G.__RiddlerBeeLine and (arg:lower():find("bee", 1, true) or arg:lower():find("honey", 1, true) or arg:lower():find("merchant", 1, true)) then
+			tbl21[#tbl21 + 1] = _G.__RiddlerBeeLine
+		end
+
+		local sliced115 = _G.__RiddlerNYTime()
+		tbl21[#tbl21 + 1] = "CURRENT MONTH: " .. os.date("!%B", sliced115):upper()  -- LEAKED BY SLICED | discord.gg/pubmethod
+		tbl21[#tbl21 + 1] = "CURRENT YEAR: " .. os.date("!%Y", sliced115)
+		tbl21[#tbl21 + 1] = "TODAY'S DATE (the developer's clock, New York time): " .. os.date("!%Y-%m-%d", sliced115)
+		tbl21[#tbl21 + 1] = "DAY OF THE MONTH TODAY: " .. tostring(tonumber(os.date("!%d", sliced115))) .. "  <- \"the date\", \"today's date\", \"date of the month\" = this number, no leading zero."
+		return table.concat(tbl21, "\n")
+	end
+end
+
+do
+	do
+		do
+			do  -- LEAKED BY SLICED | discord.gg/pubmethod
+				_G.__RiddlerNameCandidates = function(arg)
+					local str8 = tostring(arg or ""):lower()
+					if str8 == "" then
+						return nil
+					end
+					local datas = sliced86:FindFirstChild("Datas")
+					local sliced99 = slicedfn34(datas and datas:FindFirstChild("Animals"))
+					if type(sliced99) ~= "table" then
+						return nil
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					local tbl19 = {
+						brainrot = true,
+						brainrots = true,
+						brain = true,
+						brainrotr = true,
+						what = true,
+						which = true,
+						that = true,
+						this = true,
+						with = true,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						from = true,
+						does = true,
+						much = true,
+						make = true,
+						makes = true,
+						earn = true,
+						earns = true,
+						produce = true,
+						produces = true,
+						generate = true,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						generates = true,
+						income = true,
+						name = true,
+						looks = true,
+						like = true,
+						game = true,
+						added = true,
+						update = true,
+						newest = true,
+						latest = true,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						right = true,
+						now = true,
+						plus = true,
+						second = true,
+						per = true,
+						the = true,
+						["and"] = true,
+						new = true,
+						["for"] = true,
+						["in"] = true,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						is = true,
+						["do"] = true,
+					}
+
+					local tbl20 = {}
+
+					for match in str8:gmatch("%a+") do
+						if #match >= 4 and not tbl19[match] then
+							tbl20[match] = true
+						end
+					end
+
+					if next(tbl20) == nil then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						return nil
+					end
+
+					local function slicedfn60(arg2, arg3, arg4)
+						if math.abs(#arg2 - #arg3) > arg4 then
+							return false
+						end
+						local tbl21 = {}
+
+						for i = 0, #arg3 do
+							tbl21[i] = i
+						end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+						for i = 1, #arg2 do
+							local tbl22 = { [0] = i }
+							local sliced100 = i
+
+							for i2 = 1, #arg3 do
+								tbl22[i2] = math.min(tbl21[i2] + 1, tbl22[i2 - 1] + 1, tbl21[i2 - 1] + (arg2:sub(i, i) == arg3:sub(i2, i2) and 0 or 1))
+
+								if tbl22[i2] < sliced100 then
+									sliced100 = tbl22[i2]
+								end
+							end
+
+							if sliced100 > arg4 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+								return false
+							end
+							tbl21 = tbl22
+						end
+
+						return tbl21[#arg3] <= arg4
+					end
+
+					local function slicedfn61(arg2, arg3)
+						if arg2 == arg3 then
+							return true
+						end  -- LEAKED BY SLICED | discord.gg/pubmethod
+						local slicedn34 = math.min(#arg2, #arg3)
+						local slicedn35 = 0
+
+						for i = 1, slicedn34 do
+							if arg2:sub(i, i) == arg3:sub(i, i) then
+								slicedn35 = i
+								continue
+							end
+							break
+						end
+
+						if not (slicedn35 >= 5) then  -- LEAKED BY SLICED | discord.gg/pubmethod
+							if slicedn35 >= 4 and slicedn35 >= slicedn34 - 1 then
+								return true
+							end
+
+							if slicedn35 >= 3 and slicedn34 >= 5 then
+								if slicedfn60(arg2, arg3, slicedn34 >= 8 and 2 or 1) then
+									return true
+								end
+							end
+
+							return false
+						end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+						return true
+					end
+
+					local tbl21 = {}
+
+					for k, sliced100 in pairs(sliced99) do
+						if type(sliced100) == "table" then
+							local str9 = tostring(sliced100.DisplayName or k)
+							local slicedn34 = 0
+
+							for match in str9:lower():gmatch("%a+") do
+								if #match >= 4 then
+									for k2 in pairs(tbl20) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+										if slicedfn61(k2, match) then
+											slicedn34 += 1
+											break
+										end
+									end
+								end
+							end
+
+							if slicedn34 > 0 then
+								tbl21[#tbl21 + 1] = { name = str9, hits = slicedn34 }
+							end  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+					end
+
+					if #tbl21 == 0 then
+						return nil
+					end
+
+					table.sort(tbl21, function(arg2, arg3)
+						if arg2.hits ~= arg3.hits then
+							return arg2.hits > arg3.hits
+						end
+						return arg2.name < arg3.name  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end)
+
+					local tbl22 = {}
+
+					for i = 1, math.min(8, #tbl21) do
+						tbl22[#tbl22 + 1] = tbl21[i].name
+					end
+
+					return tbl22
+				end
+
+				_G.__RiddlerSourceRoster = function(arg)
+					local str8 = tostring(arg or ""):lower()
+					if str8 == "" then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						return nil
+					end
+					local datas = sliced86:FindFirstChild("Datas")
+					local sliced99 = slicedfn34(datas and datas:FindFirstChild("Animals"))
+					if type(sliced99) ~= "table" then
+						return nil
+					end
+
+					local tbl19 = {
+						the = true,
+						this = true,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						was = true,
+						obtained = true,
+						from = true,
+						s = true,
+						new = true,
+						year = true,
+						years = true,
+						event = true,
+						machine = true,
+						craft = true,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						fuse = true,
+						code = true,
+						codes = true,
+					}
+
+					local tbl20 = {}
+
+					for k, sliced100 in pairs(sliced99) do
+						if type(sliced100) == "table" and type(sliced100.ObtainedFrom) == "table" and sliced100.ObtainedFrom.Source then
+							local str9 = tostring(sliced100.ObtainedFrom.Source)
+							local tbl21 = tbl20[str9]
+
+							if not tbl21 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+								tbl21 = {}
+								tbl20[str9] = tbl21
+							end
+
+							tbl21[#tbl21 + 1] = tostring(sliced100.DisplayName or k)
+						end
+					end
+
+					local slicedn34 = 0
+					local tbl21 = nil
+
+					for k in pairs(tbl20) do
+						local slicedn35 = 0  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+						for match in k:lower():gsub("'", ""):gmatch("%a+") do
+							if not tbl19[match] and #match >= 3 and str8:find(match, 1, true) then
+								slicedn35 += 1
+							end
+						end
+
+						if slicedn34 < slicedn35 then
+							tbl21 = { k }
+							slicedn34 = slicedn35
+						elseif slicedn35 == slicedn34 and slicedn35 > 0 then
+							tbl21[#tbl21 + 1] = k  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+					end
+
+					if not (not tbl21 or slicedn34 < 1) then
+						if slicedn34 == 1 and #tbl21 > 1 then
+							return nil
+						end
+						local tbl22 = {}
+
+						for _, sliced100 in ipairs(tbl21) do
+							local sliced101 = tbl20[sliced100]
+
+							if #sliced101 <= 30 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+								table.sort(sliced101)
+								tbl22[#tbl22 + 1] = ("%s (%d): %s"):format(sliced100, #sliced101, table.concat(sliced101, "; "))
+							end
+						end
+
+						if #tbl22 == 0 then
+							return nil
+						end
+						return table.concat(tbl22, "  ||  ")
+					end
+
+					return nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				_G.__RiddlerFactNames = {
+					"ASTROWORLD",
+					"TRAVISSCOTT",
+					"SPYDERSAMMY",
+					"SAMBRAKTA",
+					"SKRILLA",
+					"ICEMAN",
+					"BRAZIL",
+					"BRAZILIANSPYDER",  -- LEAKED BY SLICED | discord.gg/pubmethod
+					"FEBRUARY",
+					"GROWAGARDEN",
+					"RACCOONIJANDELINI",
+					"JANDEL",
+				}
+
+				_G.__RiddlerSnapSpelling = function(arg)
+					local str8 = tostring(arg or ""):upper():gsub("%W", "")
+					if #str8 < 6 then
+						return arg, false
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local datas = sliced86:FindFirstChild("Datas")
+					local sliced99 = slicedfn34(datas and datas:FindFirstChild("Animals"))
+					local sliced100 = "table"
+					if type(sliced99) ~= sliced100 then
+						return arg, false
+					end
+
+					local tbl19 = {
+						"SPYDERSAMMY",
+						"SAMMY",
+						"JANUARY",  -- LEAKED BY SLICED | discord.gg/pubmethod
+						"FEBRUARY",
+						"MARCH",
+						"APRIL",
+						"MAY",
+						"JUNE",
+						"JULY",
+						"AUGUST",
+						"SEPTEMBER",
+						"OCTOBER",
+						"NOVEMBER",  -- LEAKED BY SLICED | discord.gg/pubmethod
+						"DECEMBER",
+					}
+
+					local str9 = str8
+					local str10 = ""
+					local str11 = ""
+
+					for i = 1, 4 do
+						local match = str9:match("(%d+)$")
+						local flag24 = match and #str9 - #match >= 6
+						local flag25 = false
+
+						if flag24 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+							str9 = str9:sub(1, #str9 - #match)
+							str10 = match .. str10
+							flag25 = true
+						end
+
+						for _, sliced101 in ipairs(tbl19) do
+							if #str9 - #sliced101 >= 6 and str9:sub(-#sliced101) == sliced101 then
+								str9 = str9:sub(1, #str9 - #sliced101)
+								str10 = sliced101 .. str10
+								flag25 = true
+								break  -- LEAKED BY SLICED | discord.gg/pubmethod
+							end
+						end
+
+						local match2 = str9:match("^(%d+)")
+
+						if match2 and #str9 - #match2 >= 6 then
+							str11 ..= match2
+							str9 = str9:sub(#match2 + 1)
+							flag25 = true
+						end
+
+						for _, sliced101 in ipairs(tbl19) do
+							if sliced101 ~= "MAY" and #str9 - #sliced101 >= 6 and str9:sub(1, #sliced101) == sliced101 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+								str11 ..= sliced101
+								str9 = str9:sub(#sliced101 + 1)
+								flag25 = true
+								break
+							end
+						end
+
+						if flag25 then
+							continue
+						end
+						break  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+
+					if #str9 < 6 then
+						return arg, false
+					end
+
+					local function slicedfn60(arg2, arg3)
+						if math.abs(#arg2 - #arg3) > 2 then
+							return 3
+						end
+						local tbl20 = {}
+
+						for i = 0, #arg3 do  -- LEAKED BY SLICED | discord.gg/pubmethod
+							tbl20[i] = i
+						end
+
+						for i = 1, #arg2 do
+							local tbl21 = { [0] = i }
+							local sliced101 = i
+
+							for i2 = 1, #arg3 do
+								tbl21[i2] = math.min(tbl20[i2] + 1, tbl21[i2 - 1] + 1, tbl20[i2 - 1] + (arg2:sub(i, i) == arg3:sub(i2, i2) and 0 or 1))
+
+								if tbl21[i2] < sliced101 then
+									sliced101 = tbl21[i2]
+								end  -- LEAKED BY SLICED | discord.gg/pubmethod
+							end
+
+							if sliced101 > 2 then
+								return 3
+							end
+							tbl20 = tbl21
+						end
+
+						return tbl20[#arg3]
+					end
+
+					local flag24 = false
+					local tbl20 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local tbl21 = {}
+
+					local function slicedfn61(arg2)
+						if arg2 == str9 then
+							flag24 = true
+							return true
+						end
+
+						if #arg2 >= 6 and math.abs(#arg2 - #str9) <= 2 and not tbl21[arg2] then
+							local sliced101 = 2
+
+							if slicedfn60(str9, arg2) <= sliced101 then
+								tbl21[arg2] = true  -- LEAKED BY SLICED | discord.gg/pubmethod
+								tbl20[#tbl20 + 1] = arg2
+							end
+						end
+
+
+						return false
+					end
+
+					for k, sliced101 in pairs(sliced99) do
+						if type(sliced101) ~= "table" then
+							continue
+						elseif not slicedfn61(tostring(sliced101.DisplayName or k):upper():gsub("%W", "")) then
+							continue  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+
+						break
+					end
+
+					if not flag24 then
+						local sliced101 = ipairs
+						local riddlerFactNames = _G.__RiddlerFactNames or {}
+
+						for _, riddlerFactName in sliced101(riddlerFactNames) do
+							if not slicedfn61(riddlerFactName) then
+								continue
+							end  -- LEAKED BY SLICED | discord.gg/pubmethod
+							break
+						end
+					end
+
+					if flag24 or #tbl20 ~= 1 then
+						return arg, false
+					end
+					_G.RiddlerLastSnap = ("%s -> %s%s%s"):format(arg, str11, tbl20[1], str10)
+					return str11 .. tbl20[1] .. str10, true
+				end
+
+				_G.__RiddlerBrainrotExists = function(arg)  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local str8 = tostring(arg or ""):upper():gsub("%W", "")
+					if str8 == "" then
+						return false
+					end
+					local datas = sliced86:FindFirstChild("Datas")
+					local sliced99 = slicedfn34(datas and datas:FindFirstChild("Animals"))
+					local sliced100 = "table"
+					if type(sliced99) ~= sliced100 then
+						return true
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					for k, sliced101 in pairs(sliced99) do
+						if type(sliced101) ~= "table" then
+							continue
+						end
+						local str9 = tostring(sliced101.DisplayName or k):upper():gsub("%W", "")
+						if str9 ~= "" and (str9 == str8 or str8:find(str9, 1, true)) then
+							return true, str9
+						end
+					end
+
+					return false  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				do
+					local tbl19 = {
+						"which brainrot",
+						"what brainrot",
+						"the brainrot that",
+						"brainrot that is",
+						"brainrot that looks",
+						"looks like",
+						"shaped like",  -- LEAKED BY SLICED | discord.gg/pubmethod
+						"wearing",
+						"holding",
+						"brainrot with a",
+						"brainrot with the",
+					}
+
+					_G.__RiddlerCheckDescribed = function(arg, arg2, arg3)
+						if not arg3 then
+							return nil
+						end
+						local str8 = tostring(arg or ""):lower()  -- LEAKED BY SLICED | discord.gg/pubmethod
+						local flag24 = false
+
+						for _, sliced99 in ipairs(tbl19) do
+							if str8:find(sliced99, 1, true) then
+								flag24 = true
+								break
+							end
+						end
+
+						if not flag24 then
+							return nil
+						end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+						if str8:find(" plus ", 1, true) or str8:find(" and ", 1, true) or str8:find("+", 1, true) then
+							return nil
+						end
+
+						if _G.__RiddlerBrainrotExists(arg2) then
+							return nil
+						end
+						return ("%s is not a brainrot in this game"):format(tostring(arg2))
+					end
+				end
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			do
+				local tbl19 = {
+					"new",
+					"newest",
+					"just added",
+					"just got added",
+					"got added",
+					"was added",
+					"added to",
+					"just came out",  -- LEAKED BY SLICED | discord.gg/pubmethod
+					"latest",
+					"this update",
+					"in the update",
+				}
+
+				local function slicedfn60(arg)
+					return (tostring(arg or ""):upper():gsub("%W", ""))
+				end
+
+				_G.__RiddlerPinNewGear = function(arg, arg2)
+					if type(arg2) ~= "string" or arg2 == "" then
+						return arg2, false  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+					local value = select(2, arg2:gsub("%a", ""))
+					local sliced99 = 0
+					if select(2, arg2:gsub("%d", "")) > sliced99 and value <= 2 then
+						return arg2, false
+					end
+					local str8 = tostring(arg or ""):lower()
+					if str8:find("how many", 1, true) or str8:find("count", 1, true) or str8:find("total number", 1, true) then
+						return arg2, false
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					if not (str8:find("gear", 1, true) or str8:find("tool", 1, true)) then
+						return arg2, false
+					end
+					local flag24 = false
+
+					for _, sliced100 in ipairs(tbl19) do
+						if str8:find(sliced100, 1, true) then
+							flag24 = true
+							break
+						end
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					if not flag24 then
+						return arg2, false
+					end
+					local ok, result = pcall(_G.__RiddlerSnapshotMeta)
+					if not ok or type(result) ~= "table" then
+						return arg2, false
+					end
+					local tbl20 = {}
+
+					for _, sliced100 in ipairs(result) do
+						if sliced100.kind == "gear" and sliced100.name and sliced100.name ~= "" then  -- LEAKED BY SLICED | discord.gg/pubmethod
+							tbl20[#tbl20 + 1] = sliced100.name
+						end
+					end
+
+					if #tbl20 == 0 then
+						return arg2, false
+					end
+					local sliced100 = slicedfn60(arg2)
+
+					for _, sliced101 in ipairs(tbl20) do
+						if slicedfn60(sliced101) == sliced100 then
+							return arg2, false  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+					end
+
+					local tbl21 = {}
+					local tbl22 = {}
+
+					for match in str8:gmatch("%a+") do
+						if #match >= 4 and match ~= "gear" and match ~= "tool" and match ~= "gears" and match ~= "tools" and match ~= "added" and match ~= "newest" then
+							for _, sliced101 in ipairs(tbl20) do
+								local flag25 = not tbl22[sliced101]
+
+								if flag25 then
+									flag25 = slicedfn60(sliced101):lower():find(match, 1, true)  -- LEAKED BY SLICED | discord.gg/pubmethod
+								end
+
+								if flag25 then
+									tbl22[sliced101] = true
+									tbl21[#tbl21 + 1] = sliced101
+								end
+							end
+						end
+					end
+
+					if #tbl21 == 1 then
+						_G.RiddlerLastGearPin = ("%s -> %s"):format(arg2, tbl21[1])  -- LEAKED BY SLICED | discord.gg/pubmethod
+						return tbl21[1], true
+					end
+
+					if #tbl20 == 1 then
+						_G.RiddlerLastGearPin = ("%s -> %s"):format(arg2, tbl20[1])
+						return tbl20[1], true
+					end
+					local items = sliced86:FindFirstChild("Items")
+
+					if items then
+						for _, child in ipairs(items:GetChildren()) do
+							if child:IsA("Tool") and slicedfn60(child.Name) == sliced100 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+								return arg2, false
+							end
+						end
+					end
+
+					_G.RiddlerLastGearPin = ("%s (not a gear) -> %s"):format(arg2, tbl20[1])
+					return tbl20[1], true
+				end
+			end
+		end
+
+		do  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local tbl19 = {
+				"new",
+				"newest",
+				"just added",
+				"just got added",
+				"got added",
+				"was added",
+				"added to",
+				"just came out",
+				"latest",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				"this update",
+				"in the update",
+			}
+
+			local tbl20 = {
+				"running",
+				"right now",
+				"active",
+				"currently",
+				"happening",
+				"going on",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				"we are in",
+				"we're in",
+			}
+
+			local tbl21 = {
+				{ kind = "event", words = { "event" } },
+				{ kind = "trait", words = { "trait" } },
+				{
+					kind = "mutation",
+					words = { "mutation" },
+				},  -- LEAKED BY SLICED | discord.gg/pubmethod
+				{
+					kind = "lucky block",
+					words = {
+						"lucky block",
+						"luckyblock",
+						"lucky-block",
+					},
+				},
+				{
+					kind = "rarity",  -- LEAKED BY SLICED | discord.gg/pubmethod
+					words = { "rarity", "rarities" },
+				},
+				{
+					kind = "fishing rod",
+					words = { "fishing rod", " rod ", " rods " },
+				},
+			}
+
+			local function slicedfn60(arg)
+				return (tostring(arg or ""):upper():gsub("%W", ""))
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			_G.__RiddlerPinNewMeta = function(arg, arg2)
+				local sliced99 = "string"
+				if type(arg2) ~= sliced99 or arg2 == "" then
+					return arg2, false
+				end
+				local str8 = arg2:upper():gsub("%s", "")
+				if str8 == "YES" or str8 == "NO" then
+					return arg2, false
+				end
+				local value = select(2, arg2:gsub("%a", ""))  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local sliced100 = 0
+				if select(2, arg2:gsub("%d", "")) > sliced100 and value <= 2 then
+					return arg2, false
+				end
+				local str9 = tostring(arg or ""):lower()
+				if str9 == "" then
+					return arg2, false
+				end
+
+				if str9:find("how many", 1, true) or str9:find("count", 1, true) then
+					return arg2, false  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				for _, sliced101 in ipairs(tbl20) do
+					if str9:find(sliced101, 1, true) then
+						return arg2, false
+					end
+				end
+
+				local flag24 = false
+
+				for _, sliced101 in ipairs(tbl19) do
+					if str9:find(sliced101, 1, true) then
+						flag24 = true  -- LEAKED BY SLICED | discord.gg/pubmethod
+						break
+					end
+				end
+
+				if not flag24 then
+					return arg2, false
+				end
+				local sliced101 = " "
+				local str10 = " " .. str9:gsub("[^%w]", " ") .. sliced101
+				local kind = nil
+
+				for _, sliced102 in ipairs(tbl21) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+					for _, word in ipairs(sliced102.words) do
+						if not (word:find(" ", 1, true) and word) then
+						end
+
+						if word:sub(1, 1) == " " and str10:find(word, 1, true) or word:sub(1, 1) ~= " " and str9:find(word, 1, true) then
+							kind = sliced102.kind
+							break
+						end
+					end
+
+					if not kind then
+						continue  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+					break
+				end
+
+				if not kind then
+					return arg2, false
+				end
+				local ok, result = pcall(_G.__RiddlerSnapshotMeta)
+				local flag25 = not ok
+
+				if not flag25 then
+					local sliced102 = "table"  -- LEAKED BY SLICED | discord.gg/pubmethod
+					flag25 = type(result) ~= sliced102
+				end
+
+				if flag25 then
+					return arg2, false
+				end
+				local tbl22 = {}
+
+				for _, sliced102 in ipairs(result) do
+					if sliced102.kind == kind and sliced102.name and sliced102.name ~= "" then
+						tbl22[#tbl22 + 1] = sliced102.name
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				if #tbl22 == 0 then
+					return arg2, false
+				end
+				local sliced102 = slicedfn60(arg2)
+
+				for _, sliced103 in ipairs(tbl22) do
+					if slicedfn60(sliced103) == sliced102 then
+						return arg2, false
+					end
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				local tbl23 = {}
+				local tbl24 = {}
+
+				for match in str9:gmatch("%a+") do
+					if #match >= 4 and match ~= "added" and match ~= "newest" and match ~= "event" and match ~= "trait" and match ~= "mutation" and match ~= "lucky" and match ~= "block" and match ~= "rarity" then
+						for _, sliced103 in ipairs(tbl22) do
+							local flag26 = not tbl24[sliced103]
+
+							if flag26 then
+								flag26 = slicedfn60(sliced103):lower():find(match, 1, true)
+							end
+
+							if flag26 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+								tbl24[sliced103] = true
+								tbl23[#tbl23 + 1] = sliced103
+							end
+						end
+					end
+				end
+
+				local sliced103
+
+				if #tbl23 == 1 then
+					sliced103 = tbl23[1]
+				else  -- LEAKED BY SLICED | discord.gg/pubmethod
+					sliced103 = nil
+
+					if #tbl22 == 1 then
+						sliced103 = tbl22[1]
+					end
+				end
+
+				if not sliced103 then
+					return arg2, false
+				end
+
+				_G.RiddlerLastMetaPin = ("%s -> %s (%s)"):format(arg2, sliced103, kind)
+				return sliced103, true  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+		end
+	end
+
+	do
+		local function slicedfn60(arg, arg2)
+			for _, sliced99 in ipairs(arg2) do
+				if arg:find(sliced99, 1, true) then
+					return true
+				end
+
+				if sliced99:find(" ", 1, true) then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local sliced100, sliced101, sliced102 = sliced99:gmatch("%S+")
+					local slicedn34 = 1
+					local flag24 = true
+
+					for k in sliced100, sliced101, sliced102 do
+						local pos = arg:find(k, slicedn34, true)
+
+						if not pos then
+							flag24 = false
+							break
+						else
+							slicedn34 = pos + #k  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+					end
+
+					if flag24 then
+						return true
+					end
+				end
+			end
+
+			return false
+		end
+
+		local tbl19 = {  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"obtain",
+			"get",
+			"carpet",
+			"brainrot track",
+			"track",
+			"no robux",
+			"without robux",
+			"free",
+			"still available",
+		}  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		local tbl20 = {
+			"besides spyder",
+			"except spyder",
+			"other than spyder",
+			"excluding spyder",
+			"not spyder",
+			"apart from spyder",
+			"besides the spyder",
+			"except the spyder",
+		}  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		local tbl21 = {
+			"merchant",
+			"shop",
+			"taco",
+			"secret",
+			"admin",
+			"brainrot god",
+			"common",
+			"epic",
+			"legendary",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"mythic",
+			"festive",
+			"spooky",
+			"valentine",
+			"easter",
+			"summer",
+			"honey",
+			"patrick",
+			"limited",
+			"craft",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"fat sammy",
+			"machine",
+			"lucky",
+			"wheel",
+			"bee",
+			"sold",
+			"buy",
+			"from the",
+			"stock",
+		}  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		local tbl22 = {
+			game = true,
+			whole = true,
+			entire = true,
+			world = true,
+			index = true,
+		}
+
+		local tbl23 = {
+			" plus ",
+			" and ",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"+",
+			" with ",
+			" my ",
+			" then ",
+			"&",
+			"combined",
+			" also ",
+		}
+
+		local tbl24 = {
+			"SPYDERELEPHANT",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"HEADLESSHORSEMAN",
+			"STRAWBERRYELEPHANT",
+		}
+
+		local function slicedfn61(arg)
+			if not slicedfn60(arg, tbl21) then
+				for match in arg:gmatch("in the (%a+)") do
+					if not tbl22[match] then
+						return true
+					end
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				return false
+			end
+
+			return true
+		end
+
+		_G.__RiddlerPinRarity = function(arg, arg2)
+			if type(arg2) ~= "string" or arg2 == "" then
+				return arg2, false
+			end
+			local str8 = tostring(arg or ""):lower()
+			if str8 == "" then  -- LEAKED BY SLICED | discord.gg/pubmethod
+				return arg2, false
+			end
+
+			if slicedfn60(str8, { "trait", "mutation", "event", "gear", "tool", "rebirth", "lucky block", "rod", "rarity tier" }) then
+				return arg2, false
+			end
+
+			if slicedfn60(str8, { "exist count", "how many exist", "exists are there", "how many are there" }) then
+				return arg2, false
+			end
+
+			if slicedfn60(str8, {
+				"second",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				"third",
+				"fourth",
+				"fifth",
+				"2nd",
+				"3rd",
+				"fourth",
+				"5th",
+				"next rarest",
+				"after the rarest",
+			}) then  -- LEAKED BY SLICED | discord.gg/pubmethod
+				return arg2, false
+			end
+
+			local sliced99 = slicedfn60(str8, { "rarest", "rarer", "least common", "hardest to find", "most rare" })
+			local sliced100 = slicedfn60(str8:gsub("beside", " "), { "best", "most valuable", "most valued", "highest value", "most expensive" })
+
+			if sliced99 or sliced100 then
+				if sliced99 and sliced100 then
+					return arg2, false
+				end
+
+				if slicedfn61(str8) then
+					return arg2, false  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				if not (str8:find("brainrot", 1, true) or str8:find("animal", 1, true) or str8:find("%f[%a]og%f[%A]")) then
+					return arg2, false
+				end
+				local name
+
+				if sliced99 then
+					if slicedfn60(str8, tbl20) then
+						local ok, result = pcall(_G.__RiddlerExistCounts)
+						if not (ok and type(result) == "table" and #result > 0) then
+							return arg2, false  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+
+						name = result[1].name
+					elseif slicedfn60(str8, tbl19) then
+						name = "Strawberry Elephant"
+					else
+						name = "Spyder Elephant"
+					end
+				else
+					name = slicedfn60(str8, tbl19) and "Strawberry Elephant" or "Headless Horseman"
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				local str9 = name:upper():gsub("%W", "")
+				local str10 = arg2:upper():gsub("%W", "")
+				if str10 == str9 then
+					return arg2, false
+				end
+
+				if str8:upper():gsub("%W", ""):find(str9, 1, true) then
+					return arg2, false
+				end
+
+				if str8:find("%d") ~= nil or slicedfn60(str8, tbl23) then
+					for _, sliced101 in ipairs(tbl24) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+						if sliced101 == str9 then
+							continue
+						end
+						local pos, sliced102 = str10:find(sliced101, 1, true)
+
+						if pos then
+							local str11 = str10:sub(1, pos - 1) .. str9 .. str10:sub(sliced102 + 1)
+							_G.RiddlerLastRarityPin = ("%s -> %s (spliced)"):format(arg2, str11)
+							return str11, true
+						end
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					return arg2, false
+				end
+
+				_G.RiddlerLastRarityPin = ("%s -> %s"):format(arg2, name)
+				return name, true
+			end
+
+			return arg2, false
+		end
+	end
+end
+
+do  -- LEAKED BY SLICED | discord.gg/pubmethod
+	do
+		local tbl19 = {
+			"new",
+			"newest",
+			"just added",
+			"just got added",
+			"got added",
+			"was added",
+			"added to",
+			"just came out",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"latest",
+			"this update",
+			"in the update",
+		}
+
+		local tbl20 = {
+			"rarest",
+			"best",
+			"worst",
+			"first",
+			"oldest",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"og",
+			"most expensive",
+			"cheapest",
+			"highest",
+			"lowest",
+			"used to",
+			"removed",
+			"deleted",
+			"before",
+			"last update",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"previous",
+			"how much",
+			"income",
+			"per second",
+			"per sec",
+			"produce",
+			"produces",
+			"earn",
+			"earns",
+			"earnings",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"makes how much",
+			"generate",
+			"generates",
+			"mutation",
+			"trait",
+			"event",
+			"luck",
+			"multiplier",
+			"boost",
+			"weather",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"rebirth",
+			"gear",
+			"tool",
+			"rarity",
+			"rarities",
+			"fishing",
+		}
+
+		local tbl21 = {
+			"SPYDERSAMMY",
+			"SAMMY",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"JANUARY",
+			"FEBRUARY",
+			"MARCH",
+			"APRIL",
+			"MAY",
+			"JUNE",
+			"JULY",
+			"AUGUST",
+			"SEPTEMBER",
+			"OCTOBER",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"NOVEMBER",
+			"DECEMBER",
+		}
+
+		local function slicedfn60(arg, arg2)
+			for _, sliced99 in ipairs(arg2) do
+				if arg:find(sliced99, 1, true) then
+					return true
+				end
+			end
+
+			return false  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+
+		_G.__RiddlerPinNewBrainrot = function(arg, arg2, arg3)
+			if type(arg2) ~= "string" or arg2 == "" then
+				return arg2, false
+			end
+			local value = select(2, arg2:gsub("%a", ""))
+			if select(2, arg2:gsub("%d", "")) > 0 and value <= 2 then
+				return arg2, false
+			end
+			local str8 = tostring(arg or ""):lower()  -- LEAKED BY SLICED | discord.gg/pubmethod
+			if str8 == "" then
+				return arg2, false
+			end
+
+			if not slicedfn60(str8, tbl19) then
+				return arg2, false
+			end
+
+			if slicedfn60(str8, tbl20) then
+				return arg2, false
+			end
+			local str9 = " " .. str8:gsub("[^%w]", " ") .. " "  -- LEAKED BY SLICED | discord.gg/pubmethod
+			if str9:find(" rod ", 1, true) or str9:find(" rods ", 1, true) then
+				return arg2, false
+			end
+			local tbl22 = {}
+
+			for _, sliced99 in ipairs(_G.__RiddlerReadNewContent()) do
+				if sliced99.enabled and sliced99.name and sliced99.name ~= "" then
+					tbl22[#tbl22 + 1] = sliced99
+				end
+			end
+
+			if #tbl22 == 0 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+				return arg2, false
+			end
+			local str10 = arg2:upper():gsub("%W", "")
+
+			for _, sliced99 in ipairs(tbl22) do
+				if str10:find(sliced99.name:upper():gsub("%W", ""), 1, true) then
+					return arg2, false
+				end
+			end
+
+			local flag24 = false
+
+			for match in str8:gmatch("%a+") do  -- LEAKED BY SLICED | discord.gg/pubmethod
+				if #match >= 5 and not ({
+					new = true,
+					newest = true,
+					added = true,
+					brainrot = true,
+					called = true,
+					whats = true,
+					which = true,
+					update = true,
+					released = true,  -- LEAKED BY SLICED | discord.gg/pubmethod
+					recently = true,
+				})[match] then
+					local flag25 = false
+
+					for _, sliced99 in ipairs(tbl22) do
+						if sliced99.name:lower():gsub("%W", ""):find(match, 1, true) then
+							flag25 = true
+							break
+						end
+					end
+
+					if not flag25 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						flag24 = true
+					end
+				end
+			end
+
+			if flag24 then
+				local datas = sliced86:FindFirstChild("Datas")
+				local sliced99 = slicedfn34(datas and datas:FindFirstChild("Animals"))
+				local sliced100 = "table"
+
+				if type(sliced99) == sliced100 then
+					local str11 = arg2:upper():gsub("%W", "")  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					for k, sliced101 in pairs(sliced99) do
+						if type(sliced101) == "table" then
+							local str12 = tostring(sliced101.DisplayName or k):upper():gsub("%W", "")
+							if #str12 >= 4 and str11:find(str12, 1, true) then
+								return arg2, false
+							end
+						end
+					end
+				end
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			local sliced99 = tbl22[1]
+			local match, sliced100 = str8:match("(%d+%.?%d*)%s*([mkb])/?s")
+
+			if match and sliced100 then
+				local slicedn34 = sliced100 == "b" and 1e9
+				local slicedn35
+
+				if slicedn34 then
+					slicedn35 = slicedn34
+				else
+					slicedn35 = sliced100 == "m" and 1000000
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				slicedn35 = slicedn35 or 1000
+				local slicedn36 = tonumber(match) * slicedn35
+
+				for _, sliced101 in ipairs(tbl22) do
+					local gen = sliced101.gen
+
+					if gen then
+						local sliced102 = 1
+						gen = math.abs(sliced101.gen - slicedn36) < sliced102
+					end
+
+					if gen then
+						sliced99 = sliced101  -- LEAKED BY SLICED | discord.gg/pubmethod
+						break
+					end
+				end
+			end
+
+			arg3 = arg3 and sliced99.name:upper():gsub("%W", "") or sliced99.name
+			local str11 = arg2:upper()
+			local datas = sliced86:FindFirstChild("Datas")
+			local sliced101 = slicedfn34(datas and datas:FindFirstChild("Animals"))
+			local sliced102 = nil
+			local slicedn34 = nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			if type(sliced101) == "table" then
+				slicedn34 = nil
+				local sliced103 = nil
+
+				for k, sliced104 in pairs(sliced101) do
+					if type(sliced104) == "table" then
+						local str12 = tostring(sliced104.DisplayName or k):upper():gsub("%W", "")
+
+						if 4 <= #str12 then
+							local pos = str11:find(str12, 1, true)
+
+							if pos and (not slicedn34 or #str12 > slicedn34) then
+								slicedn34 = #str12  -- LEAKED BY SLICED | discord.gg/pubmethod
+								sliced103 = pos
+							end
+						end
+					end
+				end
+
+				sliced102 = sliced103
+			end
+
+			if sliced102 then
+				arg3 = arg2:sub(1, sliced102 - 1) .. arg3 .. arg2:sub(sliced102 + slicedn34)
+			else  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local match2 = str11:match("(%d+)$")
+
+				if not match2 then
+					for _, sliced103 in ipairs(tbl21) do
+						if #str11 > #sliced103 and str11:sub(-#sliced103) == sliced103 then
+							match2 = sliced103
+							break
+						end
+					end
+				end
+
+				if match2 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					arg3 ..= arg2:sub(#arg2 - #match2 + 1)
+				end
+			end
+
+			_G.RiddlerLastNewPin = ("%s -> %s"):format(arg2, arg3)
+			return arg3, true
+		end
+	end
+end
+
+do
+	do  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local tbl19 = {
+			"now",
+			"current",
+			"right now",
+			"at the moment",
+			"this second",
+			"running",
+			"active",
+			"we are in",
+			"we're in",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"we in",
+			"happening",
+			"going on",
+			"today",
+			"live",
+		}
+
+		local tbl20 = {
+			"was",
+			"were",
+			"last",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"previous",
+			"before",
+			"yesterday",
+			"used to",
+			"rarest",
+			"rare",
+			"best",
+			"worst",
+			"first",
+			"oldest",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"newest",
+			"next",
+			"will",
+			"ever",
+			"not running",
+			"isn't",
+			"is not",
+		}
+
+		local function slicedfn60(arg, arg2)
+			for _, sliced99 in ipairs(arg2) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+				if arg:find(sliced99, 1, true) then
+					return true
+				end
+			end
+
+			return false
+		end
+
+		_G.__RiddlerPinLiveMutation = function(arg, arg2, arg3)
+			if type(arg2) ~= "string" or arg2 == "" then
+				return arg2, false
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local str8 = tostring(arg or ""):lower()
+			if str8 == "" then
+				return arg2, false
+			end
+
+			if not slicedfn59(arg, "event") then
+				return arg2, false
+			end
+
+			if not slicedfn60(str8, tbl19) then
+				return arg2, false
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			if slicedfn60(str8, tbl20) then
+				return arg2, false
+			end
+			local sliced99 = slicedfn58()
+			if #sliced99 ~= 1 then
+				return arg2, false
+			end
+			local name = sliced99[1].name
+			local sliced100
+
+			if str8:find("mutation", 1, true) then  -- LEAKED BY SLICED | discord.gg/pubmethod
+				sliced100 = _G.__RiddlerEventToMutation[name] or name
+			else
+				sliced100 = name
+			end
+
+			local sliced101 = "string"
+			if type(sliced100) ~= sliced101 or sliced100 == "" then
+				return arg2, false
+			end
+			local tbl21 = {}
+
+			for k, sliced102 in pairs(_G.__RiddlerEventToMutation) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+				tbl21[k:gsub("%W", ""):upper()] = true
+				tbl21[sliced102:gsub("%W", ""):upper()] = true
+			end
+
+			local tbl22 = {}
+
+			for k in pairs(tbl21) do
+				tbl22[#tbl22 + 1] = k
+			end
+
+			table.sort(tbl22, function(arg4, arg5)
+				return #arg4 > #arg5
+			end)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			local str9 = sliced100:gsub("%W", ""):upper()
+			local str10 = arg2:upper()
+			if str10:find(str9, 1, true) then
+				return arg2, false
+			end
+
+			for _, sliced102 in ipairs(tbl22) do
+				if sliced102 == str9 then
+					continue
+				end
+				local pos, sliced103 = str10:find(sliced102, 1, true)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				if pos then
+					str9 = arg3 and str9
+					local sliced104 = str9 or sliced100
+					local str11 = arg2:sub(1, pos - 1) .. sliced104 .. arg2:sub(sliced103 + 1)
+					_G.RiddlerLastPin = ("%s -> %s (live: %s)"):format(arg2, str11, name)
+					return str11, true
+				end
+			end
+
+			return arg2, false
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end
+end
+
+local result
+
+do
+	slicedfn57 = function(arg)
+		if not request_ then
+			return nil, "no HTTP function on this executor"
+		end
+
+		local ok, result2 = pcall(request_, {
+			Url = _G.__RiddlerProxyUrl,  -- LEAKED BY SLICED | discord.gg/pubmethod
+			Method = "POST",
+			Headers = { ["Content-Type"] = "application/json" },
+			Body = sliced98:JSONEncode(arg),
+		})
+
+		if not ok then
+			return nil, "request error: " .. tostring(result2)
+		end
+
+		local ok2, result3 = pcall(function()
+			return sliced98:JSONDecode(result2.Body)
+		end)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		if not ok2 or type(result3) ~= "table" then
+			return nil, "HTTP " .. tostring(result2 and result2.StatusCode)
+		end
+		return result3
+	end
+
+	slicedfn38 = function()
+		local sliced99 = slicedfn57({
+			op = "warm",
+			token = _G.__RiddlerClientToken,
+			tier = model,  -- LEAKED BY SLICED | discord.gg/pubmethod
+			user = _G.__RiddlerIdentNow and select(2, pcall(_G.__RiddlerIdentNow)) or _G.__RiddlerIdent,
+		})
+
+		return sliced99 ~= nil and sliced99.ok == true
+	end
+
+	_G.__RiddlerIdent = nil
+
+	do
+		local genv = getgenv and getgenv() or _G
+		result = nil
+
+		for _, sliced99 in ipairs({
+			"LRM_ScriptKey",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"LRM_SCRIPT_KEY",
+			"script_key",
+			"ScriptKey",
+			"SCRIPT_KEY",
+			"LRM_Key",
+			"lrm_key",
+			"luarmor_key",
+		}) do
+			do
+				local ok  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				ok, result = pcall(function()
+					return rawget(genv, sliced99)
+				end)
+
+				if ok then
+					local sliced100 = "string"
+					ok = type(result) == sliced100
+				end
+
+				if not (ok and #result >= 6) then
+					result = nil
+					continue  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+			end
+
+			break
+		end
+	end
+end
+
+do
+	local function slicedfn58(arg)
+		local str8 = "riddler:" .. tostring(arg)
+		local slicedn34 = 2166136261  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		for i = 1, #str8 do
+			slicedn34 = bit32.bxor(slicedn34, str8:byte(i)) * 16777619 % 4294967296
+		end
+
+		return ("id:%08x"):format(slicedn34)
+	end
+
+	local str8 = nil
+
+	for _, sliced99 in ipairs({
+		function()
+			return gethwid()
+		end,  -- LEAKED BY SLICED | discord.gg/pubmethod
+		function()
+			return get_hwid()
+		end,
+		function()
+			return syn.get_hwid()
+		end,
+		function()
+			return game:GetService("RbxAnalyticsService"):GetClientId()
+		end,
+	}) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local ok, result2 = pcall(sliced99)
+		if ok and type(result2) == "string" and #result2 >= 16 then
+			str8 = result2:lower()
+			break
+		end
+	end
+
+	if str8 then
+		_G.__RiddlerServerNow = function()
+			local ok, result2 = pcall(function()
+				return workspace:GetServerTimeNow()  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end)
+
+			if ok and type(result2) == "number" and result2 > 1.6e9 then
+				return result2
+			end
+			return os.time()
+		end
+
+		_G.__RiddlerIdentNow = function()
+			return slicedfn58(str8 .. "|" .. tostring(math.floor(_G.__RiddlerServerNow() / 900)))
+		end
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	if str8 then
+		_G.__RiddlerIdent = slicedfn58(str8)
+	elseif result then
+		_G.__RiddlerIdent = slicedfn58(result)
+	else
+		local ok, result2 = pcall(function()
+			return localPlayer.UserId
+		end)
+
+		_G.__RiddlerIdent = ok and result2 and slicedfn58(result2) or "id:unknown"
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+end
+
+do
+	do
+		do
+			local bxor, slicedfn58
+
+			do
+				do
+					local tbl19 = {
+						1116352408,
+						1899447441,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						3049323471,
+						3921009573,
+						961987163,
+						1508970993,
+						2453635748,
+						2870763221,
+						3624381080,
+						310598401,
+						607225278,
+						1426881987,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						1925078388,
+						2162078206,
+						2614888103,
+						3248222580,
+						3835390401,
+						4022224774,
+						264347078,
+						604807628,
+						770255983,
+						1249150122,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						1555081692,
+						1996064986,
+						2554220882,
+						2821834349,
+						2952996808,
+						3210313671,
+						3336571891,
+						3584528711,
+						113926993,
+						338241895,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						666307205,
+						773529912,
+						1294757372,
+						1396182291,
+						1695183700,
+						1986661051,
+						2177026350,
+						2456956037,
+						2730485921,
+						2820302411,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						3259730800,
+						3345764771,
+						3516065817,
+						3600352804,
+						4094571909,
+						275423344,
+						430227734,
+						506948616,
+						659060556,
+						883997877,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						958139571,
+						1322822218,
+						1537002063,
+						1747873779,
+						1955562222,
+						2024104815,
+						2227730452,
+						2361852424,
+						2428436474,
+						2756734187,  -- LEAKED BY SLICED | discord.gg/pubmethod
+						3204031479,
+						3329325298,
+					}
+
+					local band = bit32.band
+					bxor = bit32.bxor
+					local bnot = bit32.bnot
+					local rrotate = bit32.rrotate
+					local rshift = bit32.rshift
+
+					slicedfn58 = function(arg)
+						local tbl20 = { 1779033703, 3144134277, 1013904242, 2773480762, 1359893119, 2600822924, 528734635, 1541459225 }  -- LEAKED BY SLICED | discord.gg/pubmethod
+						local slicedn34 = #arg
+						local str8 = arg .. "\128" .. string.rep("\0", (55 - slicedn34) % 64) .. string.pack(">I8", slicedn34 * 8)
+
+						for i = 1, #str8, 64 do
+							local tbl21 = {}
+
+							for i2 = 0, 15 do
+								tbl21[i2 + 1] = string.unpack(">I4", str8, i + i2 * 4)
+							end
+
+							for i2 = 17, 64 do
+								local sliced98 = tbl21[i2 - 15]
+								local sliced99 = tbl21[i2 - 2]  -- LEAKED BY SLICED | discord.gg/pubmethod
+								tbl21[i2] = (tbl21[i2 - 16] + bxor(rrotate(sliced98, 7), rrotate(sliced98, 18), rshift(sliced98, 3)) + tbl21[i2 - 7] + bxor(rrotate(sliced99, 17), rrotate(sliced99, 19), rshift(sliced99, 10))) % 4294967296
+							end
+
+							local sliced98 = tbl20[1]
+							local sliced99 = tbl20[2]
+							local sliced100 = tbl20[3]
+							local sliced101 = tbl20[4]
+							local sliced102 = tbl20[5]
+							local sliced103 = tbl20[6]
+							local sliced104 = tbl20[7]
+							local sliced105 = tbl20[8]  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+							for i2 = 1, 64 do
+								local sliced106 = tbl19[i2]
+								local slicedn35 = (sliced105 + bxor(rrotate(sliced102, 6), rrotate(sliced102, 11), rrotate(sliced102, 25)) + bxor(band(sliced102, sliced103), band(bnot(sliced102), sliced104)) + sliced106 + tbl21[i2]) % 4294967296
+								local slicedn36 = (sliced101 + slicedn35) % 4294967296
+								local slicedn37 = (slicedn35 + (bxor(rrotate(sliced98, 2), rrotate(sliced98, 13), rrotate(sliced98, 22)) + bxor(band(sliced98, sliced99), band(sliced98, sliced100), band(sliced99, sliced100))) % 4294967296) % 4294967296
+								sliced105 = sliced104
+								sliced101 = sliced100
+								sliced104 = sliced103
+								sliced100 = sliced99
+								sliced103 = sliced102  -- LEAKED BY SLICED | discord.gg/pubmethod
+								sliced99 = sliced98
+								sliced102 = slicedn36
+								sliced98 = slicedn37
+							end
+
+							tbl20[1] = (tbl20[1] + sliced98) % 4294967296
+							tbl20[2] = (tbl20[2] + sliced99) % 4294967296
+							tbl20[3] = (tbl20[3] + sliced100) % 4294967296
+							tbl20[4] = (tbl20[4] + sliced101) % 4294967296
+							tbl20[5] = (tbl20[5] + sliced102) % 4294967296
+							tbl20[6] = (tbl20[6] + sliced103) % 4294967296  -- LEAKED BY SLICED | discord.gg/pubmethod
+							tbl20[7] = (tbl20[7] + sliced104) % 4294967296
+							tbl20[8] = (tbl20[8] + sliced105) % 4294967296
+						end
+
+						local tbl21 = {}
+
+						for i = 1, 8 do
+							tbl21[i] = string.format("%08x", tbl20[i])
+						end
+
+						return table.concat(tbl21)
+					end
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			do
+				local function slicedfn59(arg)
+					return (arg:gsub("%x%x", function(arg2)
+						return string.char(tonumber(arg2, 16))
+					end))
+				end
+
+				local function slicedfn60(arg, arg2)
+					if #arg > 64 then
+						arg = slicedfn59(slicedfn58(arg))  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+
+					local str8 = arg .. string.rep("\0", 64 - #arg)
+					local tbl19 = {}
+					local tbl20 = {}
+
+					for i = 1, 64 do
+						local sliced98 = str8:byte(i)
+						tbl19[i] = string.char(bxor(sliced98, 92))
+						tbl20[i] = string.char(bxor(sliced98, 54))
+					end
+
+					return slicedfn58(table.concat(tbl19) .. slicedfn59(slicedfn58(table.concat(tbl20) .. arg2)))  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				_G.__RiddlerNonce = function()
+					local tbl19 = {}
+
+					for i = 1, 8 do
+						tbl19[#tbl19 + 1] = string.format("%02x", math.random(0, 255))
+					end
+
+					return table.concat(tbl19)
+				end
+
+				_G.__RiddlerSign = function(arg, arg2)
+					local ok, result = pcall(slicedfn60, arg, arg2)  -- LEAKED BY SLICED | discord.gg/pubmethod
+					return ok and result or nil
+				end
+
+				_G.__RiddlerChecksum = function(arg)
+					local ok, result = pcall(slicedfn58, arg)
+					return ok and result or nil
+				end
+
+				_G.__RiddlerDecrypt = function(arg, arg2, arg3)
+					local sliced98 = "string"
+					if type(arg3) ~= sliced98 or arg3 == "" then
+						return nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+
+					if #arg3 % 2 ~= 0 then
+						return nil
+					end
+
+					local ok, result = pcall(function()
+						local tbl19 = {}
+						local slicedn34 = #arg3 // 2
+
+						for i = 0, slicedn34 - 1, 32 do
+							local sliced99 = slicedfn60(arg, arg2 .. ":" .. tostring(i // 32))
+
+							for i2 = 0, 31 do  -- LEAKED BY SLICED | discord.gg/pubmethod
+								local slicedn35 = i + i2
+
+								if not (slicedn35 >= slicedn34) then
+									local num = tonumber(arg3:sub(slicedn35 * 2 + 1, slicedn35 * 2 + 2), 16)
+									local num2 = tonumber(sliced99:sub(i2 * 2 + 1, i2 * 2 + 2), 16)
+									tbl19[#tbl19 + 1] = string.char(bit32.bxor(num, num2))
+									continue
+								end
+
+								break
+							end
+						end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+						return table.concat(tbl19)
+					end)
+
+					return ok and result or nil
+				end
+
+				_G.__RiddlerCryptoOK = slicedfn58("abc") == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad" and slicedfn60("secret", "abc") == "9946dad4e00e913fc8be8e5d3f7e110a4a9e832f83fb09c345285d78638d8a0e"
+			end
+		end
+
+		do
+			local function slicedfn58(arg, arg2)
+				local riddlerIdent = _G.__RiddlerIdent  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				if _G.__RiddlerIdentNow then
+					local ok, result = pcall(_G.__RiddlerIdentNow)
+
+					if ok and type(result) == "string" and result ~= "" then
+						riddlerIdent = result
+					end
+				end
+
+				local tbl19 = { op = arg, token = _G.__RiddlerClientToken, tier = model, user = riddlerIdent }
+
+				for k, sliced98 in pairs(arg2) do
+					tbl19[k] = sliced98
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				local sliced98 = nil
+
+				if _G.__RiddlerCryptoOK then
+					sliced98 = _G.__RiddlerNonce()
+					tbl19.nonce = sliced98
+					tbl19.enc = 1
+					local str8 = ("%s|%s|%s|%s"):format(tostring(os.time()), sliced98, tostring(riddlerIdent), tostring(arg2.riddle or arg))
+					tbl19.sig = _G.__RiddlerSign(_G.__RiddlerClientToken, str8)
+					tbl19.checksum = _G.__RiddlerChecksum(str8)
+				end
+
+				local sliced99, sliced100 = slicedfn57(tbl19)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				if not sliced99 then
+					return nil, sliced100
+				end
+
+				if not sliced99.ok then
+					return nil, tostring(sliced99.error or "proxy error")
+				end
+				local text = sliced99.text
+
+				if type(sliced99.data) == "string" and sliced98 then
+					text = _G.__RiddlerDecrypt(_G.__RiddlerClientToken, sliced98, sliced99.data)
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				if type(text) ~= "string" or slicedfn32(text) == "" then
+					return nil, "model returned no text"
+				end
+				return slicedfn32(text)
+			end
+
+			_G.__RiddlerSuffixes = { "EVENT" }
+
+			local function slicedfn59(arg)
+				if arg == "REDCARPET" or arg == "THEREDCARPET" then
+					return "REDCARPET"
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				for _, riddlerSuffixe in ipairs(_G.__RiddlerSuffixes) do
+					if not (#riddlerSuffixe < #arg) then
+						continue
+					end
+					local str8 = arg:sub(1, #arg - #riddlerSuffixe)
+					if arg:sub(-#riddlerSuffixe) == riddlerSuffixe and #str8 >= 3 then
+						return str8
+					end
+				end
+
+				return arg  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			_G.__RiddlerPreserveNumericSuffix = function(arg, arg2)
+				local str8 = tostring(arg or "")
+				local match = str8:match("[Pp][Ll][Uu][Ss]%s+(%d+)%s*[%?%.!]*$") or str8:match("%+%s*(%d+)%s*[%?%.!]*$")
+				if not match then
+					return arg2
+				end
+				local str9 = tostring(arg2 or "")
+				local str10
+
+				if str9:sub(-#match) ~= match then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					str10 = str9 .. match
+				else
+					str10 = str9
+				end
+
+				return str10
+			end
+
+			local tbl19 = {
+				"brainrot",
+				"mutation",
+				"trait",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				"rarity",
+				"event",
+				"rebirth",
+				" pet",
+				"secret",
+				"og ",
+				" og",
+				"admin",
+				"fuse",
+				"craft",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				"machine",
+				"ritual",
+				"carpet",
+				"index",
+				"base skin",
+				"merchant",
+				"steal a brainrot",
+				"sab",
+				"come from",
+				"came from",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				"come out in",
+				"obtained",
+			}
+
+			local tbl20 = {
+				"my ",
+				" my ",
+				"programmer",
+				"coder",
+				"developer",
+				"sammy",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				"jandel",
+				"i add",
+				"i added",
+				"did i ",
+				"am i ",
+				"me?",
+			}
+
+			local function slicedfn60(arg)
+				local str8 = tostring(arg or ""):lower()
+
+				for _, sliced98 in ipairs(tbl19) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+					if str8:find(sliced98, 1, true) then
+						return true
+					end
+				end
+
+				for _, sliced98 in ipairs(tbl20) do
+					if str8:find(sliced98, 1, true) then
+						return true
+					end
+				end
+
+				return false  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			_G.__RiddlerNewIncomeSuspect = function(arg, arg2)
+				local str8 = tostring(arg or ""):lower()
+				if not (str8:find("new", 1, true) or str8:find("latest", 1, true) or str8:find("just", 1, true)) then
+					return false
+				end
+				local sliced98 = false
+
+				for _, sliced99 in ipairs({ "per second", "per sec", "mps", "income", "make", "makes", "earn", "produce", "how much" }) do
+					if str8:find(sliced99, 1, true) then
+						sliced98 = true  -- LEAKED BY SLICED | discord.gg/pubmethod
+						break
+					end
+				end
+
+				if not sliced98 then
+					return false
+				end
+
+				str8:gsub("[^%w]", "")
+				local tbl21 = {}
+
+				for _, sliced99 in ipairs(_G.__RiddlerReadNewContent()) do
+					if sliced99.enabled and sliced99.gen then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						tbl21[#tbl21 + 1] = sliced99
+						tostring(sliced99.name):lower():gsub("[^%w]", "")
+						local str9 = tostring(sliced99.name)
+
+						for match in str9:lower():gmatch("%a+") do
+							if #match >= 4 and str8:find(match, 1, true) then
+								return false
+							end
+						end
+					end
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				if #tbl21 == 0 then
+					return false
+				end
+				local match, sliced99 = tostring(arg2 or ""):gsub("^%s*%a+%s*:%s*", ""):match("([%d%.]+)%s*([KkMmBbTt]?)")
+				local num = tonumber(match)
+				if not num then
+					return false
+				end
+				local slicedn34 = num * (({ K = 1000, M = 1000000, B = 1e9, T = 1e12 })[sliced99:upper()] or 1)
+
+				for _, sliced100 in ipairs(tbl21) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local slicedn35 = sliced100.gen * 0.005
+					if math.abs(slicedn34 - sliced100.gen) <= slicedn35 then
+						return false
+					end
+				end
+
+				return true
+			end
+
+			_G.__RiddlerRawNeedsSmartRetry = function(arg, arg2)
+				local match, sliced98 = tostring(arg2 or ""):match("^%s*(%a+)%s*:%s*(.*)$")
+				match = match and match:upper() or "CODE"  -- LEAKED BY SLICED | discord.gg/pubmethod
+				if match == "ANSWER" and slicedfn60(arg) then
+					return _G.__RiddlerMalformedCodeBody(sliced98)
+				end
+				return match == "CODE" and _G.__RiddlerMalformedCodeBody(sliced98)
+			end
+
+			slicedfn39 = function(arg)
+				local sliced98 = _G.__RiddlerCacheKey(arg)
+
+				if slicedfn60(arg) then
+					local sliced99 = _G.__RiddlerResolveLiveExtreme(arg)
+
+					if sliced99 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						tbl17[sliced98] = { text = sliced99, isCode = true, searched = false }
+						_G.RiddlerLastAnswer = sliced99
+						return sliced99, false, nil, true, false
+					end
+				end
+
+				local ok, riddlerLastAnswer = pcall(_G.__RiddlerResolvePrizeParts, arg)
+				if ok and type(riddlerLastAnswer) == "string" and riddlerLastAnswer ~= "" then
+					_G.RiddlerLastAnswer = riddlerLastAnswer
+					return riddlerLastAnswer, false, nil, true, false
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local sliced99 = tbl17[sliced98]
+				if sliced99 then
+					_G.RiddlerLastAnswer = sliced99.text
+					return sliced99.text, true, nil, sliced99.isCode, sliced99.searched, nil, sliced99.altForm, sliced99.altAnswer
+				end
+				local solve, sliced100 = slicedfn58("solve", { riddle = arg, liveState = _G.__RiddlerKeepLive(slicedfn56(arg)) })
+				if not solve then
+					return nil, false, sliced100
+				end
+
+				if model == "FASTER" and _G.__RiddlerRawNeedsSmartRetry(arg, solve) then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					solve = slicedfn58("solve", { riddle = arg, liveState = _G.__RiddlerKeepLive(slicedfn56(arg)), tier = "FAST" }) or solve
+				end
+
+				local match = solve:match("^OVERRIDE:%s*(.+)$")
+
+				if match then
+					local sliced101 = slicedfn32(match)
+					tbl17[sliced98] = { text = sliced101, isCode = true, searched = false }
+					return sliced101, false, nil, true, false
+				end
+
+				_G.RiddlerLastRaw = solve
+				local str8 = solve:gsub("^[\"']", ""):gsub("[\"']$", "")  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local match2, sliced101 = str8:match("^(.-)%s*||%s*ALT%s*:%s*(.+)$")
+
+				if not match2 then
+					match2, sliced101 = str8:match("^(.-)%s+ALT%s*:%s*(.+)$")
+				end
+
+				local flag24 = match2 and slicedfn32(match2) ~= ""
+				local sliced102 = nil
+
+				if flag24 then
+					str8 = slicedfn32(match2)
+					sliced102 = slicedfn32(sliced101)
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				local match3, sliced103 = str8:match("^(%a+)%s*:%s*(.*)$")
+				local str9 = "CODE"
+
+				if match3 then
+					str9 = match3:upper()
+					local flag25 = str9 == "ANSWER" or str9 == "CODE" or str9 == "SEARCHCODE" or str9 == "SEARCHANSWER" or str9 == "SEARCH"
+					local str10 = "CODE"
+
+					if flag25 then
+						str8 = sliced103
+					else
+						str9 = str10  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+				end
+
+				if str9 == "SEARCH" then
+					str9 = "SEARCHANSWER"
+				end
+
+				local str10 = slicedfn32(str8)
+				local flag25 = str9 == "SEARCHCODE" or str9 == "SEARCHANSWER"
+				local sliced104 = nil
+
+				if flag25 then
+					local match4, sliced105 = str10:match("^(.-)%s*|%s*(.*)$")  -- LEAKED BY SLICED | discord.gg/pubmethod
+					sliced104 = slicedfn32(match4 or str10)
+					str10 = slicedfn32(sliced105 or "")
+
+					if sliced104 == "" then
+						sliced104 = arg
+					end
+
+					str9 = str9 == "SEARCHCODE" and "CODE" or "ANSWER"
+					str10 = str10 ~= "" and str10 or "..."
+				end
+
+				if str9 ~= "CODE" and slicedfn60(arg) then
+					str9 = "CODE"  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				if str9 == "CODE" and _G.__RiddlerMalformedCodeBody(str10) then
+					return nil, false, "model returned an explanation instead of a code"
+				end
+				local flag26 = str9 == "CODE"
+				local str11, str12
+
+				if flag26 then
+					str11 = str10:gsub("%s+", ""):gsub("(%d)%.(%d)", "%1\1%2"):gsub("[%.,']", ""):gsub("\1", "."):upper()
+					str12 = _G.__RiddlerPreserveNumericSuffix(arg, slicedfn59(str11))
+					local sliced105 = nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					if str11 == str12 then
+						str11 = sliced105
+					end
+				else
+					str12 = str10:gsub(",", ""):gsub("%s+", " "):gsub("%.$", "")
+					str11 = nil
+				end
+
+				local sliced105, sliced106 = _G.__RiddlerPinLiveMutation(arg, _G.__RiddlerExpandUnits(str12), flag26)
+				local sliced107, sliced108 = _G.__RiddlerPinNewBrainrot(arg, sliced105, flag26)
+				sliced106 = sliced106 or sliced108  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local sliced109, sliced110 = _G.__RiddlerPinNewGear(arg, sliced107, flag26)
+				sliced106 = sliced106 or sliced110
+				local sliced111, sliced112 = _G.__RiddlerPinNewMeta(arg, sliced109, flag26)
+				sliced106 = sliced106 or sliced112
+				local sliced113, sliced114 = _G.__RiddlerPinRarity(arg, sliced111, flag26)
+				sliced114 = sliced106 or sliced114
+				local sliced115, sliced116 = _G.__RiddlerSnapSpelling(sliced113)
+
+				if sliced116 then
+					sliced114 = true
+				else  -- LEAKED BY SLICED | discord.gg/pubmethod
+					sliced115 = sliced113
+				end
+
+				local sliced117 = _G.__RiddlerCheckDescribed(arg, sliced115, flag26)
+
+				if sliced117 then
+					_G.RiddlerLastNameWarning = sliced117
+				end
+
+				if sliced115 == "" or sliced115 == "NIL" or sliced115 == "..." then
+					return nil, false, "model gave an empty answer"
+				end
+
+				if sliced102 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local str13
+
+					if flag26 then
+						str13 = slicedfn59(sliced102:gsub("%s+", ""):gsub("[%.,']", ""):upper())
+					else
+						str13 = flag26
+					end
+
+					str13 = str13 or sliced102:gsub(",", ""):gsub("%s+", " "):gsub("%.$", "")
+
+					if str13 == sliced115 or str13 == "" then
+						sliced102 = nil
+					else  -- LEAKED BY SLICED | discord.gg/pubmethod
+						sliced102 = str13
+					end
+
+					if sliced114 then
+						sliced102 = nil
+					end
+				end
+
+				_G.RiddlerLastAnswer = sliced115
+
+				if not sliced104 then
+					tbl17[sliced98] = { text = sliced115, isCode = flag26, searched = false, altForm = str11, altAnswer = sliced102 }
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				return sliced115, false, nil, flag26, false, sliced104, str11, sliced102, sliced98
+			end
+
+			slicedfn40 = function(arg, arg2, arg3, arg4, arg5)
+				local search = slicedfn58("search", { riddle = arg, query = arg2, isCode = arg4 })
+				if not search then
+					return nil
+				end
+				local sliced98 = slicedfn32(search:gsub("^%a+%s*:%s*", ""))
+				local str8
+
+				if arg4 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local str9 = sliced98:gsub("%s+", ""):gsub("[%.,]$", ""):upper()
+					str8 = _G.__RiddlerPreserveNumericSuffix(arg, str9)
+				else
+					str8 = sliced98:gsub(",", ""):gsub("%s+", " "):gsub("%.$", "")
+				end
+
+				if str8 == "" then
+					return nil
+				end
+				tbl17[arg5 or _G.__RiddlerCacheKey(arg)] = { text = str8, isCode = arg4, searched = true }
+				if str8 == arg3 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					return nil
+				end
+				return str8
+			end
+		end
+	end
+
+	do
+		local tbl19, tbl20
+
+		do
+			tbl19 = {  -- LEAKED BY SLICED | discord.gg/pubmethod
+				"^%s*$",
+				"joined the server",
+				"left the server",
+				"has left",
+				"has joined",
+				"just stole",
+				"stole a ",
+				"was stolen",
+				"robbed",
+				"welcome to",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				"thanks for playing",
+				"^%s*%d+%s*$",
+			}
+
+			do
+				local tbl21 = {
+					"use",
+					"using",
+					"redeem",
+					"type",
+					"enter",  -- LEAKED BY SLICED | discord.gg/pubmethod
+					"write",
+					"claim",
+					"grab",
+					"check",
+					"here is",
+					"heres",
+					"here's",
+					"there is",
+					"theres",
+					"there's",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				}
+
+				_G.__RiddlerTrigArticles = {
+					"",
+					"the%s+",
+					"a%s+",
+					"an%s+",
+					"this%s+",
+					"your%s+",
+					"new%s+",
+				}  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				tbl20 = {
+					"code%s+is",
+					"codes?%s+are",
+					"code%s+for",
+					"code%s+to%s+use",
+					"code%s*[:%-]",
+					"new%s+code",
+					"free%s+code",
+					"secret%s+code",
+					"working%s+code",  -- LEAKED BY SLICED | discord.gg/pubmethod
+					"another%s+code",
+					"riddle%s*[:%-]",
+					"riddle%s+is",
+					"answer%s+is",
+					"guess%s+the",
+					"hint%s*[:%-]",
+				}
+
+				for _, sliced98 in ipairs(tbl21) do
+					local str8 = sliced98:gsub("%s+", "%%s+")
+
+					for _, riddlerTrigArticle in ipairs(_G.__RiddlerTrigArticles) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+						tbl20[#tbl20 + 1] = str8 .. "%s+" .. riddlerTrigArticle .. "code"
+					end
+				end
+			end
+		end
+
+		_G.__RiddlerTrigNames = { "sammy" }
+
+		do
+			local function slicedfn58(arg)
+				for match, match2 in arg:gmatch("()([%w_]+)") do
+					if #match2 >= 4 and match2:match("%a") and (match2:match("%u") or match2:match("%d")) then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						return arg:sub(match)
+					end
+				end
+			end
+
+			local tbl21 = {
+				"code is",
+				"use code",
+				"event has been activated",
+				"has been activated",
+				"has activated",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				"your base is already locked",
+				"your base is full",
+				"request failed",
+				"base is already locked",
+				"you locked your base",
+				"you have locked your base",
+				"locked your base",
+				"brainrot express has arrived",
+				"brainrot express has arrv",
+				"brainrot express leaving in",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				"sammy activated",
+				"spydersammy activated",
+				"x luck",
+				"free spin",
+				"spin is already in progress",
+				"hold on before spinning again",
+				"please wait before buying another brainrot",
+				"not enough honey",
+				"out of stock",
+				"trade has been completed",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				"broke into your base",
+				"someone is stealing",
+				"event has started",
+				"the crystal event is here",
+			}
+
+			slicedfn41 = function(arg)
+				if not sliced92 or not flag20 then
+					return false
+				end
+				local str8 = arg:lower()  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				for _, sliced98 in ipairs(tbl21) do
+					if str8:find(sliced98, 1, true) then
+						return true, sliced98
+					end
+				end
+
+				return false
+			end
+
+			slicedfn42 = function(arg)
+				local str8 = arg:lower()
+				local sliced98 = nil  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local sliced99 = nil
+
+				local function slicedfn59(arg2, arg3, arg4)
+					local slicedn34 = 1
+
+					while true do
+						local ok, result, result2 = pcall(string.find, str8, arg2, slicedn34, arg3)
+
+						if not (not ok or not result) then
+							if not sliced98 or result2 > sliced98 then
+								sliced98 = result2
+								sliced99 = arg4
+							end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+							slicedn34 = result2 + 1
+							continue
+						end
+
+						break
+					end
+				end
+
+				for _, sliced100 in ipairs(tbl20) do
+					slicedfn59(sliced100, false, false)
+				end
+
+				if str8:find("code") or str8:find("riddle") then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					for _, riddlerTrigName in ipairs(_G.__RiddlerTrigNames) do
+						local sliced100 = true
+						local sliced101 = true
+						slicedfn59(riddlerTrigName:lower(), sliced100, sliced101)
+					end
+				end
+
+				if not sliced98 then
+					return nil
+				end
+				local str9 = arg:sub(sliced98 + 1)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local sliced100 = slicedfn58(str9)
+				if sliced99 then
+					return sliced100
+				end
+				return sliced100 or ""
+			end
+		end
+
+		slicedfn43 = function(arg)
+			local str8 = arg:lower()
+			if #str8 < 3 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+				return false
+			end
+
+			for _, sliced98 in ipairs(tbl19) do
+				if str8:find(sliced98) then
+					return false
+				end
+			end
+
+			return true
+		end
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	do
+		do
+			do
+				local function slicedfn58(arg)
+					if not getupvalues_ then
+						return {}
+					end
+					local ok, result = pcall(getupvalues_, arg)
+					local tbl19 = {}
+
+					if ok and result then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						for _, sliced98 in pairs(result) do
+							if typeof(sliced98) == "Instance" and (sliced98:IsA("RemoteEvent") or sliced98:IsA("RemoteFunction") or sliced98:IsA("UnreliableRemoteEvent")) and sliced98.Parent == sliced89 then
+								table.insert(tbl19, sliced98)
+							end
+						end
+					end
+
+					return tbl19
+				end
+
+				slicedfn44 = function()
+					local ok, result = pcall(function()  -- LEAKED BY SLICED | discord.gg/pubmethod
+						return require(sliced86.Controllers:FindFirstChild("NotificationController", true))
+					end)
+
+					if ok and type(result) == "table" and type(result.Start) == "function" then
+						return slicedfn58(result.Start)[1]
+					end
+				end
+			end
+		end
+
+		tbl18 = {
+			bg = Color3.fromRGB(6, 6, 9),  -- LEAKED BY SLICED | discord.gg/pubmethod
+			panel = Color3.fromRGB(16, 15, 21),
+			panel2 = Color3.fromRGB(32, 28, 42),
+			line = Color3.fromRGB(42, 35, 52),
+			acc = Color3.fromRGB(235, 90, 175),
+			acc2 = Color3.fromRGB(160, 50, 110),
+			accHi = Color3.fromRGB(255, 150, 210),
+			txt = Color3.fromRGB(245, 240, 255),
+			sub = Color3.fromRGB(185, 175, 210),
+			ok = Color3.fromRGB(55, 195, 105),
+			err = Color3.fromRGB(205, 50, 50),  -- LEAKED BY SLICED | discord.gg/pubmethod
+			warn = Color3.fromRGB(255, 215, 0),
+			input = Color3.fromRGB(11, 10, 15),
+			dark = Color3.fromRGB(6, 6, 9),
+		}
+
+		gothamMedium = Enum.Font.GothamMedium
+		gothamBold = Enum.Font.GothamBold
+		gothamBlack = Enum.Font.GothamBlack
+
+		slicedfn45 = function(arg, arg2, parent)
+			local instance = Instance.new(arg)
+			local sliced98 = pairs  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local tbl19 = arg2 or {}
+
+			for k, sliced99 in sliced98(tbl19) do
+				instance[k] = sliced99
+			end
+
+			if parent then
+				instance.Parent = parent
+			end
+
+			return instance
+		end
+
+		slicedfn46 = function(arg, arg2)  -- LEAKED BY SLICED | discord.gg/pubmethod
+			slicedfn45("UICorner", { CornerRadius = UDim.new(0, arg2 or 8) }, arg)
+		end
+
+		slicedfn47 = function(arg, arg2, arg3, arg4)
+			return slicedfn45("UIStroke", { Color = arg2 or tbl18.line, Thickness = arg3 or 1, Transparency = arg4 or 0 }, arg)
+		end
+
+		slicedfn48 = function(arg, arg2, arg3, arg4)
+			sliced97:Create(arg, TweenInfo.new(arg2, arg4 or Enum.EasingStyle.Quad), arg3):Play()
+		end
+
+		do
+			local function slicedfn58(arg, arg2, arg3, arg4)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				return slicedfn45("UIGradient", { Color = ColorSequence.new(arg2, arg3), Rotation = arg4 or 90 }, arg)
+			end
+
+			slicedfn49 = function(arg, arg2, arg3, arg4, arg5, arg6)
+				return slicedfn45("TextLabel", {
+					BackgroundTransparency = 1,
+					Text = arg,
+					Font = arg4 or gothamMedium,
+					TextSize = arg2 or 12,
+					TextColor3 = arg3 or tbl18.txt,
+					TextXAlignment = arg5 or Enum.TextXAlignment.Left,  -- LEAKED BY SLICED | discord.gg/pubmethod
+					}, arg6)
+			end
+
+			local function slicedfn59(arg, arg2)
+				local flag24 = nil
+				local sliced98 = nil
+				local sliced99
+
+				arg.InputBegan:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+						local position = input.Position
+						local position2 = arg2.Position  -- LEAKED BY SLICED | discord.gg/pubmethod
+						flag24 = true
+						sliced98 = position
+						sliced99 = position2
+
+						input.Changed:Connect(function()
+							if input.UserInputState == Enum.UserInputState.End then
+								flag24 = false
+							end
+						end)
+					end
+				end)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				sliced96.InputChanged:Connect(function(input)
+					if flag24 and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+						local slicedn34 = input.Position - sliced98
+						arg2.Position = UDim2.new(sliced99.X.Scale, sliced99.X.Offset + slicedn34.X, sliced99.Y.Scale, sliced99.Y.Offset + slicedn34.Y)
+					end
+				end)
+			end
+
+			slicedfn50 = function(arg, arg2, arg3, arg4)
+				local Frame3 = slicedfn45("Frame", {
+					Name = arg,  -- LEAKED BY SLICED | discord.gg/pubmethod
+					Size = UDim2.fromOffset(arg2, arg3),
+					BackgroundColor3 = tbl18.bg,
+					BorderSizePixel = 0,
+					Active = true,
+					ClipsDescendants = true,
+				})
+
+				slicedfn46(Frame3, 14)
+				slicedfn58(Frame3, Color3.fromRGB(16, 15, 21), Color3.fromRGB(6, 6, 9), 90)
+				slicedfn47(Frame3, tbl18.acc, 1.2, 0.45)
+
+				if flag18 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					slicedfn45("UIScale", { Name = "WinScale", Scale = 0.65 * _G.__RiddlerUiMult() }, Frame3)
+				end
+
+				local Frame4 = slicedfn45("Frame", { Size = UDim2.new(1, 0, 0, 44), BackgroundColor3 = tbl18.panel, BorderSizePixel = 0 }, Frame3)
+				slicedfn46(Frame4, 14)
+
+				slicedfn45("Frame", {
+					Size = UDim2.new(1, 0, 0, 14),
+					Position = UDim2.new(0, 0, 1, -14),
+					BackgroundColor3 = tbl18.panel,
+					BorderSizePixel = 0,
+					}, Frame4)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				local ImageLabel = slicedfn45("ImageLabel", {
+					Size = UDim2.fromOffset(24, 24),
+					Position = UDim2.new(0, 12, 0.5, -12),
+					BackgroundColor3 = tbl18.panel2,
+					BorderSizePixel = 0,
+					Image = "rbxthumb://type=Asset&id=124491981850461&w=150&h=150",
+					}, Frame4)
+
+				slicedfn46(ImageLabel, 13)
+				slicedfn47(ImageLabel, tbl18.acc, 1.5, 0.2)
+				local sliced98 = slicedfn49(arg4, 15, tbl18.txt, gothamBlack, Enum.TextXAlignment.Left, Frame4)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				sliced98.Size = UDim2.new(1, -132, 1, 0)
+				sliced98.Position = UDim2.fromOffset(44, 0)
+				slicedfn59(Frame4, Frame3)
+				return Frame3, Frame4, ImageLabel, sliced98
+			end
+
+			slicedfn51 = function(arg, arg2)
+				local TextButton = slicedfn45("TextButton", {
+					BackgroundColor3 = tbl18.panel2,
+					Text = arg,
+					Font = gothamBold,  -- LEAKED BY SLICED | discord.gg/pubmethod
+					TextSize = 13,
+					TextColor3 = tbl18.txt,
+					AutoButtonColor = false,
+					BorderSizePixel = 0,
+					}, arg2)
+
+				slicedfn46(TextButton, 8)
+				local sliced98 = slicedfn47(TextButton, tbl18.line, 1, 0.2)
+
+				TextButton.MouseEnter:Connect(function()
+					slicedfn48(TextButton, 0.12, { BackgroundColor3 = tbl18.panel })
+					slicedfn48(sliced98, 0.12, { Color = tbl18.acc, Transparency = 0 })  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end)
+
+				TextButton.MouseLeave:Connect(function()
+					slicedfn48(TextButton, 0.12, { BackgroundColor3 = tbl18.panel2 })
+					slicedfn48(sliced98, 0.12, { Color = tbl18.line, Transparency = 0.2 })
+				end)
+
+				return TextButton
+			end
+
+			slicedfn52 = function(arg, arg2)
+				local TextButton = slicedfn45("TextButton", {
+					BackgroundColor3 = tbl18.acc,  -- LEAKED BY SLICED | discord.gg/pubmethod
+					Text = arg,
+					Font = gothamBlack,
+					TextSize = 13,
+					TextColor3 = Color3.fromRGB(255, 255, 255),
+					AutoButtonColor = false,
+					BorderSizePixel = 0,
+					}, arg2)
+
+				slicedfn46(TextButton, 8)
+				slicedfn58(TextButton, tbl18.acc, tbl18.acc2, 90)
+
+				TextButton.MouseEnter:Connect(function()  -- LEAKED BY SLICED | discord.gg/pubmethod
+					slicedfn48(TextButton, 0.12, { BackgroundColor3 = tbl18.accHi })
+				end)
+
+				TextButton.MouseLeave:Connect(function()
+					slicedfn48(TextButton, 0.12, { BackgroundColor3 = tbl18.acc })
+				end)
+
+				return TextButton
+			end
+		end
+	end
+
+	if getgenv and getgenv().StopRiddler then  -- LEAKED BY SLICED | discord.gg/pubmethod
+		pcall(getgenv().StopRiddler)
+	end
+
+	do
+		local hui = gethui and gethui() or playerGui
+		local riddler = hui:FindFirstChild("Riddler")
+
+		if riddler then
+			riddler:Destroy()
+		end
+
+		ScreenGui = slicedfn45("ScreenGui", {
+			Name = "Riddler",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			ResetOnSpawn = false,
+			ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+			DisplayOrder = 251,
+			}, hui)
+	end
+end
+
+do
+	local sliced98
+
+	do
+		slicedn32 = 316  -- LEAKED BY SLICED | discord.gg/pubmethod
+		slicedn33 = 544
+		Main, sliced98 = slicedfn50("Main", 316, 544, "RIDDLER")
+		Main.Position = UDim2.new(1, -slicedn32 - 24, 0.5, -math.floor(slicedn33 / 2))
+
+		if flag18 then
+			local floor2 = math.floor
+			local sliced99 = 2
+			Main.Position = UDim2.new(1, -math.floor(slicedn32 * 0.65 * _G.__RiddlerUiMult()) - 8, 0.5, -floor2(slicedn33 * 0.65 * _G.__RiddlerUiMult() / sliced99))
+		end
+
+		Main.Parent = ScreenGui
+
+		slicedfn46(slicedfn45("ImageLabel", {  -- LEAKED BY SLICED | discord.gg/pubmethod
+			Name = "CityBg",
+			Size = UDim2.new(1, 0, 1, 0),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			ZIndex = 0,
+			Image = "rbxthumb://type=Asset&id=96519310989847&w=420&h=420",
+			ImageTransparency = 0.5,
+			ImageColor3 = Color3.fromRGB(200, 160, 190),
+			ScaleType = Enum.ScaleType.Crop,
+			}, Main), 14)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		do
+			local Frame3 = slicedfn45("Frame", {
+				Name = "LeavesLayer",
+				Size = UDim2.new(1, 0, 1, 0),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				ZIndex = 0,
+				ClipsDescendants = true,
+				}, Main)
+
+			slicedfn46(Frame3, 14)  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local sliced99 = _G
+			local riddlerPetalPalette = {}
+			local color = Color3.fromRGB(255, 205, 225)
+			local color2 = Color3.fromRGB(255, 175, 210)
+			local color3 = Color3.fromRGB(245, 135, 185)
+			local color4 = Color3.fromRGB(255, 220, 235)
+			local color5 = Color3.fromRGB
+			riddlerPetalPalette[1] = color
+			riddlerPetalPalette[2] = color2
+			riddlerPetalPalette[3] = color3  -- LEAKED BY SLICED | discord.gg/pubmethod
+			riddlerPetalPalette[4] = color4
+
+			do
+				local values = table.pack(color5(230, 110, 170))
+				table.move(values, 1, values.n, 5, riddlerPetalPalette)
+			end
+
+			sliced99.__RiddlerPetalPalette = riddlerPetalPalette
+
+			for i = 1, 18 do
+				task.spawn(function()
+					task.wait(math.random() * 2.5)
+
+					while Frame3.Parent do  -- LEAKED BY SLICED | discord.gg/pubmethod
+						local slicedn34 = math.random(5, 8)
+						local slicedn35 = slicedn34 + math.random(2, 4)
+						local slicedn36 = math.random()
+
+						local Frame4 = slicedfn45("Frame", {
+							Size = UDim2.new(0, slicedn34, 0, slicedn35),
+							AnchorPoint = Vector2.new(0.5, 0.5),
+							Position = UDim2.new(slicedn36, 0, 0, -slicedn35),
+							BackgroundColor3 = _G.__RiddlerPetalPalette[math.random(#_G.__RiddlerPetalPalette)],
+							BackgroundTransparency = 0.15 + math.random() * 0.35,
+							BorderSizePixel = 0,  -- LEAKED BY SLICED | discord.gg/pubmethod
+							ZIndex = 0,
+							Rotation = math.random(0, 359),
+							}, Frame3)
+
+						slicedfn45("UICorner", { CornerRadius = UDim.new(1, 0) }, Frame4)
+						local new = NumberSequenceKeypoint.new
+
+						slicedfn45("UIGradient", {
+							Rotation = math.random(0, 359),
+							Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), new(1, 0.55) }),
+							}, Frame4)
+
+						local slicedn37 = 3.2 + math.random() * 2.6  -- LEAKED BY SLICED | discord.gg/pubmethod
+						local slicedn38 = (math.random() - 0.5) * 0.35
+						local slicedn39 = math.random(180, 540)
+						local slicedn40 = math.random() < 0.5 and -1 or 1
+						sliced97:Create(Frame4, TweenInfo.new(slicedn37, Enum.EasingStyle.Linear), { Position = UDim2.new(slicedn36 + slicedn38, 0, 1, slicedn35 * 2), Rotation = Frame4.Rotation + slicedn39 * slicedn40 }):Play()
+						task.wait(slicedn37)
+
+						if Frame4 and Frame4.Parent then
+							Frame4:Destroy()
+						end
+
+						task.wait(math.random() * 0.5)
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end)
+			end
+		end
+	end
+
+	Frame = slicedfn45("Frame", {
+		Size = UDim2.fromOffset(8, 8),
+		Position = UDim2.new(1, -160, 0.5, -4),
+		BackgroundColor3 = tbl18.sub,
+		BorderSizePixel = 0,
+		}, sliced98)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	slicedfn46(Frame, 4)
+	Test = slicedfn51("Test", sliced98)
+	Test.Size = UDim2.fromOffset(38, 22)
+	Test.Position = UDim2.new(1, -149, 0.5, -11)
+	Test.TextSize = 10
+	Feed = slicedfn51("Feed", sliced98)
+	Feed.Size = UDim2.fromOffset(38, 22)
+	Feed.Position = UDim2.new(1, -108, 0.5, -11)
+	Feed.TextSize = 10
+	Settings = slicedfn51("Settings", sliced98)  -- LEAKED BY SLICED | discord.gg/pubmethod
+	Settings.Size = UDim2.fromOffset(38, 22)
+	Settings.Position = UDim2.new(1, -67, 0.5, -11)
+	Settings.TextSize = 8
+
+	do
+		local sliced99 = slicedfn51("", sliced98)
+		sliced99.Size = UDim2.fromOffset(22, 22)
+		sliced99.Position = UDim2.new(1, -26, 0.5, -11)
+
+		slicedfn46(slicedfn45("Frame", {
+			Size = UDim2.fromOffset(10, 2),
+			Position = UDim2.new(0.5, -5, 0.5, -1),  -- LEAKED BY SLICED | discord.gg/pubmethod
+			BackgroundColor3 = tbl18.txt,
+			BorderSizePixel = 0,
+			}, sliced99), 1)
+
+		local Frame3 = slicedfn45("Frame", {
+			Size = UDim2.fromOffset(2, 10),
+			Position = UDim2.new(0.5, -1, 0.5, -5),
+			BackgroundColor3 = tbl18.txt,
+			BorderSizePixel = 0,
+			Visible = false,
+			}, sliced99)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		slicedfn46(Frame3, 1)
+		local visible = false
+
+		sliced99.MouseButton1Click:Connect(function()
+			visible = not visible
+			Frame3.Visible = visible
+			slicedfn48(Main, 0.18, { Size = UDim2.fromOffset(316, visible and 44 or 544) })
+		end)
+	end
+end
+
+do  -- LEAKED BY SLICED | discord.gg/pubmethod
+	do
+		Frame2 = slicedfn45("Frame", {
+			Size = UDim2.new(1, -20, 1, -54),
+			Position = UDim2.fromOffset(10, 48),
+			BackgroundTransparency = 1,
+			}, Main)
+
+		slicedfn45("UIListLayout", {
+			Padding = UDim.new(0, 5),
+			SortOrder = Enum.SortOrder.LayoutOrder,
+			}, Frame2)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		do
+			local Frame3 = slicedfn45("Frame", {
+				Size = UDim2.new(1, 0, 0, 32),
+				BackgroundColor3 = tbl18.panel,
+				BorderSizePixel = 0,
+				LayoutOrder = 1,
+				}, Frame2)
+
+			slicedfn46(Frame3, 9)
+			slicedfn47(Frame3, tbl18.line, 1, 0.3)
+
+			local Frame4 = slicedfn45("Frame", {  -- LEAKED BY SLICED | discord.gg/pubmethod
+				Size = UDim2.fromOffset(8, 8),
+				Position = UDim2.new(0, 12, 0.5, -4),
+				BackgroundColor3 = tbl18.sub,
+				BorderSizePixel = 0,
+				}, Frame3)
+
+			slicedfn46(Frame4, 4)
+			local sliced96 = slicedfn49("starting...", 12, tbl18.txt, gothamBold, Enum.TextXAlignment.Left, Frame3)
+			sliced96.Size = UDim2.new(1, -32, 1, 0)
+			sliced96.Position = UDim2.fromOffset(28, 0)
+			sliced96.TextTruncate = Enum.TextTruncate.AtEnd  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			slicedfn53 = function(text, arg)
+				sliced96.Text = text
+				local ok = arg == "ok" and tbl18.ok or arg == "err" and tbl18.err or arg == "busy" and tbl18.acc or arg == "wait" and tbl18.warn or tbl18.txt
+				sliced96.TextColor3 = ok
+				Frame4.BackgroundColor3 = ok
+				return
+			end
+		end
+	end
+
+	do  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local Frame3 = slicedfn45("Frame", {
+			Size = UDim2.new(1, 0, 0, 44),
+			BackgroundColor3 = tbl18.panel,
+			BorderSizePixel = 0,
+			LayoutOrder = 2,
+			}, Frame2)
+
+		slicedfn46(Frame3, 9)
+		local sliced96 = slicedfn47(Frame3, tbl18.line, 1, 0.3)
+		local sliced97 = slicedfn49("AI  -  OFF", 13, tbl18.sub, gothamBlack, Enum.TextXAlignment.Left, Frame3)
+		sliced97.Size = UDim2.new(1, -80, 1, 0)  -- LEAKED BY SLICED | discord.gg/pubmethod
+		sliced97.Position = UDim2.fromOffset(14, 0)
+
+		local Frame4 = slicedfn45("Frame", {
+			Size = UDim2.fromOffset(48, 24),
+			Position = UDim2.new(1, -60, 0.5, -13),
+			BackgroundColor3 = tbl18.line,
+			BorderSizePixel = 0,
+			}, Frame3)
+
+		slicedfn46(Frame4, 12)
+
+		local Frame5 = slicedfn45("Frame", {
+			Size = UDim2.fromOffset(18, 18),  -- LEAKED BY SLICED | discord.gg/pubmethod
+			Position = UDim2.new(0, 3, 0.5, -9),
+			BackgroundColor3 = tbl18.txt,
+			BorderSizePixel = 0,
+			}, Frame4)
+
+		slicedfn46(Frame5, 9)
+
+		local tbl19 = {
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			Text = "",
+		}  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		slicedfn54 = function()
+			slicedfn48(Frame4, 0.16, { BackgroundColor3 = flag19 and tbl18.acc or tbl18.line })
+			slicedfn48(Frame5, 0.16, { Position = UDim2.new(0, flag19 and 27 or 3, 0.5, -9) }, Enum.EasingStyle.Back)
+			slicedfn48(sliced96, 0.16, { Color = flag19 and tbl18.acc or tbl18.line, Transparency = flag19 and 0 or 0.3 })
+			sliced97.Text = flag19 and "AI  -  ON" or "AI  -  OFF"
+			sliced97.TextColor3 = flag19 and tbl18.txt or tbl18.sub
+
+			if flag19 then
+				slicedfn53(sliced93 and "listening for riddles" or "listening (fallback)", "ok")
+			else
+				slicedfn53("ai off", "wait")  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+		end
+
+		slicedfn45("TextButton", tbl19, Frame3).MouseButton1Click:Connect(function()
+			flag19 = not flag19
+			slicedfn54()
+			_G.__RiddlerCfgSet("wordMode", flag19)
+		end)
+	end
+end
+
+do  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local Frame3 = slicedfn45("Frame", {
+		Size = UDim2.new(1, 0, 0, 44),
+		BackgroundColor3 = tbl18.panel,
+		BorderSizePixel = 0,
+		LayoutOrder = 3,
+		}, Frame2)
+
+	slicedfn46(Frame3, 9)
+	local sliced96 = slicedfn47(Frame3, tbl18.line, 1, 0.3)
+	local sliced97 = slicedfn49("LISTEN  -  OFF", 13, tbl18.sub, gothamBlack, Enum.TextXAlignment.Left, Frame3)
+	sliced97.Size = UDim2.new(1, -80, 1, 0)  -- LEAKED BY SLICED | discord.gg/pubmethod
+	sliced97.Position = UDim2.fromOffset(14, 0)
+
+	local Frame4 = slicedfn45("Frame", {
+		Size = UDim2.fromOffset(48, 24),
+		Position = UDim2.new(1, -60, 0.5, -12),
+		BackgroundColor3 = tbl18.line,
+		BorderSizePixel = 0,
+		}, Frame3)
+
+	slicedfn46(Frame4, 12)
+
+	local Frame5 = slicedfn45("Frame", {
+		Size = UDim2.fromOffset(18, 18),  -- LEAKED BY SLICED | discord.gg/pubmethod
+		Position = UDim2.new(0, 3, 0.5, -9),
+		BackgroundColor3 = tbl18.txt,
+		BorderSizePixel = 0,
+		}, Frame4)
+
+	slicedfn46(Frame5, 9)
+
+	local tbl19 = {
+		Size = UDim2.fromScale(1, 1),
+		BackgroundTransparency = 1,
+		Text = "",
+	}  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	slicedfn55 = function()
+		slicedfn48(Frame4, 0.16, { BackgroundColor3 = flag20 and tbl18.acc or tbl18.line })
+		slicedfn48(Frame5, 0.16, { Position = UDim2.new(0, flag20 and 27 or 3, 0.5, -9) }, Enum.EasingStyle.Back)
+		slicedfn48(sliced96, 0.16, { Color = flag20 and tbl18.acc or tbl18.line, Transparency = flag20 and 0 or 0.3 })
+		sliced97.Text = flag20 and "LISTEN  -  ON" or "LISTEN  -  OFF"
+		sliced97.TextColor3 = flag20 and tbl18.txt or tbl18.sub
+
+		if flag20 then
+			slicedfn53(sliced93 and "listening for questions" or "listening (fallback)", "ok")
+		else
+			slicedfn53("not listening", "wait")  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+	end
+
+	slicedfn45("TextButton", tbl19, Frame3).MouseButton1Click:Connect(function()
+		flag20 = not flag20
+		slicedfn55()
+	end)
+end
+
+local slicedfn56, slicedfn57, slicedfn58, Settings2, Frame3
+
+do
+	local Frame4, sliced96, answer, TextBox, redeem, slicedfn59, Feed2, slicedfn60, slicedfn61, slicedfn62  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	do
+		do
+			do
+				do
+					do
+						Frame4 = slicedfn45("Frame", {
+							Size = UDim2.new(1, 0, 0, 62),
+							BackgroundColor3 = tbl18.panel,
+							BorderSizePixel = 0,
+							LayoutOrder = 4,  -- LEAKED BY SLICED | discord.gg/pubmethod
+							}, Frame2)
+
+						slicedfn46(Frame4, 9)
+						slicedfn47(Frame4, tbl18.line, 1, 0.3)
+
+						do
+							local question = slicedfn49("QUESTION", 9, tbl18.acc, gothamBlack, Enum.TextXAlignment.Left, Frame4)
+							question.Size = UDim2.new(1, -16, 0, 11)
+							question.Position = UDim2.fromOffset(11, 5)
+						end
+					end
+
+					sliced96 = slicedfn49("waiting...", 10, tbl18.sub, gothamMedium, Enum.TextXAlignment.Left, Frame4)  -- LEAKED BY SLICED | discord.gg/pubmethod
+					sliced96.Size = UDim2.new(1, -22, 0, 40)
+					sliced96.Position = UDim2.fromOffset(11, 18)
+					sliced96.TextWrapped = true
+					sliced96.TextYAlignment = Enum.TextYAlignment.Top
+
+					do
+						local Frame5 = slicedfn45("Frame", {
+							Size = UDim2.new(1, 0, 0, 54),
+							BackgroundColor3 = tbl18.panel,
+							BorderSizePixel = 0,
+							LayoutOrder = 5,  -- LEAKED BY SLICED | discord.gg/pubmethod
+							}, Frame2)
+
+						slicedfn46(Frame5, 9)
+						slicedfn47(Frame5, tbl18.acc, 1, 0.35)
+						answer = slicedfn49("ANSWER", 9, tbl18.acc, gothamBlack, Enum.TextXAlignment.Left, Frame5)
+						answer.Size = UDim2.new(1, -16, 0, 11)
+						answer.Position = UDim2.fromOffset(11, 5)
+
+						TextBox = slicedfn45("TextBox", {
+							Size = UDim2.new(1, -18, 0, 28),
+							Position = UDim2.fromOffset(9, 19),
+							BackgroundColor3 = tbl18.input,  -- LEAKED BY SLICED | discord.gg/pubmethod
+							Text = "",
+							PlaceholderText = "answer appears here...",
+							PlaceholderColor3 = tbl18.sub,
+							Font = gothamBlack,
+							TextSize = 14,
+							TextColor3 = tbl18.acc,
+							ClearTextOnFocus = false,
+							BorderSizePixel = 0,
+							TextXAlignment = Enum.TextXAlignment.Left,
+							}, Frame5)  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+				end
+
+				slicedfn46(TextBox, 7)
+				slicedfn47(TextBox, tbl18.line, 1.2, 0.25)
+
+				slicedfn45("UIPadding", {
+					PaddingLeft = UDim.new(0, 9),
+					PaddingRight = UDim.new(0, 9),
+					}, TextBox)
+
+				do
+					local Frame5 = slicedfn45("Frame", {  -- LEAKED BY SLICED | discord.gg/pubmethod
+						Size = UDim2.new(1, 0, 0, 33),
+						BackgroundTransparency = 1,
+						LayoutOrder = 6,
+						}, Frame2)
+
+					slicedfn45("UIListLayout", {
+						FillDirection = Enum.FillDirection.Horizontal,
+						Padding = UDim.new(0, 6),
+						SortOrder = Enum.SortOrder.LayoutOrder,
+						}, Frame5)
+
+					local copy = slicedfn51("COPY", Frame5)  -- LEAKED BY SLICED | discord.gg/pubmethod
+					copy.Size = UDim2.new(0.33333333333333331, -4, 1, 0)
+					copy.LayoutOrder = 1
+					local clear = slicedfn51("CLEAR", Frame5)
+					clear.Size = UDim2.new(0.33333333333333331, -4, 1, 0)
+					clear.LayoutOrder = 2
+					redeem = slicedfn52("REDEEM", Frame5)
+					redeem.Size = UDim2.new(0.33333333333333331, -4, 1, 0)
+					redeem.LayoutOrder = 3
+					redeem.TextColor3 = Color3.fromRGB(0, 0, 0)
+
+					clear.MouseButton1Click:Connect(function()  -- LEAKED BY SLICED | discord.gg/pubmethod
+						TextBox.Text = ""
+						sliced96.Text = "waiting..."
+						sliced96.TextColor3 = tbl18.sub
+						answer.Text = "ANSWER"
+						str7 = ""
+						slicedfn53(flag20 and "listening for questions" or "not listening", flag20 and "ok" or "wait")
+					end)
+
+					copy.MouseButton1Click:Connect(function()
+						local sliced97 = slicedfn32(TextBox.Text)
+						if sliced97 == "" then  -- LEAKED BY SLICED | discord.gg/pubmethod
+							return
+						end
+						copy.Text = slicedfn33(sliced97) and "COPIED" or "ERR"
+
+						task.delay(0.7, function()
+							if copy.Parent then
+								copy.Text = "COPY"
+							end
+						end)
+					end)
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			do
+				local Frame5
+
+				do
+					slicedfn59 = function(arg, arg2, arg3, arg4, arg5)
+						local Frame6 = slicedfn45("Frame", {
+							Size = UDim2.new(1, 0, 0, 31),
+							BackgroundColor3 = tbl18.panel,
+							BorderSizePixel = 0,
+							LayoutOrder = arg2,  -- LEAKED BY SLICED | discord.gg/pubmethod
+							}, arg)
+
+						slicedfn46(Frame6, 8)
+						slicedfn47(Frame6, tbl18.line, 1, 0.3)
+						local sliced97 = slicedfn49(arg3, 11, tbl18.sub, gothamBold, Enum.TextXAlignment.Left, Frame6)
+						sliced97.Size = UDim2.new(1, -56, 1, 0)
+						sliced97.Position = UDim2.fromOffset(13, 0)
+						sliced97.TextTruncate = Enum.TextTruncate.AtEnd
+
+						local Frame7 = slicedfn45("Frame", {
+							Size = UDim2.fromOffset(36, 18),
+							Position = UDim2.new(1, -46, 0.5, -9),  -- LEAKED BY SLICED | discord.gg/pubmethod
+							BackgroundColor3 = tbl18.line,
+							BorderSizePixel = 0,
+							}, Frame6)
+
+						slicedfn46(Frame7, 9)
+
+						local Frame8 = slicedfn45("Frame", {
+							Size = UDim2.fromOffset(14, 14),
+							Position = UDim2.new(0, 2, 0.5, -7),
+							BackgroundColor3 = tbl18.txt,
+							BorderSizePixel = 0,
+							}, Frame7)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+						slicedfn46(Frame8, 7)
+						local TextButton = slicedfn45("TextButton", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Text = "" }, Frame6)
+						local flag24 = arg4
+
+						local function slicedfn63()
+							slicedfn48(Frame7, 0.16, { BackgroundColor3 = flag24 and tbl18.acc or tbl18.line })
+							slicedfn48(Frame8, 0.16, { Position = UDim2.new(0, flag24 and 20 or 2, 0.5, -7) }, Enum.EasingStyle.Back)
+							slicedfn48(sliced97, 0.16, { TextColor3 = flag24 and tbl18.txt or tbl18.sub })
+						end
+
+						slicedfn63()
+
+						TextButton.MouseButton1Click:Connect(function()  -- LEAKED BY SLICED | discord.gg/pubmethod
+							flag24 = not flag24
+							slicedfn63()
+
+							if arg5 then
+								arg5(flag24)
+							end
+						end)
+
+						return Frame6
+					end
+
+					slicedfn59(Frame2, 7, "AUTO REDEEM ANSWER", sliced90, function(arg)
+						sliced90 = arg  -- LEAKED BY SLICED | discord.gg/pubmethod
+						_G.__RiddlerCfgSet("autoType", arg)
+					end)
+
+					slicedfn59(Frame2, 8, "SECURE ANSWER (1-3)", secure, function(arg)
+						secure = arg
+						_G.__RiddlerCfgSet("secure", arg)
+					end)
+
+					slicedfn59(Frame2, 9, "AUTO COPY ANSWER", autoCopy, function(arg)
+						autoCopy = arg
+						_G.__RiddlerCfgSet("autoCopy", arg)
+					end)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					slicedfn59(Frame2, 10, "OPEN FEED ON HIT", openFeed, function(arg)
+						openFeed = arg
+						_G.__RiddlerCfgSet("openFeed", arg)
+					end)
+
+					do
+						local Frame6 = slicedfn45("Frame", {
+							Size = UDim2.new(1, 0, 0, 31),
+							BackgroundColor3 = tbl18.panel,
+							BorderSizePixel = 0,
+							LayoutOrder = 11,  -- LEAKED BY SLICED | discord.gg/pubmethod
+							}, Frame2)
+
+						slicedfn46(Frame6, 8)
+						slicedfn47(Frame6, tbl18.line, 1, 0.3)
+						local model2 = slicedfn49("MODEL", 11, tbl18.sub, gothamBold, Enum.TextXAlignment.Left, Frame6)
+						model2.Size = UDim2.fromOffset(56, 31)
+						model2.Position = UDim2.fromOffset(11, 0)
+
+						Frame5 = slicedfn45("Frame", {
+							Size = UDim2.fromOffset(168, 23),
+							Position = UDim2.new(1, -177, 0.5, -11.5),
+							BackgroundColor3 = tbl18.input,  -- LEAKED BY SLICED | discord.gg/pubmethod
+							BorderSizePixel = 0,
+							}, Frame6)
+					end
+				end
+
+				slicedfn46(Frame5, 7)
+
+				do
+					local tbl19 = { "FASTER", "FAST" }
+					local tbl20 = {}
+
+					local function slicedfn63(arg)
+						if arg ~= model then  -- LEAKED BY SLICED | discord.gg/pubmethod
+							tbl17 = {}
+						end
+
+						model = arg
+						_G.__RiddlerCfgSet("model", arg)
+
+						for k, sliced97 in pairs(tbl20) do
+							local flag24 = k == arg
+							slicedfn48(sliced97, 0.12, { BackgroundColor3 = flag24 and tbl18.acc or tbl18.input })
+							sliced97.TextColor3 = flag24 and Color3.fromRGB(255, 255, 255) or tbl18.sub
+						end
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					for i, sliced97 in ipairs(tbl19) do
+						do
+							local TextButton = slicedfn45("TextButton", {
+								Size = UDim2.new(1 / #tbl19, -2, 1, -2),
+								Position = UDim2.new((i - 1) / #tbl19, 1, 0, 1),
+								BackgroundColor3 = tbl18.input,
+								Text = sliced97,
+								Font = gothamBold,
+								TextSize = 10,
+								TextColor3 = tbl18.sub,  -- LEAKED BY SLICED | discord.gg/pubmethod
+								AutoButtonColor = false,
+								BorderSizePixel = 0,
+								}, Frame5)
+
+							slicedfn46(TextButton, 6)
+							tbl20[sliced97] = TextButton
+
+							TextButton.MouseButton1Click:Connect(function()
+								slicedfn63(sliced97)
+							end)
+						end
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					slicedfn63(model)
+				end
+			end
+		end
+
+		do
+			local Clear, sliced97
+
+			do
+				local sliced98, sliced99
+
+				do
+					do  -- LEAKED BY SLICED | discord.gg/pubmethod
+						local sliced100
+						Feed2, sliced99, sliced100, sliced98 = slicedfn50("Feed", 348, 392, "SOLVE LOG")
+					end
+				end
+
+				Feed2.Visible = false
+				Feed2.Parent = ScreenGui
+
+				do
+					local sliced100 = slicedfn51("X", sliced99)
+					sliced100.Size = UDim2.fromOffset(24, 24)
+					sliced100.Position = UDim2.new(1, -32, 0.5, -12)  -- LEAKED BY SLICED | discord.gg/pubmethod
+					sliced100.TextSize = 12
+					Clear = slicedfn51("Clear", sliced99)
+					Clear.Size = UDim2.fromOffset(46, 24)
+					Clear.Position = UDim2.new(1, -84, 0.5, -13)
+					Clear.TextSize = 10
+					sliced97 = slicedfn49("0 solved", 10, tbl18.sub, gothamBold, Enum.TextXAlignment.Right, sliced99)
+					sliced97.Size = UDim2.new(0, 62, 1, 0)
+					sliced97.Position = UDim2.new(1, -152, 0, 0)
+					sliced98.Size = UDim2.new(1, -204, 1, 0)
+					sliced98.TextTruncate = Enum.TextTruncate.AtEnd  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					sliced100.MouseButton1Click:Connect(function()
+						Feed2.Visible = false
+					end)
+				end
+			end
+
+			do
+				local ScrollingFrame = slicedfn45("ScrollingFrame", {
+					Size = UDim2.new(1, -18, 1, -56),
+					Position = UDim2.fromOffset(11, 50),
+					BackgroundTransparency = 1,  -- LEAKED BY SLICED | discord.gg/pubmethod
+					BorderSizePixel = 0,
+					ScrollBarThickness = 3,
+					ScrollBarImageColor3 = tbl18.acc,
+					ScrollBarImageTransparency = 0.3,
+					CanvasSize = UDim2.new(),
+					AutomaticCanvasSize = Enum.AutomaticSize.Y,
+					ScrollingDirection = Enum.ScrollingDirection.Y,
+					}, Feed2)
+
+				slicedfn45("UIListLayout", {
+					Padding = UDim.new(0, 6),  -- LEAKED BY SLICED | discord.gg/pubmethod
+					SortOrder = Enum.SortOrder.LayoutOrder,
+					}, ScrollingFrame)
+
+				local sliced98 = slicedfn49("waiting for riddles...", 11, tbl18.sub, gothamMedium, Enum.TextXAlignment.Center, ScrollingFrame)
+				sliced98.Size = UDim2.new(1, 0, 0, 34)
+				sliced98.LayoutOrder = 999
+				local tbl19 = {}
+				local slicedn34 = 0
+
+				slicedfn60 = function()
+					if flag18 then
+						Feed2.Position = UDim2.new(0.5, -math.floor(Feed2.AbsoluteSize.X / 2), 0.5, -math.floor(Feed2.AbsoluteSize.Y / 2))  -- LEAKED BY SLICED | discord.gg/pubmethod
+					else
+						local position = Main.Position
+						Feed2.Position = UDim2.new(position.X.Scale, position.X.Offset - Feed2.AbsoluteSize.X - 10, position.Y.Scale, position.Y.Offset)
+					end
+
+					Feed2.Visible = true
+				end
+
+				Feed.MouseButton1Click:Connect(function()
+					if Feed2.Visible then
+						Feed2.Visible = false
+					else  -- LEAKED BY SLICED | discord.gg/pubmethod
+						slicedfn60()
+					end
+
+					return
+				end)
+
+				addRedeemCard = function(arg, arg2)
+					if sliced98 then
+						sliced98:Destroy()
+						sliced98 = nil
+					end
+
+					slicedn34 += 1  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					local Frame5 = slicedfn45("Frame", {
+						Size = UDim2.new(1, -4, 0, 0),
+						AutomaticSize = Enum.AutomaticSize.Y,
+						BackgroundColor3 = tbl18.panel,
+						BorderSizePixel = 0,
+						LayoutOrder = -slicedn34,
+						}, ScrollingFrame)
+
+					slicedfn46(Frame5, 10)
+					slicedfn47(Frame5, tbl18.warn, 1, 0.35)
+
+					slicedfn45("UIPadding", {  -- LEAKED BY SLICED | discord.gg/pubmethod
+						PaddingTop = UDim.new(0, 9),
+						PaddingBottom = UDim.new(0, 9),
+						PaddingLeft = UDim.new(0, 11),
+						PaddingRight = UDim.new(0, 11),
+						}, Frame5)
+
+					slicedfn45("UIListLayout", { Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder }, Frame5)
+					local Frame6 = slicedfn45("Frame", { Size = UDim2.new(1, 0, 0, 13), BackgroundTransparency = 1, LayoutOrder = 1 }, Frame5)
+					local sliced99 = slicedfn49(arg2 or "REDEEMING", 8, tbl18.warn, gothamBlack, Enum.TextXAlignment.Left, Frame6)
+					sliced99.Size = UDim2.new(0.5, 0, 1, 0)
+					local sub = tbl18.sub  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local right = Enum.TextXAlignment.Right
+					local sliced100 = slicedfn49(os.date("%H:%M:%S"), 8, sub, gothamMedium, right, Frame6)
+					sliced100.Size = UDim2.new(0.5, 0, 1, 0)
+					sliced100.Position = UDim2.new(0.5, 0, 0, 0)
+					local tbl20 = {}
+
+					for i, sliced101 in ipairs(arg) do
+						local Frame7 = slicedfn45("Frame", {
+							Size = UDim2.new(1, 0, 0, 22),
+							BackgroundColor3 = tbl18.input,
+							BorderSizePixel = 0,  -- LEAKED BY SLICED | discord.gg/pubmethod
+							LayoutOrder = 1 + i,
+							}, Frame5)
+
+						slicedfn46(Frame7, 6)
+						local sub2 = tbl18.sub
+						local left = Enum.TextXAlignment.Left
+						local sliced102 = slicedfn49(("%d/%d"):format(i, #arg), 9, sub2, gothamBlack, left, Frame7)
+						sliced102.Size = UDim2.fromOffset(30, 22)
+						sliced102.Position = UDim2.fromOffset(8, 0)
+						local sliced103 = slicedfn49(sliced101, 11, tbl18.sub, gothamBlack, Enum.TextXAlignment.Left, Frame7)
+						sliced103.Size = UDim2.new(1, -104, 1, 0)  -- LEAKED BY SLICED | discord.gg/pubmethod
+						sliced103.Position = UDim2.fromOffset(45, 0)
+						sliced103.TextTruncate = Enum.TextTruncate.AtEnd
+						local queued = slicedfn49("queued", 9, tbl18.sub, gothamMedium, Enum.TextXAlignment.Right, Frame7)
+						queued.Size = UDim2.fromOffset(58, 22)
+						queued.Position = UDim2.new(1, -64, 0, 0)
+						tbl20[i] = { code = sliced103, status = queued, frame = Frame7 }
+					end
+
+					table.insert(tbl19, Frame5)
+
+					if #tbl19 > 30 then
+						local sliced101 = table.remove(tbl19, 1)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+						if sliced101 then
+							sliced101:Destroy()
+						end
+					end
+
+					return function(arg3, arg4)
+						local sliced101 = tbl20[arg3]
+
+						if not sliced101 then
+							return
+						end
+
+						if arg4 == "sending" then  -- LEAKED BY SLICED | discord.gg/pubmethod
+							sliced101.status.Text = "sending"
+							sliced101.status.TextColor3 = tbl18.warn
+							sliced101.code.TextColor3 = tbl18.txt
+						elseif arg4 == "sent" then
+							sliced101.status.Text = "sent"
+							sliced101.status.TextColor3 = tbl18.acc
+							sliced101.code.TextColor3 = tbl18.acc
+						elseif arg4 == "ok" then
+							sliced101.status.Text = "REDEEMED"
+							sliced101.status.TextColor3 = tbl18.ok  -- LEAKED BY SLICED | discord.gg/pubmethod
+							sliced101.code.TextColor3 = tbl18.ok
+							sliced99.Text = "REDEEMED"
+							sliced99.TextColor3 = tbl18.ok
+						elseif arg4 == "fail" then
+							sliced101.status.Text = "failed"
+							sliced101.status.TextColor3 = tbl18.err
+							sliced101.code.TextColor3 = tbl18.sub
+						elseif arg4 == "skip" then
+							sliced101.status.Text = "skipped"
+							sliced101.status.TextColor3 = tbl18.sub  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+
+						return
+					end
+				end
+
+				slicedfn61 = function(arg, arg2, arg3, arg4, arg5, arg6)
+					if sliced98 then
+						sliced98:Destroy()
+						sliced98 = nil
+					end
+
+					slicedn34 += 1  -- LEAKED BY SLICED | discord.gg/pubmethod
+					sliced97.Text = slicedn34 .. " solved"
+
+					local Frame5 = slicedfn45("Frame", {
+						Size = UDim2.new(1, -4, 0, 0),
+						AutomaticSize = Enum.AutomaticSize.Y,
+						BackgroundColor3 = tbl18.panel,
+						BorderSizePixel = 0,
+						LayoutOrder = -slicedn34,
+						}, ScrollingFrame)
+
+					slicedfn46(Frame5, 10)
+					slicedfn47(Frame5, arg2 and tbl18.acc or tbl18.err, 1, 0.35)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					slicedfn45("UIPadding", {
+						PaddingTop = UDim.new(0, 9),
+						PaddingBottom = UDim.new(0, 9),
+						PaddingLeft = UDim.new(0, 11),
+						PaddingRight = UDim.new(0, 11),
+						}, Frame5)
+
+					slicedfn45("UIListLayout", { Padding = UDim.new(0, 7), SortOrder = Enum.SortOrder.LayoutOrder }, Frame5)
+					local Frame6 = slicedfn45("Frame", { Size = UDim2.new(1, 0, 0, 13), BackgroundTransparency = 1, LayoutOrder = 1 }, Frame5)
+					local str8 = arg5 == false and (arg6 and "WEB" or "GENERAL") or "CODE"
+
+					if arg4 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						str8 ..= " *"
+					end
+
+					slicedfn49(str8, 8, tbl18.acc, gothamBlack, Enum.TextXAlignment.Left, Frame6).Size = UDim2.new(0.45, 0, 1, 0)
+					local sliced99 = slicedfn49
+					local str9 = "%s   %.2fs"
+					local format = str9.format
+					local sliced100 = os.date("%H:%M:%S")
+					arg3 = arg3 or 0
+					local sub = tbl18.sub
+					local right = Enum.TextXAlignment.Right  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local sliced101 = sliced99(format(str9, sliced100, arg3), 8, sub, gothamMedium, right, Frame6)
+					sliced101.Size = UDim2.new(0.55, 0, 1, 0)
+					sliced101.Position = UDim2.new(0.45, 0, 0, 0)
+					local sliced102 = slicedfn49(arg, 11, tbl18.txt, gothamMedium, Enum.TextXAlignment.Left, Frame5)
+					sliced102.Size = UDim2.new(1, 0, 0, 0)
+					sliced102.AutomaticSize = Enum.AutomaticSize.Y
+					sliced102.TextWrapped = true
+					sliced102.LayoutOrder = 2
+
+					local TextLabel = slicedfn45("TextLabel", {
+						Size = UDim2.new(1, 0, 0, 26),  -- LEAKED BY SLICED | discord.gg/pubmethod
+						BackgroundColor3 = tbl18.input,
+						Text = arg2 or "FAILED",
+						Font = gothamBlack,
+						TextSize = 12,
+						TextColor3 = arg2 and tbl18.accHi or tbl18.err,
+						BorderSizePixel = 0,
+						LayoutOrder = 3,
+						TextWrapped = true,
+						}, Frame5)
+
+					slicedfn46(TextLabel, 7)  -- LEAKED BY SLICED | discord.gg/pubmethod
+					slicedfn47(TextLabel, arg2 and tbl18.acc or tbl18.err, 1.2, 0.35)
+					slicedfn45("UIPadding", { PaddingLeft = UDim.new(0, 6), PaddingRight = UDim.new(0, 6) }, TextLabel)
+
+					if arg2 then
+						local Frame7 = slicedfn45("Frame", { Size = UDim2.new(1, 0, 0, 26), BackgroundTransparency = 1, LayoutOrder = 4 }, Frame5)
+
+						slicedfn45("UIListLayout", {
+							FillDirection = Enum.FillDirection.Horizontal,
+							Padding = UDim.new(0, 6),
+							SortOrder = Enum.SortOrder.LayoutOrder,
+							}, Frame7)
+
+						local copy = slicedfn51("COPY", Frame7)  -- LEAKED BY SLICED | discord.gg/pubmethod
+						copy.Size = UDim2.new(0.5, -3, 1, 0)
+						copy.TextSize = 10
+						copy.LayoutOrder = 1
+
+						copy.MouseButton1Click:Connect(function()
+							copy.Text = slicedfn33(arg2) and "COPIED" or "ERR"
+
+							task.delay(0.7, function()
+								if copy.Parent then
+									copy.Text = "COPY"
+								end
+							end)  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end)
+
+						local redeem2 = slicedfn52("REDEEM", Frame7)
+						redeem2.Size = UDim2.new(0.5, -3, 1, 0)
+						redeem2.TextSize = 10
+						redeem2.LayoutOrder = 2
+						redeem2.TextColor3 = Color3.fromRGB(0, 0, 0)
+
+						redeem2.MouseButton1Click:Connect(function()
+							redeem2.Text = "..."
+							slicedfn30(arg2)
+							redeem2.Text = "REDEEM"  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end)
+					end
+
+					table.insert(tbl19, Frame5)
+
+					if #tbl19 > 30 then
+						local sliced103 = table.remove(tbl19, 1)
+
+						if sliced103 then
+							sliced103:Destroy()
+						end
+					end
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				Clear.MouseButton1Click:Connect(function()
+					for _, sliced99 in ipairs(tbl19) do
+						sliced99:Destroy()
+					end
+
+					tbl19 = {}
+					slicedn34 = 0
+					sliced97.Text = "0 solved"
+
+					if not sliced98 then
+						sliced98 = slicedfn49("waiting for riddles...", 11, tbl18.sub, gothamMedium, Enum.TextXAlignment.Center, ScrollingFrame)
+						sliced98.Size = UDim2.new(1, 0, 0, 34)  -- LEAKED BY SLICED | discord.gg/pubmethod
+						sliced98.LayoutOrder = 999
+					end
+				end)
+			end
+		end
+
+		do
+			local tbl19 = {
+				["à"] = "A",
+				["á"] = "A",
+				["â"] = "A",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				["ã"] = "A",
+				["ä"] = "A",
+				["å"] = "A",
+				["À"] = "A",
+				["Á"] = "A",
+				["Â"] = "A",
+				["Ã"] = "A",
+				["Ä"] = "A",
+				["Å"] = "A",
+				["ç"] = "C",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				["Ç"] = "C",
+				["è"] = "E",
+				["é"] = "E",
+				["ê"] = "E",
+				["ë"] = "E",
+				["È"] = "E",
+				["É"] = "E",
+				["Ê"] = "E",
+				["Ë"] = "E",
+				["ì"] = "I",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				["í"] = "I",
+				["î"] = "I",
+				["ï"] = "I",
+				["Ì"] = "I",
+				["Í"] = "I",
+				["Î"] = "I",
+				["Ï"] = "I",
+				["ñ"] = "N",
+				["Ñ"] = "N",
+				["ò"] = "O",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				["ó"] = "O",
+				["ô"] = "O",
+				["õ"] = "O",
+				["ö"] = "O",
+				["Ò"] = "O",
+				["Ó"] = "O",
+				["Ô"] = "O",
+				["Õ"] = "O",
+				["Ö"] = "O",
+				["ù"] = "U",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				["ú"] = "U",
+				["û"] = "U",
+				["ü"] = "U",
+				["Ù"] = "U",
+				["Ú"] = "U",
+				["Û"] = "U",
+				["Ü"] = "U",
+			}
+
+			slicedfn62 = function(arg)
+				local str8 = tostring(arg or "")  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				if str8:find("\195") then
+					for k, sliced97 in pairs(tbl19) do
+						str8 = str8:gsub(k, sliced97)
+					end
+
+					return str8
+				end
+
+				return str8
+			end
+		end
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	local Test2, Frame5, sliced97, sample, send
+
+	do
+		do
+			local function slicedfn63(arg)
+				return slicedfn62(arg):gsub("%s*/%s*[sS][eE]?[cC]?%.?%s*$", ""):gsub("%s+per%s+sec[a-zA-Z]*%s*$", ""):gsub("[^%w]", ""):upper()
+			end
+
+			slicedfn56 = function(arg, arg2, arg3)
+				local sliced98 = slicedfn63(arg)
+				if sliced98 == "" then
+					return {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+				local tbl19 = {}
+				local tbl20 = {}
+
+				local function slicedfn64(arg4, arg5)
+					if arg4 == nil then
+						return
+					end
+					local sliced99 = slicedfn63(arg4)
+					local flag24 = sliced99 ~= ""
+
+					if flag24 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						flag24 = #sliced99 >= (arg5 or 2)
+					end
+
+					if flag24 and not tbl20[sliced99] and #tbl19 < 3 then
+						tbl20[sliced99] = true
+						tbl19[#tbl19 + 1] = sliced99
+					end
+				end
+
+				slicedfn64(sliced98, 1)
+
+				if arg3 then
+					slicedfn64(arg3, 1)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				local match, sliced99 = sliced98:match("^(%u+)AND(%d+)$")
+
+				if not match then
+					match, sliced99 = sliced98:match("^(%u+)WITH(%d+)$")
+				end
+
+				if match and sliced99 and #match >= 4 then
+					slicedfn64(match .. sliced99, 2)
+				end
+
+				local match2, sliced100, sliced101 = sliced98:match("^(.-)(%d+)XLUCK(.*)$")
+
+				if not match2 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					match2, sliced100, sliced101 = sliced98:match("^(.-)LUCK(%d+)X(.*)$")
+
+					if match2 then
+						slicedfn64(match2 .. sliced100 .. "XLUCK" .. sliced101, 2)
+					end
+				else
+					slicedfn64(match2 .. "LUCK" .. sliced100 .. "X" .. sliced101, 2)
+				end
+
+				if match2 then
+					slicedfn64(match2 .. sliced100 .. "X" .. sliced101, 2)
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				if tostring(arg or ""):find("[\128-\255]") then
+					local str8 = tostring(arg):gsub("[\128-\255]", ""):gsub("[^%w]", ""):upper()
+
+					if str8 ~= "" and str8 ~= sliced98 then
+						slicedfn64(str8, 2)
+					end
+				end
+
+				slicedfn64(arg2 or _G.__RiddlerSources[sliced98])
+				local riddlerWords = _G.__RiddlerWords and _G.__RiddlerWords[sliced98]
+
+				if riddlerWords and #riddlerWords > 1 then
+					if #riddlerWords >= 3 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						slicedfn64(table.concat(riddlerWords, "", 2))
+					end
+
+					slicedfn64(table.concat(riddlerWords, "", 1, #riddlerWords - 1))
+					return tbl19
+				end
+
+				if sliced98:match("%d+$") then
+					return tbl19
+				end
+				local value = select(2, sliced98:gsub("%a", ""))
+				if select(2, sliced98:gsub("%d", "")) > 0 and value <= 2 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					return tbl19
+				end
+
+				if sliced98:sub(-1) == "S" and #sliced98 > 3 then
+					slicedfn64(sliced98:sub(1, -2))
+				else
+					slicedfn64(sliced98 .. "S")
+				end
+
+				return tbl19
+			end
+
+			local function slicedfn64(arg, arg2, arg3)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local sliced98 = slicedfn56(arg, arg2, arg3)
+				if #sliced98 == 0 then
+					slicedfn53("no answer to redeem", "err")
+					return false
+				end
+				local sliced99 = addRedeemCard(sliced98, "SECURE REDEEM")
+
+				if openFeed and not Feed2.Visible then
+					slicedfn60()
+				end
+
+				task.spawn(function()  -- LEAKED BY SLICED | discord.gg/pubmethod
+					for i, sliced100 in ipairs(sliced98) do
+						slicedfn53(("secure %d/%d: %s"):format(i, #sliced98, sliced100), "busy")
+						sliced99(i, "sending")
+						local sliced101, sliced102 = slicedfn37(sliced100)
+
+						if sliced101 and type(sliced102) == "table" and (sliced102.success or sliced102.Success) then
+							sliced99(i, "ok")
+
+							for i2 = i + 1, #sliced98 do
+								sliced99(i2, "skip")
+							end
+
+							slicedfn53(("redeemed: %s  (%d/%d)"):format(sliced100, i, #sliced98), "ok")  -- LEAKED BY SLICED | discord.gg/pubmethod
+							return
+						end
+
+						sliced99(i, sliced101 and "sent" or "fail")
+
+						if i < #sliced98 then
+							task.wait(0.6)
+						end
+					end
+
+					slicedfn53(("secure: tried all %d - %s"):format(#sliced98, table.concat(sliced98, ", ")), "wait")
+				end)
+
+				return true  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			local function slicedfn65(arg)
+				local redeeming = slicedfn63(arg)
+				if redeeming == "" then
+					slicedfn53("no answer to redeem", "err")
+					return false
+				end
+				slicedfn53("redeeming: " .. redeeming, "busy")
+				local sliced98 = addRedeemCard({ redeeming }, "REDEEM")
+				sliced98(1, "sending")  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local sliced99, sliced100 = slicedfn37(redeeming)
+				local flag24 = sliced99 and type(sliced100) == "table"
+				local success = flag24 and (sliced100.success or sliced100.Success) or false
+
+				if sliced99 and not flag24 then
+					sliced98(1, "sent")
+					slicedfn53("sent: " .. redeeming, "ok")
+					return true
+				end
+
+				sliced98(1, success and "ok" or "fail")
+				slicedfn53(success and "redeemed: " .. redeeming or "redeem failed: " .. tostring(sliced100), success and "ok" or "err")  -- LEAKED BY SLICED | discord.gg/pubmethod
+				return success
+			end
+
+			slicedfn30 = function(text)
+				TextBox.Text = text
+				slicedfn65(text)
+			end
+
+			redeem.MouseButton1Click:Connect(function()
+				redeem.Text = "..."
+				local sliced98 = slicedfn32(TextBox.Text)
+				local flag24 = sliced98 == str7  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local sliced99 = flag24 and sliced94 or nil
+				flag24 = flag24 and sliced95 or nil
+
+				if secure then
+					slicedfn64(sliced98, sliced99, flag24)
+				else
+					slicedfn65(sliced98)
+				end
+
+				redeem.Text = "REDEEM"
+			end)
+
+			TextBox.FocusLost:Connect(function(enterPressed)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				if enterPressed then
+					slicedfn65(TextBox.Text)
+				end
+			end)
+
+			slicedfn57 = function(arg, arg2)
+				local sliced98 = slicedfn32(slicedfn31(arg))
+				if sliced98 == "" then
+					return
+				end
+
+				if flag23 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					return
+				end
+
+				if not arg2 and not slicedfn43(sliced98) then
+					return
+				end
+				flag23 = true
+				sliced96.Text = sliced98
+				sliced96.TextColor3 = tbl18.txt
+				TextBox.Text = ""
+				slicedfn53("thinking...", "busy")  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				task.spawn(function()
+					local sliced99 = setthreadidentity or setidentity or set_thread_identity
+					local setThreadIdentity
+
+					if sliced99 then
+						setThreadIdentity = sliced99
+					else
+						setThreadIdentity = syn and syn.set_thread_identity
+					end
+
+					local sliced100 = setThreadIdentity or setthreadcontext
+
+					local function slicedfn66()  -- LEAKED BY SLICED | discord.gg/pubmethod
+						if type(sliced100) == "function" then
+							pcall(sliced100, 8)
+						end
+					end
+
+					slicedfn66()
+					local now2 = os.clock()
+
+					local ok, result = pcall(function()
+						local sliced101, sliced102, sliced103, sliced104, sliced105, sliced106, sliced107, sliced108, sliced109 = slicedfn39(sliced98)
+						local slicedn34 = os.clock() - now2
+						slicedfn66()  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+						if sliced101 then
+							TextBox.Text = sliced101
+							str7 = sliced101
+							TextBox.TextColor3 = sliced104 and tbl18.acc or tbl18.txt
+							answer.Text = sliced104 and "ANSWER  (CODE)" or sliced106 and "ANSWER  (CHECKING WEB...)" or sliced105 and "ANSWER  (WEB)" or "ANSWER  (GENERAL)"
+
+							if autoCopy then
+								slicedfn33(sliced101)
+							end
+
+							slicedfn53(("%s  (%.2fs%s)"):format(sliced101, slicedn34, sliced102 and ", cached" or ""), "ok")
+
+							if sliced108 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+								answer.Text = answer.Text .. "   alt: " .. sliced108
+							end
+
+							if sliced90 then
+								sliced94 = sliced107
+								sliced95 = sliced108
+
+								if secure then
+									slicedfn64(sliced101, sliced107, sliced108)
+								else
+									slicedfn65(sliced101)
+								end  -- LEAKED BY SLICED | discord.gg/pubmethod
+							end
+						else
+							TextBox.Text = ""
+							slicedfn53("failed: " .. tostring(sliced103), "err")
+						end
+
+						slicedfn61(sliced98, sliced101, slicedn34, sliced102, sliced104, sliced105)
+
+						if openFeed and not Feed2.Visible then
+							slicedfn60()
+						end
+
+						if sliced106 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+							task.spawn(function()
+								local sliced110 = slicedfn40(sliced98, sliced106, sliced101, sliced104, sliced109)
+								slicedfn66()
+
+								if sliced110 then
+									TextBox.Text = sliced110
+									str7 = sliced110
+									answer.Text = sliced104 and "ANSWER  (CODE, WEB)" or "ANSWER  (WEB)"
+
+									if autoCopy then
+										slicedfn33(sliced110)
+									end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+									slicedfn53(("%s  (web, was %s)"):format(sliced110, sliced101), "ok")
+									slicedfn61(sliced98, sliced110, os.clock() - now2, false, sliced104, true)
+
+									if sliced90 then
+										if secure then
+											slicedfn64(sliced110)
+										else
+											slicedfn65(sliced110)
+										end
+									end
+								elseif answer.Text:find("CHECKING") then  -- LEAKED BY SLICED | discord.gg/pubmethod
+									answer.Text = "ANSWER  (WEB)"
+								end
+							end)
+						end
+					end)
+
+					flag23 = false
+
+					if not ok then
+						pcall(function()
+							slicedfn53("error: " .. tostring(result), "err")
+						end)  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+				end)
+
+				return
+			end
+		end
+
+		do
+			slicedfn45("TextButton", {
+				Size = UDim2.fromScale(1, 1),
+				BackgroundTransparency = 1,
+				Text = "",  -- LEAKED BY SLICED | discord.gg/pubmethod
+				}, Frame4).MouseButton1Click:Connect(function()
+				local sliced98 = slicedfn32(sliced96.Text)
+
+				if not (sliced98 == "" or sliced98 == "waiting...") then
+					tbl17[sliced98] = nil
+					tbl17[_G.__RiddlerCacheKey(sliced98)] = nil
+					slicedfn57(sliced98, true)
+					return
+				end
+
+				return
+			end)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			slicedfn58 = function(...)
+				local sliced98 = table.pack(...)
+				local sliced99 = slicedfn31(tostring(... or ""))
+				if sliced99 == "" then
+					return
+				end
+				_G.__RiddlerRecent = _G.__RiddlerRecent or {}
+				local riddlerRecent = _G.__RiddlerRecent
+				local value = select("#", table.unpack(sliced98, 1, sliced98.n))
+				local value2 = select(4, table.unpack(sliced98, 1, sliced98.n))  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local value3 = select(5, table.unpack(sliced98, 1, sliced98.n))
+				local flag24 = value <= 1 or value2 == "Top" or value3 == 2678001507
+				local flag25 = not (value2 == "Top" or value3 == 2678001507) and slicedfn41 and slicedfn41(sliced99)
+
+				if flag24 and #sliced99 <= 300 and not flag25 then
+					riddlerRecent[#riddlerRecent + 1] = { t = os.time(), text = sliced99 }
+
+					while #riddlerRecent > 60 do
+						table.remove(riddlerRecent, 1)
+					end
+
+					local sliced100 = " "
+					local str8 = " " .. sliced99:lower():gsub("[^%w]+", " ") .. sliced100  -- LEAKED BY SLICED | discord.gg/pubmethod
+					local sliced101 = pairs
+					local riddlerAliases = _G.__RiddlerAliases or {}
+
+					for k, riddlerAliase in sliced101(riddlerAliases) do
+						str8 = str8:gsub(" " .. k .. " ", " " .. riddlerAliase .. " ")
+					end
+
+					local riddlerFindAnimal = _G.__RiddlerFindAnimal and _G.__RiddlerFindAnimal(sliced99)
+
+					local sliced102, sliced103, sliced104 = ipairs({
+						" colou?r",
+						" name ",
+						" date ",  -- LEAKED BY SLICED | discord.gg/pubmethod
+						" day ",
+						" month ",
+						" og ",
+						" how many ",
+						" how much ",
+						" exist",
+						" plus ",
+						" my ",
+						" what ",
+						" which ",  -- LEAKED BY SLICED | discord.gg/pubmethod
+						" who ",
+						" when ",
+						" where ",
+						" income ",
+						" age ",
+						" and ",
+						" mutation",
+						" trait",
+						" gen ",
+						" generation ",  -- LEAKED BY SLICED | discord.gg/pubmethod
+						" mps ",
+						" value ",
+						" price ",
+						" speed ",
+						" tier ",
+						" fav ",
+						" favo",
+						" birthday ",
+						" cost ",
+						" worth ",  -- LEAKED BY SLICED | discord.gg/pubmethod
+						" count ",
+					})
+
+					local flag26 = false
+
+					for _, sliced105 in sliced102, sliced103, sliced104 do
+						if str8:find(sliced105, 1) then
+							flag26 = true
+							break
+						end
+					end
+
+					local sabClassifyDrop = not flag26 and not riddlerFindAnimal and _G.__SabClassifyDrop  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					if sabClassifyDrop then
+						local sliced105 = "property"
+						sabClassifyDrop = select(2, _G.__SabClassifyDrop(sliced99)) == sliced105
+					end
+
+					if sabClassifyDrop then
+						flag26 = true
+					end
+
+					local flag27 = not flag26
+
+					if flag27 then
+						flag27 = str8:find("%d+ %a+ codes? ") or str8:find(" codes? for ", 1) or str8:find(" doing %a+ codes? ") or str8:find(" code ") or str8:find(" codes ")  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+
+					if flag27 then
+						_G.__RiddlerAnnouncementOnly = sliced99
+					end
+
+					if riddlerFindAnimal then
+						local str9 = " " .. riddlerFindAnimal:lower():gsub("[^%w]+", " ")
+						local pos = str8:find(str9, 1, true)
+						local flag28 = (pos and str8:sub(math.max(1, pos - 18), pos) or ""):find("%d") ~= nil
+						local str10 = pos and str8:sub(pos + #str9, pos + #str9 + 13) or ""
+						local pos2 = str10:find("^s? codes? ") ~= nil or str10:find("^ codes? ") ~= nil or str8:find(" doing ", 1, true) or str8:find(" giv", 1, true) or str8:find(" stock", 1, true) or str8:find(" prize", 1, true) or str8:find(" reward", 1, true) or str8:find(" code for ", 1, true) or str8:find(" code is for ", 1, true) or str8:find(" codes for ", 1, true) or str8:find(" riddle for ", 1, true) or str8:find(" riddle is for ", 1, true) or str8:find(" win ", 1, true) or str8:find(" winner", 1, true) or str8:find(" for a ", 1, true) or str8:find(" get a ", 1, true) or str8:find(" gets a ", 1, true) or str8:find(" free ", 1, true) or str8:find(" drop", 1, true)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+						if not pos2 then
+							pos2 = not flag26
+
+							if pos2 then
+								pos2 = str8:find(" next code is ", 1, true) or str8:find(" this code is ", 1, true) or str8:find(" code is the ", 1, true)
+							end
+						end
+
+						local flag29 = _G.__SabClassifyDrop and _G.__SabClassifyDrop(sliced99) == "riddle"
+						local str11 = riddlerFindAnimal:lower()
+						local pos3 = str11:find(" pet", 1, true) or str11:find(" egg", 1, true) or str11:find("^egg")
+
+						if flag28 or pos2 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+							_G.__RiddlerPrize = { name = riddlerFindAnimal, text = sliced99, t = os.time(), prize = true }
+
+							if not flag26 then
+								_G.__RiddlerAnnouncementOnly = sliced99
+							end
+						elseif not flag29 and not pos3 and sliced99:find("%d") then
+							_G.__RiddlerSubject = { name = riddlerFindAnimal, text = sliced99, t = os.time(), prize = false }
+						end
+					end
+				end
+
+				if _G.__RiddlerAnnouncementOnly == sliced99 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					_G.__RiddlerAnnouncementOnly = nil
+					sliced96.Text = sliced99
+					sliced96.TextColor3 = tbl18.sub
+					slicedfn53("prize noted: " .. tostring(_G.__RiddlerPrize and _G.__RiddlerPrize.name), "ok")
+					return
+				end
+
+				sliced96.Text = sliced99
+				sliced96.TextColor3 = tbl18.sub
+
+				if sliced91 and not flag20 and slicedfn42(sliced99) then
+					flag20 = true  -- LEAKED BY SLICED | discord.gg/pubmethod
+					slicedfn55()
+					slicedfn53("auto-listen armed", "ok")
+				end
+
+				if not flag20 then
+					return
+				end
+				local sliced100 = _G.__SabClassifyDrop(sliced99)
+
+				if _G.__RiddlerDuo and _G.__RdmDuo then
+					if sliced100 == "code" then
+						_G.__SabDropClaim = { text = sliced99, kind = "code", at = os.clock() }  -- LEAKED BY SLICED | discord.gg/pubmethod
+						slicedfn53("typed code - left to the redeemer", "wait")
+						return
+					end
+
+					if sliced100 == "riddle" then
+						_G.__SabDropClaim = { text = sliced99, kind = "riddle", at = os.clock() }
+					end
+				end
+
+				local flag26, sliced101 = slicedfn41(sliced99)
+
+				if flag26 then
+					flag26 = not (sliced100 == "riddle" and tostring(sliced101):find("code", 1, true))  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				if flag26 then
+					slicedfn53("ignored system phrase: " .. tostring(sliced101), "wait")
+					return
+				end
+
+				if not slicedfn43(sliced99) then
+					return
+				end
+				sliced96.TextColor3 = tbl18.txt
+				if not flag19 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					slicedfn53("question caught - AI is OFF", "wait")
+					return
+				end
+				slicedfn57(sliced99, true)
+			end
+
+			do
+				local sliced98
+				Test2, sliced98 = slicedfn50("Test", 300, 214, "TEST SENDER")
+				Test2.Visible = false
+				Test2.Parent = ScreenGui  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local sliced99 = slicedfn51("X", sliced98)
+				sliced99.Size = UDim2.fromOffset(22, 22)
+				sliced99.Position = UDim2.new(1, -28, 0.5, -11)
+				sliced99.TextSize = 12
+
+				sliced99.MouseButton1Click:Connect(function()
+					Test2.Visible = false
+				end)
+			end
+		end
+
+		do  -- LEAKED BY SLICED | discord.gg/pubmethod
+			Frame5 = slicedfn45("Frame", {
+				Size = UDim2.new(1, -24, 1, -58),
+				Position = UDim2.fromOffset(12, 50),
+				BackgroundTransparency = 1,
+				}, Test2)
+
+			slicedfn45("UIListLayout", {
+				Padding = UDim.new(0, 8),
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				}, Frame5)
+
+			do  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local Frame6 = slicedfn45("Frame", {
+					Size = UDim2.new(1, 0, 0, 54),
+					BackgroundColor3 = tbl18.panel,
+					BorderSizePixel = 0,
+					LayoutOrder = 1,
+					}, Frame5)
+
+				slicedfn46(Frame6, 9)
+				slicedfn47(Frame6, tbl18.line, 1, 0.3)
+				local fakeRiddle = slicedfn49("FAKE RIDDLE", 9, tbl18.acc, gothamBlack, Enum.TextXAlignment.Left, Frame6)
+				fakeRiddle.Size = UDim2.new(1, -16, 0, 13)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				fakeRiddle.Position = UDim2.fromOffset(11, 6)
+
+				sliced97 = slicedfn45("TextBox", {
+					Size = UDim2.new(1, -18, 0, 26),
+					Position = UDim2.fromOffset(9, 20),
+					BackgroundColor3 = tbl18.input,
+					Text = "",
+					PlaceholderText = "type a riddle to test...",
+					PlaceholderColor3 = tbl18.sub,
+					Font = gothamBlack,
+					TextSize = 12,  -- LEAKED BY SLICED | discord.gg/pubmethod
+					TextColor3 = tbl18.txt,
+					ClearTextOnFocus = false,
+					BorderSizePixel = 0,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					}, Frame6)
+			end
+		end
+
+		slicedfn46(sliced97, 7)
+		slicedfn45("UIPadding", { PaddingLeft = UDim.new(0, 9), PaddingRight = UDim.new(0, 9) }, sliced97)
+		slicedfn47(sliced97, tbl18.line, 1.2, 0.25)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		do
+			local Frame6 = slicedfn45("Frame", {
+				Size = UDim2.new(1, 0, 0, 34),
+				BackgroundTransparency = 1,
+				LayoutOrder = 2,
+				}, Frame5)
+
+			sample = slicedfn51("SAMPLE", Frame6)
+			sample.Size = UDim2.new(0.4, -4, 1, 0)
+			send = slicedfn52("SEND", Frame6)
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end
+
+	do
+		local sliced98
+
+		do
+			send.Size = UDim2.new(0.6, -4, 1, 0)
+			send.Position = UDim2.new(0.4, 4, 0, 0)
+			sliced98 = slicedfn49("", 10, tbl18.sub, gothamMedium, Enum.TextXAlignment.Left, Frame5)
+			sliced98.Size = UDim2.new(1, -4, 0, 14)
+			sliced98.LayoutOrder = 3
+
+			do  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local sliced99 = slicedfn49("fires through the same handler as a real\nnotification - nothing leaves the client", 9, tbl18.sub, gothamMedium, Enum.TextXAlignment.Left, Frame5)
+				sliced99.Size = UDim2.new(1, -4, 0, 26)
+				sliced99.LayoutOrder = 4
+				sliced99.TextWrapped = true
+			end
+		end
+
+		local tbl19 = {
+			"Riddle: the candy mutation plus my age plus my name",
+			"Riddle: the divine mutation plus the cursed mutation",
+			"Riddle: this month plus meowl plus jandel",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"Riddle: the mutation that is running now",
+			"Riddle: the month sab released, year sab released, mutation that is running now",
+			"Riddle: what event are we in right now plus 67",
+			"Riddle: my name plus the luck that is running",
+			"Riddle: the first mutation in the game plus the one we are in right now",
+			"Riddle: my favorite color plus 67 plus my favorite brainrot",
+			"Riddle: my birthday month plus my age",
+			"Riddle: my country plus my favorite brainrot",
+			"Riddle: who is my top programmer",
+			"Riddle: my top programmer plus my favorite color",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"Riddle: what is my real full name in real life",
+			"Riddle: my real life name plus 67",
+			"Riddle: who is my friend that is a youtuber and has a food in his name",
+			"Riddle: who won the admin war",
+			"Riddle: my first original game plus my age",
+			"Riddle: the month the ninth mutation came out",
+			"Riddle: the month and the day the ninth mutation came out",
+			"Riddle: the month the day the year the ninth mutation came out",
+			"Riddle: the month plus the day, and the year the ninth mutation came out plus 67",
+			"Riddle: when did i add lucky blocks",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"Riddle: the month the day and the year the first mutation came out",
+			"Riddle: the rarest og",
+			"Riddle: the best og obtainable",
+			"Riddle: the 2nd best og that is obtainable",
+			"Riddle: whats the rarest brainrot",
+			"Riddle: my name plus 67 plus the best og obtainable no robux",
+			"Riddle: what event did pot pumpkin come out in",
+			"Riddle: where did griffin come from",
+			"Riddle: where did noobini santanini come from",
+			"Riddle: what craft did the la supreme come from",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"Riddle: the machine griffin came from plus my country",
+			"Riddle: the first trait i ever added",
+			"Riddle: the newest mutation plus the current month",
+			"Riddle: the highest income brainrot in the game",
+			"Riddle: the cheapest secret brainrot",
+			"Riddle: the rarest limited quantity brainrot plus my age",
+			"Riddle: what gear comes with rebirth 11",
+			"Riddle: how many gold brainrots does the rainbow machine need",
+			"Riddle: team number 1 plus my top programmer",
+			"Riddle: america plus the rarest og in the game",  -- LEAKED BY SLICED | discord.gg/pubmethod
+			"Riddle: brazil plus my name",
+			"Riddle: who won the 2026 world cup",
+			"Riddle: who won the 2026 world cup plus my favorite color and my name",
+			"Riddle: what is the capital of France",
+			"Riddle: am i gay?",
+			"Riddle: the best mutation",
+			"Riddle: my hardest event",
+			"Riddle: the strongest brainrot",
+		}
+
+		local function slicedfn63(arg)  -- LEAKED BY SLICED | discord.gg/pubmethod
+			local fired = slicedfn32(arg)
+
+			if fired == "" then
+				sliced98.Text = "nothing to send"
+				sliced98.TextColor3 = tbl18.err
+				return
+			end
+
+			if not flag19 then
+				sliced98.Text = "AI is OFF - turn it on first"
+				sliced98.TextColor3 = tbl18.warn
+				return  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			if not flag20 and not sliced91 then
+				sliced98.Text = "LISTEN and AUTO LISTEN are both off"
+				sliced98.TextColor3 = tbl18.warn
+				return
+			end
+
+			if sliced93 and not flag22 and typeof(firesignal) == "function" then
+				local ok = pcall(firesignal, sliced93.OnClientEvent, fired, 5.5, "Sounds.Sfx.Blop", "Top", 2678001507)
+				sliced98.Text = ok and "fired: " .. fired or "firesignal failed"
+				sliced98.TextColor3 = ok and tbl18.ok or tbl18.err  -- LEAKED BY SLICED | discord.gg/pubmethod
+				if ok then
+					return
+				end
+			end
+
+			local ok = pcall(slicedfn58, fired, 5.5, "Sounds.Sfx.Blop", "Top", 2678001507)
+			sliced98.Text = ok and "local test: " .. fired or "handler error"
+			sliced98.TextColor3 = ok and tbl18.ok or tbl18.err
+		end
+
+		send.MouseButton1Click:Connect(function()
+			slicedfn63(sliced97.Text)  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end)
+
+		sliced97.FocusLost:Connect(function(enterPressed)
+			if enterPressed then
+				slicedfn63(sliced97.Text)
+			end
+		end)
+
+		sample.MouseButton1Click:Connect(function()
+			sliced97.Text = tbl19[math.random(#tbl19)]
+		end)
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	do
+		Test.MouseButton1Click:Connect(function()
+			if Test2.Visible then
+				Test2.Visible = false
+				return
+			end
+
+			if flag18 then
+				Test2.Position = UDim2.new(0.5, -math.floor(Test2.AbsoluteSize.X / 2), 0.5, -math.floor(Test2.AbsoluteSize.Y / 2))
+			else
+				local position = Main.Position  -- LEAKED BY SLICED | discord.gg/pubmethod
+				Test2.Position = UDim2.new(position.X.Scale, position.X.Offset - Test2.AbsoluteSize.X - 10, position.Y.Scale, position.Y.Offset + Main.AbsoluteSize.Y - Test2.AbsoluteSize.Y)
+			end
+
+			Test2.Visible = true
+		end)
+
+		do
+			local sliced98
+			Settings2, sliced98 = slicedfn50("Settings", 300, 198, "SETTINGS")
+			Settings2.Visible = false
+			Settings2.Parent = ScreenGui
+			local sliced99 = slicedfn51("X", sliced98)  -- LEAKED BY SLICED | discord.gg/pubmethod
+			sliced99.Size = UDim2.fromOffset(22, 22)
+			sliced99.Position = UDim2.new(1, -28, 0.5, -11)
+			sliced99.TextSize = 12
+
+			sliced99.MouseButton1Click:Connect(function()
+				Settings2.Visible = false
+			end)
+		end
+	end
+
+	Frame3 = slicedfn45("Frame", {
+		Size = UDim2.new(1, -20, 1, -58),  -- LEAKED BY SLICED | discord.gg/pubmethod
+		Position = UDim2.fromOffset(10, 50),
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		}, Settings2)
+
+	slicedfn45("UIListLayout", {
+		Padding = UDim.new(0, 5),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		}, Frame3)
+
+	slicedfn59(Frame3, 1, "AUTO LISTEN", sliced91, function(arg)
+		sliced91 = arg  -- LEAKED BY SLICED | discord.gg/pubmethod
+		_G.__RiddlerCfgSet("autoRedeem", arg)
+	end)
+
+	slicedfn59(Frame3, 2, "IGNORE SYSTEM PHRASES", sliced92, function(arg)
+		sliced92 = arg
+		_G.__RiddlerCfgSet("ignoreSystem", arg)
+	end)
+
+	do
+		local sliced98 = slicedfn59(Frame3, 3, "DUO MODE (WITH REDEEMER)", _G.__RiddlerDuo, function(riddlerDuo)
+			_G.__RiddlerDuo = riddlerDuo
+			_G.__RiddlerCfgSet("duo", riddlerDuo)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			if _G.__SabDuoSync then
+				_G.__SabDuoSync()
+			end
+		end)
+
+		local sliced99 = slicedfn49("0/2", 10, tbl18.sub, gothamBold, Enum.TextXAlignment.Right, sliced98)
+		sliced99.Size = UDim2.fromOffset(30, 31)
+		sliced99.Position = UDim2.new(1, -84, 0, 0)
+
+		for _, child in ipairs(sliced98:GetChildren()) do
+			if child:IsA("TextLabel") and child ~= sliced99 then
+				child.Size = UDim2.new(1, -100, 1, 0)  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+		end
+
+		local function riddler()
+			local slicedn34 = (_G.__RiddlerDuo and 1 or 0) + (_G.__RdmDuo and 1 or 0)
+			sliced99.Text = slicedn34 .. "/2"
+			sliced99.TextColor3 = slicedn34 == 2 and tbl18.acc or slicedn34 == 1 and (tbl18.warn or tbl18.sub) or tbl18.sub
+		end
+
+		riddler()
+		_G.__SabDuoRefresh = _G.__SabDuoRefresh or {}
+		_G.__SabDuoRefresh.riddler = riddler  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		_G.__SabDuoSync = function()
+			local sliced100 = pairs
+			local sabDuoRefresh = _G.__SabDuoRefresh or {}
+
+			for _, sliced101 in sliced100(sabDuoRefresh) do
+				pcall(sliced101)
+			end
+		end
+
+		_G.__SabDuoSync()
+
+		task.spawn(function()
+			while sliced98.Parent do  -- LEAKED BY SLICED | discord.gg/pubmethod
+				riddler()
+				task.wait(1)
+			end
+		end)
+	end
+end
+
+local tbl19, slicedfn59, slicedfn60, slicedfn61, slicedfn62, AutoBuy, Frame4, slicedfn63
+
+do
+	do
+		local sliced96  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		do
+			do
+				local tbl20, slicedfn64
+
+				do
+					do
+						local Frame5
+
+						do
+							Frame5 = slicedfn45("Frame", {
+								Size = UDim2.new(1, 0, 0, 31),
+								BackgroundColor3 = tbl18.panel,  -- LEAKED BY SLICED | discord.gg/pubmethod
+								BorderSizePixel = 0,
+								LayoutOrder = 4,
+								}, Frame3)
+
+							slicedfn46(Frame5, 8)
+							slicedfn47(Frame5, tbl18.line, 1, 0.3)
+
+							do
+								local autoBuy = slicedfn49("AUTO BUY", 11, tbl18.sub, gothamBold, Enum.TextXAlignment.Left, Frame5)
+								autoBuy.Size = UDim2.new(1, -70, 1, 0)
+								autoBuy.Position = UDim2.fromOffset(13, 0)
+							end  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+
+						local open = slicedfn51("OPEN", Frame5)
+						open.Size = UDim2.fromOffset(52, 22)
+						open.Position = UDim2.new(1, -60, 0.5, -11)
+						open.TextSize = 11
+
+						open.MouseButton1Click:Connect(function()
+							if _G.__RiddlerOpenAutoBuy then
+								_G.__RiddlerOpenAutoBuy()
+							end
+						end)  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+
+					Settings.MouseButton1Click:Connect(function()
+						if Settings2.Visible then
+							Settings2.Visible = false
+							return
+						end
+
+						if flag18 and not Frame3:FindFirstChild("UiSizeRow") then
+							Settings2.Size = UDim2.fromOffset(300, 198)
+
+							local Frame5 = slicedfn45("Frame", {
+								Name = "UiSizeRow",  -- LEAKED BY SLICED | discord.gg/pubmethod
+								Size = UDim2.new(1, 0, 0, 31),
+								BackgroundColor3 = tbl18.panel,
+								BorderSizePixel = 0,
+								LayoutOrder = 3,
+								}, Frame3)
+
+							slicedfn46(Frame5, 8)
+							slicedfn47(Frame5, tbl18.line, 1, 0.3)
+							local uiSize = slicedfn49("UI SIZE", 11, tbl18.sub, gothamBold, Enum.TextXAlignment.Left, Frame5)
+							uiSize.Size = UDim2.fromOffset(70, 31)
+							uiSize.Position = UDim2.fromOffset(11, 0)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+							local Frame6 = slicedfn45("Frame", {
+								Size = UDim2.fromOffset(168, 23),
+								Position = UDim2.new(1, -177, 0.5, -11.5),
+								BackgroundColor3 = tbl18.input,
+								BorderSizePixel = 0,
+								}, Frame5)
+
+							slicedfn46(Frame6, 7)
+							local tbl21 = {}
+
+							local function slicedfn65(arg, arg2)
+								for k, sliced97 in pairs(tbl21) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+									local flag24 = k == arg
+									slicedfn48(sliced97, 0.12, { BackgroundColor3 = flag24 and tbl18.acc or tbl18.input })
+									sliced97.TextColor3 = flag24 and Color3.fromRGB(255, 255, 255) or tbl18.sub
+								end
+
+								if arg2 then
+									return
+								end
+								_G.__RiddlerCfgSet("uiSize", arg)
+								local scale = 0.65 * _G.__RiddlerUiMult()
+
+								for _, descendant in ipairs(ScreenGui:GetDescendants()) do  -- LEAKED BY SLICED | discord.gg/pubmethod
+									if descendant:IsA("UIScale") and descendant.Name == "WinScale" then
+										descendant.Scale = scale
+									end
+								end
+
+								Main.Position = UDim2.new(1, -math.floor(slicedn32 * scale) - 8, 0.5, -math.floor(slicedn33 * scale / 2))
+							end
+
+							for i, sliced97 in ipairs({ "BIG", "MEDIUM", "SMALL" }) do
+								local TextButton = slicedfn45("TextButton", {
+									Size = UDim2.new(0.33333333333333331, -2, 1, -2),
+									Position = UDim2.new((i - 1) / 3, 1, 0, 1),  -- LEAKED BY SLICED | discord.gg/pubmethod
+									BackgroundColor3 = tbl18.input,
+									Text = sliced97,
+									Font = gothamBold,
+									TextSize = 9,
+									TextColor3 = tbl18.sub,
+									AutoButtonColor = false,
+									BorderSizePixel = 0,
+									}, Frame6)
+
+								slicedfn46(TextButton, 6)
+								tbl21[sliced97] = TextButton  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+								TextButton.MouseButton1Click:Connect(function()
+									slicedfn65(sliced97)
+								end)
+							end
+
+							slicedfn65(_G.__RiddlerCfgStr("uiSize", "MEDIUM"), true)
+						end
+
+						if flag18 then
+							Settings2.Position = UDim2.new(0.5, -math.floor(Settings2.AbsoluteSize.X / 2), 0.5, -math.floor(Settings2.AbsoluteSize.Y / 2))
+						else
+							local position = Main.Position  -- LEAKED BY SLICED | discord.gg/pubmethod
+							Settings2.Position = UDim2.new(position.X.Scale, position.X.Offset - Settings2.AbsoluteSize.X - 10, position.Y.Scale, position.Y.Offset)
+						end
+
+						Settings2.Visible = true
+					end)
+
+					tbl19 = {}
+
+					do
+						local tbl21 = { "buy", "purchase", "claim", "steal", "collect" }
+						tbl20 = {}
+
+						slicedfn64 = function(arg)
+							local str8 = tostring(arg.Name)  -- LEAKED BY SLICED | discord.gg/pubmethod
+							local sliced97 = " "
+							local str9 = (str8 .. " " .. tostring(arg.ActionText) .. sliced97 .. tostring(arg.ObjectText)):lower()
+
+							for _, sliced98 in ipairs(tbl21) do
+								if str9:find(sliced98, 1, true) then
+									return true
+								end
+							end
+
+
+							return false
+						end
+					end  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				do
+					do
+						local function slicedfn65(descendant)
+							if descendant:IsA("ProximityPrompt") then
+								tbl20[descendant] = true
+							end
+						end
+
+						for _, descendant in ipairs(sliced88:GetDescendants()) do
+							slicedfn65(descendant)  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+
+						tbl19[#tbl19 + 1] = sliced88.DescendantAdded:Connect(slicedfn65)
+					end
+
+					tbl19[#tbl19 + 1] = sliced88.DescendantRemoving:Connect(function(descendant)
+						tbl20[descendant] = nil
+					end)
+
+					do
+						local function slicedfn65(arg)
+							local parent = arg.Parent
+							if not parent then  -- LEAKED BY SLICED | discord.gg/pubmethod
+								return nil
+							end
+
+							if parent:IsA("Attachment") then
+								return parent.WorldPosition
+							end
+
+							if parent:IsA("BasePart") then
+								return parent.Position
+							end
+							local model2 = parent:FindFirstAncestorOfClass("Model")
+
+							if model2 then  -- LEAKED BY SLICED | discord.gg/pubmethod
+								local primaryPart = model2.PrimaryPart or model2:FindFirstChildWhichIsA("BasePart", true)
+								if primaryPart then
+									return primaryPart.Position
+								end
+							end
+						end
+
+						slicedfn59 = function()
+							local character = localPlayer.Character
+							character = character and character:FindFirstChild("HumanoidRootPart")
+							if not character then  -- LEAKED BY SLICED | discord.gg/pubmethod
+								return nil, math.huge
+							end
+							local huge = math.huge
+							local sliced97 = nil
+
+							for k in pairs(tbl20) do
+								if k.Parent and k.Enabled and slicedfn64(k) then
+									local sliced98 = slicedfn65(k)
+
+									if sliced98 then
+										local magnitude = (character.Position - sliced98).Magnitude
+
+										if magnitude < huge then  -- LEAKED BY SLICED | discord.gg/pubmethod
+											huge = magnitude
+											sliced97 = k
+										end
+									end
+								end
+							end
+
+							return sliced97, huge
+						end
+					end
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+
+			slicedfn60 = function(arg)
+				if not (arg and arg.Parent and arg.Enabled) then
+					return false
+				end
+
+				if type(fireproximityprompt) == "function" then
+					return (pcall(fireproximityprompt, arg))
+				end
+
+				return (pcall(function()
+					arg:InputHoldBegin()  -- LEAKED BY SLICED | discord.gg/pubmethod
+					task.wait(math.max(arg.HoldDuration, 0.05) + 0.05)
+					arg:InputHoldEnd()
+				end))
+			end
+
+			sliced96 = nil
+
+			do
+				local ok, result = pcall(require, sliced86.Datas:FindFirstChild("Animals"))
+
+				if ok then
+					sliced96 = result
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end
+		end
+
+		do
+			do
+				slicedfn61 = function(arg)
+					local num = tonumber(arg)
+					if not num then
+						return tostring(arg or "---")
+					end
+					local slicedn34 = math.abs(num)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+					for _, sliced97 in ipairs({ { 1e12, "T" }, { 1e9, "B" }, { 1000000, "M" }, { 1000, "K" } }) do
+						if sliced97[1] <= slicedn34 then
+							local slicedn35 = num / sliced97[1]
+							return string.format(slicedn35 >= 100 and "%.0f%s" or "%.1f%s", slicedn35, sliced97[2])
+						end
+					end
+
+					return num % 1 == 0 and tostring(math.floor(num)) or string.format("%.1f", num)
+				end
+
+				do
+					local function slicedfn64(arg)  -- LEAKED BY SLICED | discord.gg/pubmethod
+						return (tostring(arg or ""):gsub("%s*%$?[%d%.,]+%s*[KMBTQaqs]*%s*$", ""):gsub("^%s+", ""):gsub("%s+$", ""))
+					end
+
+					local function slicedfn65(arg)
+						if type(sliced96) ~= "table" or not arg or arg == "" then
+							return nil
+						end
+
+						if type(sliced96[arg]) == "table" then
+							return sliced96[arg]
+						end
+						local str8 = arg:lower()  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+						for _, sliced97 in pairs(sliced96) do
+							local flag24 = type(sliced97) == "table"
+
+							if flag24 then
+								local sliced98 = "string"
+								flag24 = type(sliced97.DisplayName) == sliced98
+							end
+
+							if flag24 and sliced97.DisplayName:lower() == str8 then
+								return sliced97
+							end
+						end  -- LEAKED BY SLICED | discord.gg/pubmethod
+					end
+
+					slicedfn62 = function(arg)
+						local sliced97 = slicedfn64(arg.ObjectText ~= "" and arg.ObjectText or arg.ActionText ~= "" and arg.ActionText or arg.Name)
+						local model2 = arg.Parent and arg.Parent:FindFirstAncestorOfClass("Model")
+						local rarity = slicedfn65(sliced97)
+
+						if not rarity and model2 then
+							rarity = slicedfn65(model2.Name)
+						end
+
+						local displayName = rarity and rarity.DisplayName or sliced97
+						local generation = rarity and (rarity.Generation or rarity.Income)  -- LEAKED BY SLICED | discord.gg/pubmethod
+						rarity = rarity and rarity.Rarity
+						local sliced98 = nil
+						local attribute = nil
+
+						if model2 then
+							attribute = model2:GetAttribute("Mutation") or model2:GetAttribute("MutationName")
+							local attribute2 = model2:GetAttribute("Traits") or model2:GetAttribute("Trait")
+							sliced98 = nil
+
+							if type(attribute2) == "string" then
+								sliced98 = attribute2
+							end  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+
+						return displayName, generation, rarity, attribute, sliced98
+					end
+				end
+			end
+
+			do
+				local sliced97
+				AutoBuy, sliced97 = slicedfn50("AutoBuy", 264, 286, "AUTO BUY")
+				AutoBuy.Visible = false
+				AutoBuy.Parent = ScreenGui  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local sliced98 = slicedfn51("X", sliced97)
+				sliced98.Size = UDim2.fromOffset(22, 22)
+				sliced98.Position = UDim2.new(1, -28, 0.5, -11)
+				sliced98.TextSize = 12
+
+				sliced98.MouseButton1Click:Connect(function()
+					AutoBuy.Visible = false
+				end)
+			end
+		end
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	Frame4 = slicedfn45("Frame", {
+		Size = UDim2.new(1, -20, 1, -58),
+		Position = UDim2.fromOffset(10, 50),
+		BackgroundTransparency = 1,
+		}, AutoBuy)
+
+	slicedfn45("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, Frame4)
+
+	do
+		local Frame5 = slicedfn45("Frame", {
+			Size = UDim2.new(1, 0, 0, 44),
+			BackgroundColor3 = tbl18.panel,  -- LEAKED BY SLICED | discord.gg/pubmethod
+			BorderSizePixel = 0,
+			LayoutOrder = 1,
+			}, Frame4)
+
+		slicedfn46(Frame5, 9)
+		local sliced96 = slicedfn47(Frame5, tbl18.line, 1, 0.3)
+		local sliced97 = slicedfn49("AUTO BUY  -  OFF", 13, tbl18.sub, gothamBlack, Enum.TextXAlignment.Left, Frame5)
+		sliced97.Size = UDim2.new(1, -80, 1, 0)
+		sliced97.Position = UDim2.fromOffset(14, 0)
+
+		local Frame6 = slicedfn45("Frame", {
+			Size = UDim2.fromOffset(48, 24),  -- LEAKED BY SLICED | discord.gg/pubmethod
+			Position = UDim2.new(1, -60, 0.5, -13),
+			BackgroundColor3 = tbl18.line,
+			BorderSizePixel = 0,
+			}, Frame5)
+
+		slicedfn46(Frame6, 13)
+
+		local Frame7 = slicedfn45("Frame", {
+			Size = UDim2.fromOffset(18, 18),
+			Position = UDim2.new(0, 3, 0.5, -9),
+			BackgroundColor3 = tbl18.txt,
+			BorderSizePixel = 0,  -- LEAKED BY SLICED | discord.gg/pubmethod
+			}, Frame6)
+
+		slicedfn46(Frame7, 9)
+
+		local tbl20 = {
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			Text = "",
+		}
+
+		slicedfn63 = function()
+			slicedfn48(Frame6, 0.16, { BackgroundColor3 = flag21 and tbl18.acc or tbl18.line })
+			slicedfn48(Frame7, 0.16, { Position = UDim2.new(0, flag21 and 27 or 3, 0.5, -9) }, Enum.EasingStyle.Back)  -- LEAKED BY SLICED | discord.gg/pubmethod
+			slicedfn48(sliced96, 0.16, { Color = flag21 and tbl18.acc or tbl18.line, Transparency = flag21 and 0 or 0.3 })
+			sliced97.Text = flag21 and "AUTO BUY  -  ON" or "AUTO BUY  -  OFF"
+			sliced97.TextColor3 = flag21 and tbl18.txt or tbl18.sub
+		end
+
+		slicedfn45("TextButton", tbl20, Frame5).MouseButton1Click:Connect(function()
+			flag21 = not flag21
+			slicedfn63()
+		end)
+	end
+end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+do
+	local slicedfn64, sliced96, sliced97, sliced98, sliced99, sliced100
+
+	do
+		local slicedfn65
+
+		do
+			do
+				local Frame5 = slicedfn45("Frame", {
+					Size = UDim2.new(1, 0, 0, 28),
+					BackgroundColor3 = tbl18.panel,
+					BorderSizePixel = 0,  -- LEAKED BY SLICED | discord.gg/pubmethod
+					LayoutOrder = 2,
+					}, Frame4)
+
+				slicedfn46(Frame5, 9)
+				slicedfn47(Frame5, tbl18.line, 1, 0.3)
+
+				local Frame6 = slicedfn45("Frame", {
+					Size = UDim2.fromOffset(7, 7),
+					Position = UDim2.new(0, 11, 0.5, -3.5),
+					BackgroundColor3 = tbl18.sub,
+					BorderSizePixel = 0,
+					}, Frame5)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+				slicedfn46(Frame6, 4)
+				local idle = slicedfn49("idle", 11, tbl18.sub, gothamBold, Enum.TextXAlignment.Left, Frame5)
+				idle.Size = UDim2.new(1, -32, 1, 0)
+				idle.Position = UDim2.fromOffset(26, 0)
+				idle.TextTruncate = Enum.TextTruncate.AtEnd
+
+				slicedfn64 = function(text, arg)
+					idle.Text = text
+					local ok = arg == "ok" and tbl18.ok
+					local warn_
+
+					if ok then  -- LEAKED BY SLICED | discord.gg/pubmethod
+						warn_ = ok
+					else
+						warn_ = arg == "warn" and tbl18.warn
+					end
+
+					local err = warn_ or arg == "err" and tbl18.err or tbl18.sub
+					idle.TextColor3 = err
+					Frame6.BackgroundColor3 = err
+				end
+			end
+
+			do  -- LEAKED BY SLICED | discord.gg/pubmethod
+				local Frame5 = slicedfn45("Frame", {
+					Size = UDim2.new(1, 0, 0, 120),
+					BackgroundColor3 = tbl18.panel,
+					BorderSizePixel = 0,
+					LayoutOrder = 3,
+					}, Frame4)
+
+				slicedfn46(Frame5, 9)
+				slicedfn47(Frame5, tbl18.line, 1, 0.3)
+				local nearestBuyable = slicedfn49("NEAREST BUYABLE", 9, tbl18.acc, gothamBlack, Enum.TextXAlignment.Left, Frame5)
+				nearestBuyable.Size = UDim2.new(1, -20, 0, 13)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				nearestBuyable.Position = UDim2.fromOffset(11, 7)
+
+				slicedfn65 = function(arg, arg2)
+					local sliced101 = slicedfn49("", 11, arg2 or tbl18.sub, gothamBold, Enum.TextXAlignment.Left, Frame5)
+					sliced101.Size = UDim2.new(1, -20, 0, 15)
+					sliced101.Position = UDim2.fromOffset(11, arg)
+					sliced101.TextTruncate = Enum.TextTruncate.AtEnd
+					return sliced101
+				end
+			end
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		sliced96 = slicedfn65(24, tbl18.txt)
+		sliced97 = slicedfn65(41, tbl18.acc)
+		sliced98 = slicedfn65(58)
+		sliced99 = slicedfn65(75)
+		sliced100 = slicedfn65(92)
+	end
+
+	local sliced101 = slicedfn49("", 9, tbl18.sub, gothamMedium, Enum.TextXAlignment.Left, Frame4)
+	sliced101.Size = UDim2.new(1, 0, 0, 12)
+	sliced101.LayoutOrder = 4
+
+	local function slicedfn65()  -- LEAKED BY SLICED | discord.gg/pubmethod
+		sliced96.Text = "Name: ---"
+		sliced97.Text = "Income: --- /sec"
+		sliced98.Text = "Rarity: ---"
+		sliced99.Text = "Mutation: ---"
+		sliced100.Text = "Traits: ---"
+		sliced101.Text = "Distance: ---"
+	end
+
+	slicedfn65()
+	local sliced102 = nil
+	local sliced103 = 0  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local slicedn34 = 0
+
+	tbl19[#tbl19 + 1] = sliced87.Heartbeat:Connect(function(deltaTime)
+		slicedn34 += deltaTime
+		if slicedn34 < 0.2 then
+			return
+		end
+		slicedn34 = 0
+		if not flag21 and not AutoBuy.Visible then
+			return
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local sliced104, sliced105 = slicedfn59()
+
+		if not sliced104 then
+			slicedfn65()
+			slicedfn64(flag21 and "no buy prompt found" or "idle", flag21 and "warn" or nil)
+			return
+		end
+
+		local sliced106, sliced107, sliced108, sliced109, sliced110 = slicedfn62(sliced104)
+		sliced96.Text = "Name: " .. tostring(sliced106 or "---")
+		sliced97.Text = "Income: " .. slicedfn61(sliced107) .. " /sec"
+		sliced98.Text = "Rarity: " .. tostring(sliced108 or "---")  -- LEAKED BY SLICED | discord.gg/pubmethod
+		sliced99.Text = "Mutation: " .. tostring(sliced109 or "---")
+		sliced100.Text = "Traits: " .. tostring(sliced110 or "---")
+		sliced101.Text = string.format("Distance: %.1f studs", sliced105)
+		if not flag21 then
+			slicedfn64("idle (watching)", nil)
+			return
+		end
+
+		if sliced105 > (sliced104.MaxActivationDistance or 10) + 2 then
+			slicedfn64("move closer to buy", "warn")
+			return  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end
+		slicedfn64("buying: " .. tostring(sliced106), "ok")
+
+		if sliced104 ~= sliced102 or os.clock() - sliced103 >= 1.2 then
+			local now2 = os.clock()
+			sliced102 = sliced104
+			sliced103 = now2
+
+			task.spawn(function()
+				if not slicedfn60(sliced104) and flag21 then
+					slicedfn64("prompt failed", "err")
+				end  -- LEAKED BY SLICED | discord.gg/pubmethod
+			end)
+		end
+	end)
+end
+
+do
+	_G.__RiddlerOpenAutoBuy = function()
+		if AutoBuy.Visible then
+			AutoBuy.Visible = false
+			return
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		if flag18 then
+			AutoBuy.Position = UDim2.new(0.5, -math.floor(AutoBuy.AbsoluteSize.X / 2), 0.5, -math.floor(AutoBuy.AbsoluteSize.Y / 2))
+		else
+			local position = Main.Position
+			AutoBuy.Position = UDim2.new(position.X.Scale, position.X.Offset - AutoBuy.AbsoluteSize.X - 10, position.Y.Scale, position.Y.Offset)
+		end
+
+		AutoBuy.Visible = true
+	end
+
+	slicedfn63()
+
+	do  -- LEAKED BY SLICED | discord.gg/pubmethod
+		local tbl20 = {}
+		local sliced96 = nil
+		local slicedn34 = 0
+
+		local function slicedfn64(...)
+			local sliced97 = table.pack(...)
+			local str8 = tostring(... or "")
+			if #str8 < 8 then
+				return
+			end
+			local now2 = os.clock()  -- LEAKED BY SLICED | discord.gg/pubmethod
+			if str8 == sliced96 and now2 - slicedn34 < 0.25 then
+				return
+			end
+			sliced96 = str8
+			slicedn34 = now2
+			pcall(slicedfn58, table.unpack(sliced97, 1, sliced97.n))
+		end
+
+		sliced93 = slicedfn44()
+
+		if sliced93 then
+			Frame.BackgroundColor3 = tbl18.ok  -- LEAKED BY SLICED | discord.gg/pubmethod
+			tbl20[#tbl20 + 1] = sliced93.OnClientEvent:Connect(slicedfn64)
+		else
+			do
+				local slicedn35 = 0
+
+				for _, child in ipairs(sliced89:GetChildren()) do
+					if child:IsA("RemoteEvent") or child:IsA("UnreliableRemoteEvent") then
+						slicedn35 += 1
+						tbl20[#tbl20 + 1] = child.OnClientEvent:Connect(slicedfn64)
+						if not (slicedn35 >= 400) then
+							continue  -- LEAKED BY SLICED | discord.gg/pubmethod
+						end
+					else
+						continue
+					end
+
+					break
+				end
+
+				flag22 = slicedn35 > 0
+			end
+
+			Frame.BackgroundColor3 = flag22 and tbl18.warn or tbl18.err
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		_G.__RiddlerWarmGen = (_G.__RiddlerWarmGen or 0) + 1
+
+		task.spawn(function()
+			if not request_ then
+				return
+			end
+			local riddlerWarmGen = _G.__RiddlerWarmGen
+			pcall(slicedfn38)
+
+			while task.wait(600) and _G.__RiddlerWarmGen == riddlerWarmGen do
+				pcall(slicedfn38)
+			end  -- LEAKED BY SLICED | discord.gg/pubmethod
+		end)
+
+		if getgenv then
+			getgenv().StopRiddler = function()
+				flag19 = false
+				flag21 = false
+				_G.__RiddlerWarmGen = (_G.__RiddlerWarmGen or 0) + 1
+
+				for _, sliced97 in ipairs(tbl20) do
+					pcall(function()
+						sliced97:Disconnect()
+					end)  -- LEAKED BY SLICED | discord.gg/pubmethod
+				end
+
+				for _, sliced97 in ipairs(tbl19) do
+					pcall(function()
+						sliced97:Disconnect()
+					end)
+				end
+
+				tbl20 = {}
+				tbl19 = {}
+				_G.__RiddlerOpenAutoBuy = nil
+
+				if ScreenGui then  -- LEAKED BY SLICED | discord.gg/pubmethod
+					ScreenGui:Destroy()
+				end
+
+				getgenv().StopRiddler = nil
+				return
+			end
+		end
+	end
+end
+
+_G.AskRiddle = function(arg)
+	slicedfn57(arg, true)  -- LEAKED BY SLICED | discord.gg/pubmethod
+end
+
+_G.RiddlerAnnounce = function(...)
+	slicedfn58(...)
+end
+
+_G.RiddlerState = function()
+	return { listening = flag20, autoListen = sliced91, ai = flag19 }
+end
+
+_G.RiddlerSetAutoListen = function(arg)
+	sliced91 = arg
+end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+_G.RiddlerSetListening = function(arg)
+	flag20 = arg
+	slicedfn55()
+end
+
+_G.RiddlerSetAI = function(arg)
+	flag19 = arg
+	slicedfn54()
+end
+
+_G.RiddlerSetIgnoreSystem = function(arg)
+	sliced92 = arg  -- LEAKED BY SLICED | discord.gg/pubmethod
+end
+
+_G.RiddlerSetAutoRedeem = function(arg)
+	sliced90 = arg
+end
+
+_G.RiddlerIsBlacklisted = function(arg)
+	return (slicedfn41(arg))
+end
+
+_G.RiddlerMatchTrigger = function(arg)
+	return slicedfn42(arg)
+end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+_G.RiddlerVariants = function(arg, arg2, arg3)
+	return table.concat(slicedfn56(arg, arg2, arg3), ", ")
+end
+
+_G.RiddlerDetectorStatus = function()
+	local tbl20 = {}
+	local ok, result = pcall(_G.__RiddlerSnapshotNew)
+	local sliced96 = sliced86:FindFirstChild("Datas")
+	local sliced97 = slicedfn34(sliced96 and sliced96:FindFirstChild("Animals"))
+	local slicedn34 = 0
+
+	if type(sliced97) == "table" then  -- LEAKED BY SLICED | discord.gg/pubmethod
+		for k in pairs(sliced97) do
+			slicedn34 += 1
+		end
+	end
+
+	local tbl21 = {}
+
+	if ok and type(result) == "table" then
+		for _, sliced98 in ipairs(result) do
+			tbl21[#tbl21 + 1] = sliced98.name or tostring(sliced98)
+		end
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	tbl20[#tbl20 + 1] = ("brainrot: %d live, %d new (%s)"):format(slicedn34, #tbl21, #tbl21 > 0 and table.concat(tbl21, ", ") or "-")
+	local ok2, result2 = pcall(_G.__RiddlerSnapshotMeta)
+	local tbl22 = {}
+
+	if ok2 and type(result2) == "table" then
+		for _, sliced98 in ipairs(result2) do
+			tbl22[sliced98.kind] = tbl22[sliced98.kind] or {}
+			table.insert(tbl22[sliced98.kind], sliced98.name)
+		end
+	end
+
+	local datas = sliced86:FindFirstChild("Datas")  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	local function slicedfn64(arg)
+		local sliced98 = slicedfn34(datas and datas:FindFirstChild(arg))
+		local slicedn35 = 0
+
+		if type(sliced98) == "table" then
+			for k in pairs(sliced98) do
+				slicedn35 += 1
+			end
+		end
+
+		return slicedn35
+	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+	local tbl23 = {}
+	local tbl24 = {}
+	local Traits = slicedfn64("Traits")
+	tbl24[1] = "trait"
+	tbl24[2] = Traits
+	local tbl25 = {}
+	local Mutations = slicedfn64("Mutations")
+	tbl25[1] = "mutation"
+	tbl25[2] = Mutations
+	local tbl26 = {}  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local sliced98 = " pet"
+	local LuckyBlocks = slicedfn64("LuckyBlocks")
+	tbl26[1] = sliced98
+	tbl26[2] = LuckyBlocks
+	local tbl27 = {}
+	local ShopItems = slicedfn64("ShopItems")
+	tbl27[1] = "shop item"
+	tbl27[2] = ShopItems
+	local tbl28 = {}
+	local Rarities = slicedfn64("Rarities")  -- LEAKED BY SLICED | discord.gg/pubmethod
+	tbl28[1] = "rarity"
+	tbl28[2] = Rarities
+	local tbl29 = {}
+	local RodsShopItems = slicedfn64("RodsShopItems")
+	tbl29[1] = "fishing rod"
+	tbl29[2] = RodsShopItems
+	tbl23[1] = tbl24
+	tbl23[2] = tbl25
+	tbl23[3] = tbl26
+	tbl23[4] = tbl27  -- LEAKED BY SLICED | discord.gg/pubmethod
+	tbl23[5] = tbl28
+	tbl23[6] = tbl29
+	local sliced99 = sliced86:FindFirstChild("Items")
+	local slicedn35 = 0
+
+	if sliced99 then
+		for _, child in ipairs(sliced99:GetChildren()) do
+			if child:IsA("Tool") then
+				slicedn35 += 1
+			end
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+	end
+
+	tbl23[#tbl23 + 1] = { "gear", slicedn35 }
+	local eventController = sliced86:FindFirstChild("Controllers")
+	eventController = eventController and eventController:FindFirstChild("EventController")
+	eventController = eventController and eventController:FindFirstChild("Events")
+	local slicedn36 = #tbl23 + 1
+	local tbl30 = {}
+	local slicedn37 = eventController and #eventController:GetChildren() or 0
+	tbl30[1] = "event"
+	tbl30[2] = slicedn37  -- LEAKED BY SLICED | discord.gg/pubmethod
+	tbl23[slicedn36] = tbl30
+
+	for _, sliced100 in ipairs(tbl23) do
+		local tbl31 = tbl22[sliced100[1]] or {}
+		tbl20[#tbl20 + 1] = ("%s: %d live, %d new (%s)"):format(sliced100[1], sliced100[2], #tbl31, #tbl31 > 0 and table.concat(tbl31, ", ") or "-")
+	end
+
+	return table.concat(tbl20, "\n")
+end
+
+_G.RiddlerKnownSource = function(arg)
+	return _G.__RiddlerSources[tostring(arg):gsub("[^%w]", ""):upper()]
+end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+if not (getconnections_ and slicedfn36()) then
+	slicedfn35()
+end
 
 task.spawn(function()
-    local uid = player.UserId
-    local ok, content = pcall(function()
-        return Players:GetUserThumbnailAsync(uid, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
-    end)
-    if ok and content and AvatarImage then
-        AvatarImage.Image = content
-    elseif AvatarImage then
-        AvatarImage.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. tostring(uid) .. "&width=48&height=48&format=png"
-    end
+	task.wait(2)
+	pcall(_G.__RiddlerPrimeExistCounts)
 end)
 
-local MinimizeButton = Instance.new("TextButton")
-MinimizeButton.Name = "Minimize"
-MinimizeButton.Size = UDim2.fromOffset(24, 24)
-MinimizeButton.Position = UDim2.new(1, -72, 0, 10)
-MinimizeButton.BackgroundColor3 = COLORS.Control
-MinimizeButton.BorderSizePixel = 0
-MinimizeButton.AutoButtonColor = false
-MinimizeButton.Text = "–"
-MinimizeButton.TextSize = 16
-MinimizeButton.TextColor3 = COLORS.White
-MinimizeButton.Font = Enum.Font.GothamBold
-MinimizeButton.ZIndex = 5
-MinimizeButton.Parent = Header
-addCorner(MinimizeButton, 6)
-addStroke(MinimizeButton, COLORS.Border, 1, 0.5)
-
-local AutoWriteButton = Instance.new("TextButton")
-AutoWriteButton.Name = "AutoWrite"
-AutoWriteButton.Size = UDim2.fromOffset(47, 24)
-AutoWriteButton.Position = UDim2.new(1, -124, 0, 10)
-AutoWriteButton.BackgroundColor3 = COLORS.Accent
-AutoWriteButton.BorderSizePixel = 0
-AutoWriteButton.AutoButtonColor = false
-AutoWriteButton.Active = true
-AutoWriteButton.Text = ""
-AutoWriteButton.ZIndex = 5
-AutoWriteButton.Parent = Header
-addCorner(AutoWriteButton, 12)
-
-local AutoWriteStroke = addStroke(AutoWriteButton, COLORS.White, 1, 0.62)
-local AutoWriteKnob = Instance.new("Frame")
-AutoWriteKnob.Name = "Knob"
-AutoWriteKnob.Size = UDim2.fromOffset(20, 20)
-AutoWriteKnob.Position = UDim2.new(1, -22, 0.5, -10)
-AutoWriteKnob.BackgroundColor3 = COLORS.Window
-AutoWriteKnob.BorderSizePixel = 0
-AutoWriteKnob.ZIndex = 6
-AutoWriteKnob.Parent = AutoWriteButton
-addCorner(AutoWriteKnob, 10)
-
-local autoWriteEnabled = (savedConfig.codeSniper ~= false)
-_enabled = autoWriteEnabled
-
-AutoWriteButton.BackgroundColor3 = autoWriteEnabled and COLORS.Accent or COLORS.Control
-AutoWriteStroke.Transparency = autoWriteEnabled and 0.62 or 0.88
-AutoWriteKnob.BackgroundColor3 = autoWriteEnabled and COLORS.Window or COLORS.White
-AutoWriteKnob.Position = autoWriteEnabled and UDim2.new(1, -22, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)
-
-local lastToggleTime = 0
-function toggleAutoWrite()
-    if tick() - lastToggleTime < 0.08 then return end
-    lastToggleTime = tick()
-
-    autoWriteEnabled = not autoWriteEnabled
-    _enabled = autoWriteEnabled
-    if not autoWriteEnabled and clearNxcCapture then clearNxcCapture() end
-    savedConfig.codeSniper = autoWriteEnabled
-    saveConfig()
-    _lastStatusMsg = nil
-
-    local ti = TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-    TweenService:Create(AutoWriteButton, ti, {
-        BackgroundColor3 = autoWriteEnabled and COLORS.Accent or COLORS.Control
-    }):Play()
-    TweenService:Create(AutoWriteStroke, ti, {
-        Transparency = autoWriteEnabled and 0.62 or 0.88
-    }):Play()
-    TweenService:Create(AutoWriteKnob, ti, {
-        BackgroundColor3 = autoWriteEnabled and COLORS.Window or COLORS.White,
-        Position = autoWriteEnabled
-            and UDim2.new(1, -22, 0.5, -10)
-            or  UDim2.new(0,   2, 0.5, -10),
-    }):Play()
-
-    if ConsoleOutput then
-        if autoWriteEnabled then
-            ConsoleOutput.Text = '<font color="' .. CONSOLE_COLORS.Tag .. '">◈</font> <font color="' .. CONSOLE_COLORS.Amber .. '">SCOPE LIVE</font> <font color="' .. CONSOLE_COLORS.Dim .. '">· waiting for targets...</font>'
-            for _, featureName in ipairs({"Auto submit", "Riddle solver", "Retype invalid", "Auto farm"}) do
-                if featureStates[featureName] then appendConsoleStatus(featureName, true) end
-            end
-        else
-            ConsoleOutput.Text = '<font color="' .. CONSOLE_COLORS.Tag .. '">◈</font> <font color="' .. CONSOLE_COLORS.Red .. '">SCOPE DOWN</font>\n<font color="' .. CONSOLE_COLORS.Dim .. '">sniper paused — CODE IS still armed</font>'
-        end
-        scrollConsoleToBottom()
-    end
-end
-
-AutoWriteButton.Activated:Connect(toggleAutoWrite)
-AutoWriteButton.MouseButton1Click:Connect(toggleAutoWrite)
-
-local HeaderAccent = Instance.new("Frame")
-HeaderAccent.Name = "TitleDivider"
-HeaderAccent.Size = UDim2.new(1, -34, 0, 1)
-HeaderAccent.Position = UDim2.fromOffset(17, 62)
-HeaderAccent.BackgroundColor3 = COLORS.Accent
-HeaderAccent.BackgroundTransparency = 0.55
-HeaderAccent.BorderSizePixel = 0
-HeaderAccent.Parent = Header
-_G.NxcPulseRefs.headerAccent = HeaderAccent
-
-Console = Instance.new("ScrollingFrame")
-Console.Name = "Console"
-Console.Size = UDim2.new(1, -28, 0, 96)
-Console.Position = UDim2.fromOffset(14, 82)
-Console.BackgroundColor3 = Color3.fromRGB(6, 10, 18)
-Console.BackgroundTransparency = 0.22
-Console.BorderSizePixel = 0
-Console.ClipsDescendants = true
-Console.Active = true
-Console.ScrollingEnabled = true
-Console.ScrollingDirection = Enum.ScrollingDirection.Y
-Console.ElasticBehavior = Enum.ElasticBehavior.Always
-Console.VerticalScrollBarInset = Enum.ScrollBarInset.Always
-Console.CanvasSize = UDim2.new(0, 0, 0, 120)
-Console.AutomaticCanvasSize = Enum.AutomaticSize.Y
-Console.ScrollBarThickness = 5
-Console.ScrollBarImageColor3 = Color3.fromRGB(120, 190, 255)
-Console.ScrollBarImageTransparency = 0.25
-Console.ZIndex = 3
-Console.Parent = Window
-addCorner(Console, 10)
-
-local ConsoleStroke = addStroke(Console, Color3.fromRGB(100, 170, 255), 1, 0.55)
-_G.NxcPulseRefs.consoleStroke = ConsoleStroke
-
-local ConsolePulse = Instance.new("TextLabel")
-ConsolePulse.Name = "PulseGlyph"
-ConsolePulse.Size = UDim2.fromOffset(16, 14)
-ConsolePulse.Position = UDim2.fromOffset(22, 87)
-ConsolePulse.BackgroundTransparency = 1
-ConsolePulse.Text = "◈"
-ConsolePulse.TextSize = 13
-ConsolePulse.Font = Enum.Font.GothamBold
-ConsolePulse.TextColor3 = Color3.fromRGB(120, 200, 255)
-ConsolePulse.TextStrokeColor3 = Color3.fromRGB(40, 120, 255)
-ConsolePulse.TextStrokeTransparency = 0.5
-ConsolePulse.ZIndex = 12
-ConsolePulse.Parent = Window
-_G.NxcPulseRefs.consolePulse = ConsolePulse
-
-ConsoleOutput = Instance.new("TextLabel")
-ConsoleOutput.Name = "ConsoleOutput"
-ConsoleOutput.Size = UDim2.new(1, -22, 0, 0)
-ConsoleOutput.AutomaticSize = Enum.AutomaticSize.Y
-ConsoleOutput.Position = UDim2.fromOffset(9, 6)
-ConsoleOutput.BackgroundTransparency = 1
-ConsoleOutput.RichText = true
-if autoWriteEnabled then
-    ConsoleOutput.Text = '<font color="' .. CONSOLE_COLORS.Tag .. '">◈</font> <font color="' .. CONSOLE_COLORS.Amber .. '">SCOPE LIVE</font> <font color="' .. CONSOLE_COLORS.Dim .. '">· waiting for targets...</font>'
-else
-    ConsoleOutput.Text = '<font color="' .. CONSOLE_COLORS.Tag .. '">◈</font> <font color="' .. CONSOLE_COLORS.Red .. '">SCOPE DOWN</font>\n<font color="' .. CONSOLE_COLORS.Dim .. '">sniper paused — CODE IS still armed</font>'
-end
-ConsoleOutput.TextSize = 13
-ConsoleOutput.Font = Enum.Font.GothamMedium
-ConsoleOutput.TextColor3 = Color3.fromRGB(240, 245, 255)
-ConsoleOutput.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-ConsoleOutput.TextStrokeTransparency = 0.45
-ConsoleOutput.TextXAlignment = Enum.TextXAlignment.Left
-ConsoleOutput.TextYAlignment = Enum.TextYAlignment.Top
-ConsoleOutput.TextWrapped = true
-ConsoleOutput.ZIndex = 4
-ConsoleOutput.Parent = Console
-
-local CONSOLE_BOTTOM_PADDING = 30
-updateConsoleCanvas = function()
-    if not Console or not ConsoleOutput then return end
-    local h = ConsoleOutput.TextBounds.Y
-    if h < 1 then h = ConsoleOutput.AbsoluteSize.Y end
-    local contentHeight = math.max(Console.AbsoluteWindowSize.Y + 1, ConsoleOutput.Position.Y.Offset + h + CONSOLE_BOTTOM_PADDING)
-    Console.CanvasSize = UDim2.new(0, 0, 0, contentHeight)
-end
-ConsoleOutput:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateConsoleCanvas)
-task.defer(updateConsoleCanvas)
-
-local ClearLogsBtn = Instance.new("TextButton")
-ClearLogsBtn.Name = "ClearLogs"
-ClearLogsBtn.Size = UDim2.fromOffset(52, 18)
-ClearLogsBtn.Position = UDim2.new(1, -58, 0, 4)
-ClearLogsBtn.BackgroundColor3 = COLORS.Control
-ClearLogsBtn.BorderSizePixel = 0
-ClearLogsBtn.AutoButtonColor = false
-ClearLogsBtn.Active = true
-ClearLogsBtn.Text = "Clear"
-ClearLogsBtn.TextSize = 10
-ClearLogsBtn.TextColor3 = COLORS.White
-ClearLogsBtn.Font = Enum.Font.GothamBold
-ClearLogsBtn.ZIndex = 6
-ClearLogsBtn.Parent = Console
-addCorner(ClearLogsBtn, 5)
-addStroke(ClearLogsBtn, COLORS.Border, 1, 0.55)
-
-local lastClearTime = 0
-function clearLogs()
-    if tick() - lastClearTime < 0.2 then return end
-    lastClearTime = tick()
-    _capturedParts = {}
-    if type(clearNxcCapture) == "function" then
-        pcall(clearNxcCapture)
-    end
-    pcall(function()
-        local box = (_cachedBox and _cachedBox.Parent) and _cachedBox or (type(nxcCodeBox) == "function" and nxcCodeBox())
-        if box then
-            _writingCodeBox = true
-            box.Text = ""
-            _writingCodeBox = false
-        end
-    end)
-    if type(refreshMiniView) == "function" then pcall(refreshMiniView) end
-    if not ConsoleOutput then return end
-    if autoWriteEnabled then
-        ConsoleOutput.Text = '<font color="' .. CONSOLE_COLORS.Tag .. '">◈</font> <font color="' .. CONSOLE_COLORS.Amber .. '">CLEARED</font> <font color="' .. CONSOLE_COLORS.Dim .. '">· buffer reset · waiting...</font>'
-    else
-        ConsoleOutput.Text = '<font color="' .. CONSOLE_COLORS.Tag .. '">◈</font> <font color="' .. CONSOLE_COLORS.Red .. '">CLEARED</font>\n<font color="' .. CONSOLE_COLORS.Dim .. '">buffer wiped · sniper paused</font>'
-    end
-    _lastStatusMsg = nil
-    scrollConsoleToBottom()
-end
-ClearLogsBtn.Activated:Connect(clearLogs)
-ClearLogsBtn.MouseButton1Click:Connect(clearLogs)
-
-local TabBar = Instance.new("Frame")
-TabBar.Name = "TabBar"
-TabBar.Size = UDim2.new(1, -34, 0, 28)
-TabBar.Position = UDim2.fromOffset(17, 182)
-TabBar.BackgroundTransparency = 1
-TabBar.ZIndex = 4
-TabBar.Parent = Window
-
-function makeTabButton(text, xScale, xOffset)
-    local b = Instance.new("TextButton")
-    b.Name = "Tab_" .. text
-    b.Size = UDim2.new(0.5, -4, 1, 0)
-    b.Position = UDim2.new(xScale, xOffset, 0, 0)
-    b.BackgroundColor3 = COLORS.Control
-    b.BorderSizePixel = 0
-    b.AutoButtonColor = false
-    b.Text = text
-    b.TextSize = 12
-    b.TextColor3 = COLORS.Dim
-    b.Font = Enum.Font.GothamBold
-    b.ZIndex = 5
-    b.Parent = TabBar
-    addCorner(b, 7)
-    local stroke = addStroke(b, COLORS.White, 1, 0.75)
-    b.MouseEnter:Connect(function()
-        TweenService:Create(stroke, TweenInfo.new(0.15), { Transparency = 0.35 }):Play()
-    end)
-    b.MouseLeave:Connect(function()
-        TweenService:Create(stroke, TweenInfo.new(0.2), { Transparency = 0.75 }):Play()
-    end)
-    return b
-end
-
-local TabMainBtn = makeTabButton("Main", 0, 0)
-local TabKeybindsBtn = makeTabButton("Keybinds", 0.5, 4)
-
-function setTabVisual(active)
-    local ti = TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    local function style(btn, on)
-        TweenService:Create(btn, ti, {
-            BackgroundColor3 = on and COLORS.Accent or COLORS.Control,
-            TextColor3 = on and COLORS.Window or COLORS.Dim,
-        }):Play()
-    end
-    style(TabMainBtn, active == "Main")
-    style(TabKeybindsBtn, active == "Keybinds")
-end
-setTabVisual("Main")
-
-local MainPage = Instance.new("Frame")
-MainPage.Name = "MainPage"
-MainPage.Size = UDim2.new(1, 0, 0, 352)
-MainPage.Position = UDim2.fromOffset(0, 214)
-MainPage.BackgroundTransparency = 1
-MainPage.ZIndex = 3
-MainPage.Visible = true
-MainPage.ClipsDescendants = true
-MainPage.Parent = Window
-
-local KeybindsPage = Instance.new("Frame")
-KeybindsPage.Name = "KeybindsPage"
-KeybindsPage.Size = UDim2.new(1, 0, 0, 250)
-KeybindsPage.Position = UDim2.fromOffset(0, 214)
-KeybindsPage.BackgroundTransparency = 1
-KeybindsPage.ZIndex = 3
-KeybindsPage.Visible = false
-KeybindsPage.ClipsDescendants = true
-KeybindsPage.Parent = Window
-
-local function popPage(page)
-    local sc = page:FindFirstChildOfClass("UIScale") or Instance.new("UIScale", page)
-    sc.Scale = 0.94
-    TweenService:Create(sc, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
-end
-
-function showTab(name)
-    local isMain = name == "Main"
-    local showPage = isMain and MainPage or KeybindsPage
-    local hidePage = isMain and KeybindsPage or MainPage
-    hidePage.Visible = false
-    showPage.Visible = true
-    popPage(showPage)
-    setTabVisual(name)
-end
-
-TabMainBtn.Activated:Connect(function() showTab("Main") end)
-TabKeybindsBtn.Activated:Connect(function() showTab("Keybinds") end)
-
-local Settings = MainPage
-
-function makeCard(name, position, size, parentOverride)
-    local card = Instance.new("Frame")
-    card.Name = name
-    card.Position = position
-    card.Size = size
-    card.BackgroundColor3 = Color3.fromRGB(12, 16, 26)
-    card.BackgroundTransparency = 0.25
-    card.BorderSizePixel = 0
-    card.Parent = parentOverride or Settings
-    addCorner(card, 9)
-    local stroke = addStroke(card, Color3.fromRGB(140, 190, 255), 1, 0.72)
-
-    local baseBg = card.BackgroundColor3
-    local baseTrans = card.BackgroundTransparency
-    local hoverTi  = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    local leaveTi  = TweenInfo.new(0.20, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-    card.MouseEnter:Connect(function()
-        TweenService:Create(card, hoverTi, {
-            BackgroundColor3 = Color3.fromRGB(18, 24, 36),
-            BackgroundTransparency = 0.15,
-        }):Play()
-        if stroke then
-            TweenService:Create(stroke, hoverTi, { Transparency = 0.4 }):Play()
-        end
-    end)
-    card.MouseLeave:Connect(function()
-        TweenService:Create(card, leaveTi, {
-            BackgroundColor3 = baseBg,
-            BackgroundTransparency = baseTrans,
-        }):Play()
-        if stroke then
-            TweenService:Create(stroke, leaveTi, { Transparency = 0.72 }):Play()
-        end
-    end)
-
-    return card
-end
-
-function makeStateButton(parent, enabled, consoleName, onToggle, customColor)
-    parent.Active = true
-    featureStates[consoleName] = enabled
-    local button = Instance.new("TextButton")
-    button.Name = "State"
-    button.Size = UDim2.fromOffset(42, 20)
-    button.Position = UDim2.new(1, -50, 0.5, -10)
-    button.BackgroundColor3 = enabled and (customColor or COLORS.Accent) or COLORS.Control
-    button.BorderSizePixel = 0
-    button.AutoButtonColor = false
-    button.Active = true
-    button.Text = enabled and "ON" or "OFF"
-    button.TextSize = 8
-    button.TextColor3 = enabled and COLORS.Window or COLORS.Dim
-    button.Font = Enum.Font.GothamBold
-    button.ZIndex = 5
-    button.Parent = parent
-    addCorner(button, 6)
-    local outline = addStroke(button, COLORS.White, 1, enabled and 0.62 or 0.88)
-    local lastSubToggle = 0
-
-    local function applyVisual(state)
-        featureStates[consoleName] = state
-        button.Text = state and "ON" or "OFF"
-        local targetBg   = state and (customColor or COLORS.Accent) or COLORS.Control
-        local targetTxt  = state and COLORS.Window or COLORS.Dim
-        local targetLine = state and 0.62 or 0.88
-
-        local ti = TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        TweenService:Create(button, ti, {
-            BackgroundColor3 = targetBg,
-            TextColor3 = targetTxt,
-        }):Play()
-        TweenService:Create(outline, ti, { Transparency = targetLine }):Play()
-
-        local sc = button:FindFirstChildOfClass("UIScale") or Instance.new("UIScale", button)
-        sc.Scale = 0.88
-        TweenService:Create(sc, TweenInfo.new(0.22, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Scale = 1
-        }):Play()
-    end
-
-    button:SetAttribute("FeatureName", consoleName)
-
-    local function toggleState()
-        if tick() - lastSubToggle < 0.25 then return end
-        lastSubToggle = tick()
-        local state = not (featureStates[consoleName] == true)
-        applyVisual(state)
-        if autoWriteEnabled then appendConsoleStatus(consoleName, state) end
-        if onToggle then onToggle(state) end
-    end
-
-    button.Activated:Connect(toggleState)
-    return button
-end
-
-local AutoCard = makeCard("AutoSubmit", UDim2.fromOffset(17, 0), UDim2.fromOffset(135, 50))
-makeLabel(AutoCard, "Title", "Auto submit", UDim2.new(1, -58, 1, 0), UDim2.fromOffset(12, 0), 11, COLORS.White, Enum.Font.GothamMedium)
-makeStateButton(AutoCard, _autoAccept, "Auto submit", function(state)
-    _autoAccept = state
-    savedConfig.autoSubmit = state
-    saveConfig()
-end)
-
-local AICard = makeCard("AIRiddles", UDim2.fromOffset(158, 0), UDim2.fromOffset(135, 50))
-makeLabel(AICard, "Title", "Riddle solver", UDim2.new(1, -58, 1, 0), UDim2.fromOffset(12, 0), 11, COLORS.White, Enum.Font.GothamMedium)
-makeStateButton(AICard, _riddleSolver, "Riddle solver", function(state)
-    _riddleSolver = state
-    savedConfig.riddleSolver = state
-    saveConfig()
-end)
-
-local SpamCard = makeCard("SpamRedeem", UDim2.fromOffset(17, 56), UDim2.fromOffset(276, 40))
-makeLabel(SpamCard, "Title", "Spam redeem", UDim2.new(1, -58, 1, 0), UDim2.fromOffset(12, 0), 11, COLORS.White, Enum.Font.GothamMedium)
-makeStateButton(SpamCard, _spamRedeem, "Spam redeem", function(state)
-    _spamRedeem = state
-    savedConfig.spamRedeem = state
-    saveConfig()
-    if setStatus then
-        setStatus(state and "Spam redeem ON" or "Spam redeem OFF", state and COLORS.Green or COLORS.Dim)
-    end
-end, COLORS.Accent)
-
-local DelayCard = makeCard("SubmitAfter", UDim2.fromOffset(17, 102), UDim2.fromOffset(276, 44))
-makeLabel(DelayCard, "Title", "Submit after announcements", UDim2.fromOffset(145, 43), UDim2.fromOffset(12, 0), 11, COLORS.White, Enum.Font.GothamMedium)
-local CounterShell = Instance.new("Frame")
-CounterShell.Name = "Counter"
-CounterShell.Size = UDim2.fromOffset(96, 31)
-CounterShell.Position = UDim2.new(1, -105, 0.5, -15)
-CounterShell.BackgroundColor3 = COLORS.Window
-CounterShell.BackgroundTransparency = 0.05
-CounterShell.BorderSizePixel = 0
-CounterShell.Parent = DelayCard
-addCorner(CounterShell, 7)
-addStroke(CounterShell, COLORS.White, 1, 0.86)
-
-local Minus = Instance.new("TextButton")
-Minus.Name = "Minus"
-Minus.Size = UDim2.fromOffset(25, 25)
-Minus.Position = UDim2.fromOffset(3, 3)
-Minus.BackgroundColor3 = COLORS.Control
-Minus.BorderSizePixel = 0
-Minus.AutoButtonColor = false
-Minus.Active = true
-Minus.Text = "-"
-Minus.TextSize = 16
-Minus.TextColor3 = COLORS.Text
-Minus.Font = Enum.Font.GothamBold
-Minus.Parent = CounterShell
-addCorner(Minus, 5)
-
-local Count = makeLabel(CounterShell, "Count", tostring(_submitAfter), UDim2.fromOffset(28, 25), UDim2.fromOffset(34, 3), 17, COLORS.White, Enum.Font.GothamBold)
-Count.TextXAlignment = Enum.TextXAlignment.Center
-
-local Plus = Instance.new("TextButton")
-Plus.Name = "Plus"
-Plus.Size = UDim2.fromOffset(25, 25)
-Plus.Position = UDim2.fromOffset(68, 3)
-Plus.BackgroundColor3 = COLORS.Control
-Plus.BorderSizePixel = 0
-Plus.AutoButtonColor = false
-Plus.Active = true
-Plus.Text = "+"
-Plus.TextSize = 16
-Plus.TextColor3 = COLORS.Text
-Plus.Font = Enum.Font.GothamBold
-Plus.Parent = CounterShell
-addCorner(Plus, 5)
-
-function decr()
-    _submitAfter = math.max(1, _submitAfter - 1)
-    Count.Text = tostring(_submitAfter)
-    savedConfig.submitAfter = _submitAfter
-    clearNxcCapture()
-    if refreshMiniView then refreshMiniView() end
-    saveConfig()
-end
-function incr()
-    _submitAfter = _submitAfter + 1
-    Count.Text = tostring(_submitAfter)
-    savedConfig.submitAfter = _submitAfter
-    clearNxcCapture()
-    saveConfig()
-end
-
-local lastCounterTime = 0
-function safeDecr()
-    if tick() - lastCounterTime < 0.18 then return end
-    lastCounterTime = tick()
-    decr()
-end
-function safeIncr()
-    if tick() - lastCounterTime < 0.18 then return end
-    lastCounterTime = tick()
-    incr()
-end
-
-Minus.Activated:Connect(safeDecr)
-Plus.Activated:Connect(safeIncr)
-
-local RetypeCard = makeCard("RetypeInvalid", UDim2.fromOffset(17, 152), UDim2.fromOffset(276, 38))
-makeLabel(RetypeCard, "Title", "Retype invalid", UDim2.new(1, -65, 1, 0), UDim2.fromOffset(12, 0), 11, COLORS.White, Enum.Font.GothamMedium)
-local RetypeState = makeStateButton(RetypeCard, _retypeInvalid, "Retype invalid", function(state)
-    _retypeInvalid = state
-    savedConfig.retypeInvalid = state
-    saveConfig()
-end)
-
-local FarmCard = makeCard("AutoFarm", UDim2.fromOffset(17, 196), UDim2.fromOffset(276, 38))
-makeLabel(FarmCard, "Title", "Auto farm", UDim2.new(1, -58, 1, 0), UDim2.fromOffset(12, 0), 11, COLORS.White, Enum.Font.GothamMedium)
-makeStateButton(FarmCard, _autoFarm, "Auto farm", function(state)
-    _autoFarm = state
-    savedConfig.autoFarm = state
-    saveConfig()
-    if state then
-        pcall(autoBuyStart)
-        setStatus("Auto farm ON", COLORS.Gold)
-    else
-        pcall(autoBuyStop)
-        setStatus("Auto farm OFF", COLORS.Dim)
-    end
-end, COLORS.Gold)
-
-local ManualSubmitBtn = Instance.new("TextButton")
-ManualSubmitBtn.Name = "ManualSubmit"
-ManualSubmitBtn.Size = UDim2.fromOffset(276, 34)
-ManualSubmitBtn.Position = UDim2.fromOffset(17, 240)
-ManualSubmitBtn.BackgroundColor3 = Color3.fromRGB(40, 90, 160)
-ManualSubmitBtn.BorderSizePixel = 0
-ManualSubmitBtn.AutoButtonColor = false
-ManualSubmitBtn.Text = "SUBMIT NOW"
-ManualSubmitBtn.TextSize = 13
-ManualSubmitBtn.TextColor3 = COLORS.White
-ManualSubmitBtn.Font = Enum.Font.GothamBlack
-ManualSubmitBtn.ZIndex = 5
-ManualSubmitBtn.Parent = MainPage
-addCorner(ManualSubmitBtn, 9)
-addStroke(ManualSubmitBtn, Color3.fromRGB(120, 190, 255), 1.2, 0.4)
-_G.NxcPulseRefs.manualSubmit = ManualSubmitBtn
-
-ManualSubmitBtn.Activated:Connect(function()
-    if type(manualSubmitNow) == "function" then
-        pcall(manualSubmitNow)
-    end
-end)
-ManualSubmitBtn.MouseButton1Click:Connect(function()
-    if type(manualSubmitNow) == "function" then
-        pcall(manualSubmitNow)
-    end
-end)
-
-function keyNameFromConfig(v)
-    if type(v) ~= "string" or v == "" then return "NONE" end
-    return v
-end
-
-local _listeningKB = false
-function makeKeybindRow(parent, y, title, configKey, onChanged)
-    local card = makeCard("KB_" .. configKey, UDim2.fromOffset(17, y), UDim2.fromOffset(266, 34), parent)
-    makeLabel(card, "Title", title, UDim2.new(1, -90, 1, 0), UDim2.fromOffset(12, 0), 11, COLORS.White, Enum.Font.GothamMedium)
-    local btn = Instance.new("TextButton")
-    btn.Name = "Bind"
-    btn.Size = UDim2.fromOffset(72, 22)
-    btn.Position = UDim2.new(1, -80, 0.5, -11)
-    btn.BackgroundColor3 = COLORS.Control
-    btn.BorderSizePixel = 0
-    btn.AutoButtonColor = false
-    btn.Active = true
-    btn.Text = keyNameFromConfig(savedConfig[configKey])
-    btn.TextSize = 10
-    btn.TextColor3 = COLORS.White
-    btn.Font = Enum.Font.GothamBold
-    btn.ZIndex = 5
-    btn.Parent = card
-    addCorner(btn, 6)
-    addStroke(btn, COLORS.White, 1, 0.7)
-
-    local listening = false
-    local conn
-    local function stopListen()
-        listening = false
-        _listeningKB = false
-        if conn then pcall(function() conn:Disconnect() end); conn = nil end
-        btn.Text = keyNameFromConfig(savedConfig[configKey])
-        btn.TextColor3 = COLORS.White
-        btn.BackgroundColor3 = COLORS.Control
-    end
-
-    local function startListen()
-        if _listeningKB and not listening then return end
-        if listening then stopListen(); return end
-        listening = true
-        _listeningKB = true
-        btn.Text = "..."
-        btn.TextColor3 = COLORS.Accent
-        btn.BackgroundColor3 = COLORS.Accent
-        conn = UserInputService.InputBegan:Connect(function(input, gpe)
-            if not listening then return end
-            if input.UserInputType ~= Enum.UserInputType.Keyboard then return end
-            if input.KeyCode == Enum.KeyCode.Escape then
-                savedConfig[configKey] = nil
-                if onChanged then onChanged(nil) end
-                saveConfig()
-                stopListen()
-                return
-            end
-            if input.KeyCode == Enum.KeyCode.Unknown then return end
-            local name = input.KeyCode.Name
-            savedConfig[configKey] = name
-            if onChanged then onChanged(name) end
-            saveConfig()
-            stopListen()
-        end)
-    end
-
-    btn.Activated:Connect(startListen)
-    return btn
-end
-
-makeLabel(KeybindsPage, "KBHeader", "KEYBINDS  (Esc clears)", UDim2.fromOffset(220, 16), UDim2.fromOffset(17, 4), 10, COLORS.Dim, Enum.Font.GothamBold)
-
-makeKeybindRow(KeybindsPage, 24, "Code Sniper", "kbCodeSniper")
-makeKeybindRow(KeybindsPage, 60, "Auto Submit", "kbAutoSubmit")
-makeKeybindRow(KeybindsPage, 96, "Riddle Solver", "kbRiddleSolver")
-makeKeybindRow(KeybindsPage, 132, "Retype Invalid", "kbRetypeInvalid")
-makeKeybindRow(KeybindsPage, 168, "Auto Farm", "kbAutoFarm")
-makeKeybindRow(KeybindsPage, 204, "Manual Submit", "kbManualSubmit")
-
-local BottomStrip = Instance.new("Frame")
-BottomStrip.Name = "BottomStrip"
-BottomStrip.Size = UDim2.new(1, -34, 0, 42)
-BottomStrip.Position = UDim2.fromOffset(17, 570)
-BottomStrip.BackgroundColor3 = Color3.fromRGB(6, 10, 18)
-BottomStrip.BackgroundTransparency = 0.08
-BottomStrip.BorderSizePixel = 0
-BottomStrip.ZIndex = 8
-BottomStrip.Parent = Window
-addCorner(BottomStrip, 9)
-addStroke(BottomStrip, Color3.fromRGB(100, 170, 255), 1, 0.55)
-
-local DiscordFooter = makeLabel(BottomStrip, "DiscordFooter", "CALCIUM HUB  •  CODE SNIPER", UDim2.new(1, -16, 0, 14), UDim2.fromOffset(10, 4), 10, COLORS.Dim, Enum.Font.GothamMedium)
-DiscordFooter.TextXAlignment = Enum.TextXAlignment.Left
-DiscordFooter.ZIndex = 9
-do
-    local sweep = Instance.new("Frame")
-    sweep.Name = "AccentSweep"
-    sweep.Size = UDim2.fromOffset(40, 2)
-    sweep.Position = UDim2.fromOffset(-40, 0)
-    sweep.BackgroundColor3 = COLORS.Accent
-    sweep.BackgroundTransparency = 0.25
-    sweep.BorderSizePixel = 0
-    sweep.ZIndex = 10
-    sweep.Parent = BottomStrip
-    addCorner(sweep, 2)
-    task.spawn(function()
-        while sweep and sweep.Parent do
-            if not Window.Visible then
-                task.wait(1.2)
-            else
-            local w = BottomStrip.AbsoluteSize.X
-            if w < 10 then w = 280 end
-            sweep.Position = UDim2.fromOffset(-40, 0)
-            local tw = TweenService:Create(sweep, TweenInfo.new(2.4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                Position = UDim2.fromOffset(w + 10, 0),
-            })
-            tw:Play()
-            tw.Completed:Wait()
-            task.wait(0.8)
-            end
-        end
-    end)
-end
-
-local SpeedLabel = Instance.new("TextLabel")
-SpeedLabel.Name = "SpeedLabel"
-SpeedLabel.Size = UDim2.new(1, -16, 0, 16)
-SpeedLabel.Position = UDim2.fromOffset(10, 20)
-SpeedLabel.BackgroundTransparency = 1
-SpeedLabel.Text = "last redeem  ·  — ms"
-SpeedLabel.TextSize = 12
-SpeedLabel.TextColor3 = COLORS.White
-SpeedLabel.Font = Enum.Font.GothamBold
-SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
-SpeedLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-SpeedLabel.TextStrokeTransparency = 0.4
-SpeedLabel.ZIndex = 9
-SpeedLabel.Parent = BottomStrip
-
-local _lastRedeemMs = nil
-local _lastRedeemCode = nil
-local MiniView, MiniMsLabel, MiniCodeLabel, MiniSeqLabel, MiniAvatar, ExpandButton
-local _miniVisSnapshot = {}
-local refreshMiniView
-
-function setRedeemSpeedMs(ms, code)
-    if code and code ~= "" then
-        _lastRedeemCode = tostring(code)
-    end
-    local n = tonumber(ms)
-    local col = COLORS.Dim
-    local fullTxt = "last redeem  ·  —.——— ms"
-    local miniTxt = "—.——— ms"
-    if n then
-        n = math.max(0, n)
-        n = math.floor(n * 1000 + 0.5) / 1000
-        _lastRedeemMs = n
-        fullTxt = string.format("last redeem  ·  %.3f ms", n)
-        miniTxt = string.format("%.3f ms", n)
-        if n < 120 then
-            col = COLORS.Green
-        elseif n < 350 then
-            col = COLORS.Accent
-        else
-            col = COLORS.Text
-        end
-    else
-        _lastRedeemMs = nil
-    end
-    pcall(function()
-        if SpeedLabel and SpeedLabel.Parent then
-            SpeedLabel.Text = fullTxt
-            SpeedLabel.TextColor3 = col
-        end
-    end)
-    pcall(function()
-        if MiniMsLabel and MiniMsLabel.Parent then
-            MiniMsLabel.Text = miniTxt
-            MiniMsLabel.TextColor3 = col
-        end
-    end)
-    pcall(function()
-        if type(refreshMiniView) == "function" then refreshMiniView() end
-    end)
-end
-RedeemSpeedUI.label = SpeedLabel
-RedeemSpeedUI.set = setRedeemSpeedMs
-_G.NxcSetRedeemMs = setRedeemSpeedMs
-
-local FULL_SIZE = UDim2.fromOffset(310, 620)
-local MINI_SIZE = UDim2.fromOffset(300, 72)
-local _isMinimized = false
-
-MiniView = Instance.new("Frame")
-MiniView.Name = "MiniView"
-MiniView.Size = UDim2.new(1, 0, 1, 0)
-MiniView.BackgroundColor3 = Color3.fromRGB(12, 14, 20)
-MiniView.BackgroundTransparency = 0
-MiniView.Visible = false
-MiniView.ZIndex = 20
-MiniView.Active = true
-MiniView.ClipsDescendants = true
-MiniView.Parent = Window
-addCorner(MiniView, 14)
-
-do
-    local bgImg = Instance.new("ImageLabel")
-    bgImg.Name = "MiniBgImage"
-    bgImg.Size = UDim2.fromScale(1, 1)
-    bgImg.BackgroundTransparency = 1
-    bgImg.Image = "rbxassetid://129085053275432"
-    bgImg.ScaleType = Enum.ScaleType.Crop
-    bgImg.ImageTransparency = 0.22
-    bgImg.ZIndex = 20
-    bgImg.Parent = MiniView
-    addCorner(bgImg, 14)
-end
-
-local MiniScrim = Instance.new("Frame")
-MiniScrim.Name = "MiniScrim"
-MiniScrim.Size = UDim2.new(1, 0, 1, 0)
-MiniScrim.BackgroundColor3 = Color3.fromRGB(8, 10, 16)
-MiniScrim.BackgroundTransparency = 0.38
-MiniScrim.BorderSizePixel = 0
-MiniScrim.ZIndex = 21
-MiniScrim.Parent = MiniView
-addCorner(MiniScrim, 14)
-
-local StarLayer = Instance.new("Frame")
-StarLayer.Name = "StarLayer"
-StarLayer.Size = UDim2.new(1, 0, 1, 0)
-StarLayer.BackgroundTransparency = 1
-StarLayer.ZIndex = 22
-StarLayer.ClipsDescendants = true
-StarLayer.Active = false
-StarLayer.Parent = MiniView
-
-do
-    local pool = {}
-    for i = 1, 10 do
-        local star = Instance.new("Frame")
-        star.Name = "Star" .. i
-        star.BackgroundColor3 = Color3.fromRGB(180, 210, 255)
-        star.BackgroundTransparency = 0.25 + math.random() * 0.45
-        star.BorderSizePixel = 0
-        local sz = 2 + math.random(0, 2)
-        star.Size = UDim2.fromOffset(sz, sz)
-        star.Position = UDim2.fromOffset(math.random(0, 260), -4 - math.random(0, 40))
-        star.ZIndex = 20
-        star.Parent = StarLayer
-        addCorner(star, 8)
-        pool[i] = {
-            frame = star,
-            speed = 18 + math.random() * 42,
-            drift = (math.random() - 0.5) * 12,
-            twinkle = math.random() * math.pi * 2,
-        }
-    end
-    _G.NxcPulseRefs.miniStars = {
-        layer = StarLayer,
-        pool = pool,
-    }
-end
-
-MiniAvatar = Instance.new("ImageLabel")
-MiniAvatar.Name = "MiniAvatar"
-MiniAvatar.Size = UDim2.fromOffset(42, 42)
-MiniAvatar.Position = UDim2.fromOffset(10, 15)
-MiniAvatar.BackgroundColor3 = COLORS.Control
-MiniAvatar.BorderSizePixel = 0
-MiniAvatar.ZIndex = 25
-MiniAvatar.ScaleType = Enum.ScaleType.Crop
-MiniAvatar.Parent = MiniView
-addCorner(MiniAvatar, 21)
-local miniAvStroke = addStroke(MiniAvatar, COLORS.Accent, 1.4, 0.25)
-_G.NxcPulseRefs.miniAvatar = miniAvStroke
-
-pcall(function()
-    if AvatarImage and AvatarImage.Image and AvatarImage.Image ~= "" then
-        MiniAvatar.Image = AvatarImage.Image
-    else
-        local uid = player.UserId
-        local ok, content = pcall(function()
-            return Players:GetUserThumbnailAsync(uid, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
-        end)
-        if ok and content then
-            MiniAvatar.Image = content
-        else
-            MiniAvatar.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. tostring(uid) .. "&width=48&height=48&format=png"
-        end
-    end
-end)
-
-MiniMsLabel = Instance.new("TextLabel")
-MiniMsLabel.Name = "MiniMs"
-MiniMsLabel.Size = UDim2.new(1, -110, 0, 16)
-MiniMsLabel.Position = UDim2.fromOffset(58, 6)
-MiniMsLabel.BackgroundTransparency = 1
-MiniMsLabel.Text = "—.——— ms"
-MiniMsLabel.TextSize = 13
-MiniMsLabel.TextColor3 = COLORS.Green
-MiniMsLabel.Font = Enum.Font.GothamBold
-MiniMsLabel.TextXAlignment = Enum.TextXAlignment.Left
-MiniMsLabel.TextTruncate = Enum.TextTruncate.AtEnd
-MiniMsLabel.ZIndex = 26
-MiniMsLabel.Parent = MiniView
-
-MiniCodeLabel = Instance.new("TextLabel")
-MiniCodeLabel.Name = "MiniCode"
-MiniCodeLabel.Size = UDim2.new(1, -110, 0, 14)
-MiniCodeLabel.Position = UDim2.fromOffset(58, 24)
-MiniCodeLabel.BackgroundTransparency = 1
-MiniCodeLabel.Text = "ready"
-MiniCodeLabel.TextSize = 11
-MiniCodeLabel.TextColor3 = COLORS.White
-MiniCodeLabel.Font = Enum.Font.GothamMedium
-MiniCodeLabel.TextXAlignment = Enum.TextXAlignment.Left
-MiniCodeLabel.TextTruncate = Enum.TextTruncate.AtEnd
-MiniCodeLabel.ZIndex = 26
-MiniCodeLabel.Parent = MiniView
-
-MiniSeqLabel = Instance.new("TextLabel")
-MiniSeqLabel.Name = "MiniSeq"
-MiniSeqLabel.Size = UDim2.new(1, -110, 0, 12)
-MiniSeqLabel.Position = UDim2.fromOffset(58, 40)
-MiniSeqLabel.BackgroundTransparency = 1
-MiniSeqLabel.Text = ""
-MiniSeqLabel.TextSize = 10
-MiniSeqLabel.TextColor3 = COLORS.Dim
-MiniSeqLabel.Font = Enum.Font.Gotham
-MiniSeqLabel.TextXAlignment = Enum.TextXAlignment.Left
-MiniSeqLabel.TextTruncate = Enum.TextTruncate.AtEnd
-MiniSeqLabel.ZIndex = 26
-MiniSeqLabel.Parent = MiniView
-
-ExpandButton = Instance.new("TextButton")
-ExpandButton.Name = "Expand"
-ExpandButton.Size = UDim2.fromOffset(28, 28)
-ExpandButton.Position = UDim2.new(1, -36, 0.5, -14)
-ExpandButton.BackgroundColor3 = Color3.fromRGB(20, 28, 40)
-ExpandButton.BorderSizePixel = 0
-ExpandButton.AutoButtonColor = false
-ExpandButton.Text = "+"
-ExpandButton.TextSize = 16
-ExpandButton.TextColor3 = COLORS.White
-ExpandButton.Font = Enum.Font.GothamBold
-ExpandButton.ZIndex = 26
-ExpandButton.Parent = MiniView
-addCorner(ExpandButton, 6)
-addStroke(ExpandButton, COLORS.Border, 1, 0.5)
-
-refreshMiniView = function()
-    if not MiniView or not MiniView.Visible then return end
-    local msTxt = _lastRedeemMs and (_lastRedeemMs .. " ms") or "— ms"
-    MiniMsLabel.Text = msTxt
-    MiniMsLabel.TextColor3 = SpeedLabel and SpeedLabel.TextColor3 or Color3.fromRGB(255, 255, 255)
-
-    local need = math.max(1, tonumber(_submitAfter) or 1)
-    local parts = _capturedParts or {}
-    local n = #parts
-
-    if n > 0 and n < need then
-        local seq = table.concat(parts, " + ")
-        local combined = table.concat(parts, "")
-        if #seq > 36 then seq = seq:sub(1, 34) .. "…" end
-        MiniSeqLabel.Text = string.format("%d/%d  %s", n, need, seq)
-        MiniSeqLabel.TextColor3 = Color3.fromRGB(120, 190, 255)
-        local show = combined
-        if #show > 28 then show = show:sub(1, 26) .. "…" end
-        MiniCodeLabel.Text = show
-        MiniCodeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    elseif n >= need and n > 0 then
-        local combined = table.concat(parts, "")
-        if #combined > 28 then combined = combined:sub(1, 26) .. "…" end
-        MiniCodeLabel.Text = combined
-        MiniCodeLabel.TextColor3 = COLORS.Green
-        MiniSeqLabel.Text = string.format("%d/%d announcements", need, need)
-        MiniSeqLabel.TextColor3 = COLORS.Green
-    else
-        local codeTxt = (_lastRedeemCode and #_lastRedeemCode > 0) and _lastRedeemCode or "—"
-        if #codeTxt > 28 then codeTxt = codeTxt:sub(1, 26) .. "…" end
-        MiniCodeLabel.Text = codeTxt
-        MiniCodeLabel.TextColor3 = Color3.fromRGB(235, 240, 255)
-        if need > 1 then
-            MiniSeqLabel.Text = string.format("0/%d announcements", need)
-            MiniSeqLabel.TextColor3 = Color3.fromRGB(190, 210, 240)
-        else
-            MiniSeqLabel.Text = "ready"
-            MiniSeqLabel.TextColor3 = Color3.fromRGB(190, 210, 240)
-        end
-    end
-end
-
-local _miniTween = nil
-function setMinimized(on)
-    _isMinimized = on
-    if _miniTween then
-        pcall(function() _miniTween:Cancel() end)
-        _miniTween = nil
-    end
-
-    local ti = TweenInfo.new(0.28, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-    if on then
-        for k in pairs(_miniVisSnapshot) do _miniVisSnapshot[k] = nil end
-        for _, child in ipairs(Window:GetChildren()) do
-            if child:IsA("GuiObject") and child ~= MiniView then
-                _miniVisSnapshot[child] = child.Visible
-                child.Visible = false
-            end
-        end
-        pcall(function()
-            if WindowScrim then WindowScrim.Visible = true end
-        end)
-        MiniView.Visible = true
-        StarLayer.Visible = true
-        _miniTween = TweenService:Create(Window, ti, {Size = MINI_SIZE})
-        _miniTween:Play()
-        MinimizeButton.Text = "▢"
-        if AvatarImage and AvatarImage.Image ~= "" then
-            MiniAvatar.Image = AvatarImage.Image
-        end
-        refreshMiniView()
-    else
-        MiniView.Visible = false
-        StarLayer.Visible = false
-        for child, wasVisible in pairs(_miniVisSnapshot) do
-            if child and child.Parent == Window then
-                child.Visible = wasVisible
-            end
-        end
-        for k in pairs(_miniVisSnapshot) do _miniVisSnapshot[k] = nil end
-        pcall(function()
-            if WindowScrim then
-                WindowScrim.Visible = true
-                WindowScrim.BackgroundTransparency = 0.55
-            end
-        end)
-        _miniTween = TweenService:Create(Window, ti, { Size = FULL_SIZE })
-        _miniTween:Play()
-        MinimizeButton.Text = "—"
-    end
-end
-
-MinimizeButton.Activated:Connect(function()
-    setMinimized(not _isMinimized)
-end)
-ExpandButton.Activated:Connect(function()
-    setMinimized(false)
-end)
-
-do
-    local dragging = false
-    local activeDragInput
-    local dragStart
-    local startPosition
-    local dragMoved = false
-    local DRAG_THRESHOLD = UserInputService.TouchEnabled and 10 or 3
-
-    local function isOverHeaderControl(position)
-        local function over(btn)
-            if not btn or not btn.Parent then return false end
-            local btnPos = btn.AbsolutePosition
-            local btnSize = btn.AbsoluteSize
-            return position.X >= (btnPos.X - 8)
-                and position.X <= (btnPos.X + btnSize.X + 8)
-                and position.Y >= (btnPos.Y - 8)
-                and position.Y <= (btnPos.Y + btnSize.Y + 8)
-        end
-        return over(AutoWriteButton) or over(MinimizeButton) or over(AvatarImage) or over(ExpandButton)
-    end
-
-    local function stopDragging(input)
-        if input ~= activeDragInput then return end
-        dragging = false
-        activeDragInput = nil
-        dragStart = nil
-        startPosition = nil
-    end
-
-    local function beginDrag(input)
-        if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
-        if dragging or isOverHeaderControl(input.Position) then return end
-
-        dragging = true
-        activeDragInput = input
-        dragStart = Vector2.new(input.Position.X, input.Position.Y)
-        startPosition = Window.Position
-        dragMoved = false
-
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End or input.UserInputState == Enum.UserInputState.Cancel then
-                stopDragging(input)
-            end
-        end)
-    end
-
-    Header.InputBegan:Connect(beginDrag)
-    MiniView.InputBegan:Connect(beginDrag)
-    MiniView.Active = true
-
-    UserInputService.InputChanged:Connect(function(input)
-        if not dragging or not activeDragInput then return end
-        local isTrackedTouch = activeDragInput.UserInputType == Enum.UserInputType.Touch and input == activeDragInput
-        local isTrackedMouse = activeDragInput.UserInputType == Enum.UserInputType.MouseButton1 and input.UserInputType == Enum.UserInputType.MouseMovement
-        if not isTrackedTouch and not isTrackedMouse then return end
-
-        local current = Vector2.new(input.Position.X, input.Position.Y)
-        local delta = current - dragStart
-        if not dragMoved then
-            if delta.Magnitude < DRAG_THRESHOLD then return end
-            dragMoved = true
-        end
-
-        Window.Position = UDim2.new(
-            startPosition.X.Scale,
-            startPosition.X.Offset + delta.X,
-            startPosition.Y.Scale,
-            startPosition.Y.Offset + delta.Y
-        )
-    end)
-end
-
-function col3ToRich(col)
-    if col == COLORS.Green then return CONSOLE_COLORS.Green end
-    if col == COLORS.Red then return CONSOLE_COLORS.Red end
-    if col == COLORS.Text then return CONSOLE_COLORS.Amber end
-    if col == COLORS.White then return CONSOLE_COLORS.Cyan end
-    if col == COLORS.Dim then return CONSOLE_COLORS.Dim end
-    if col == COLORS.Gold then return CONSOLE_COLORS.Gold end
-    return string.format("rgb(%d,%d,%d)", math.floor(col.R * 255 + 0.5), math.floor(col.G * 255 + 0.5), math.floor(col.B * 255 + 0.5))
-end
-
-function consoleTime()
-    local t = os.date("*t")
-    return string.format("%02d:%02d:%02d", t.hour, t.min, t.sec)
-end
-
-function consoleTagFor(msg, col)
-    local m = tostring(msg or ""):lower()
-    if m:find("redeemed") or m:find("success") then
-        return "HIT", CONSOLE_COLORS.Green
-    end
-    if m:find("invalid") or m:find("fail") or m:find("error") or m:find("rejected") then
-        return "MISS", CONSOLE_COLORS.Red
-    end
-    if m:find("code alert") or m:find("[code]") or m:find("pasted") or m:find("target") then
-        return "CODE", CONSOLE_COLORS.Gold
-    end
-    if m:find("solved") or m:find("instant") or m:find("riddle") then
-        return "RIDDLE", CONSOLE_COLORS.Magenta
-    end
-    if m:find("iceridden") or m:find("gemini") or m:find("thinking") then
-        return "AI", CONSOLE_COLORS.Cyan
-    end
-    if m:find("ready") or m:find("scanning") or m:find("scope") then
-        return "SYS", CONSOLE_COLORS.Dim
-    end
-    if col == COLORS.Green then return "OK", CONSOLE_COLORS.Green end
-    if col == COLORS.Red then return "ERR", CONSOLE_COLORS.Red end
-    if col == COLORS.Gold then return "FARM", CONSOLE_COLORS.Gold end
-    return "LOG", CONSOLE_COLORS.Amber
-end
-
-function setStatus(msg, col)
-    if not ConsoleOutput or not _enabled then return end
-    if msg == _lastStatusMsg then return end
-    _lastStatusMsg = msg
-    col = col or COLORS.Dim
-    local tag, tagCol = consoleTagFor(msg, col)
-    local bodyCol = col3ToRich(col)
-    local line = table.concat({
-        '<font color="', CONSOLE_COLORS.Tag, '">', consoleTime(), '</font> ',
-        '<font color="', tagCol, '">[', tag, ']</font> ',
-        '<font color="', bodyCol, '">', tostring(msg), '</font>',
-    })
-    local cur = ConsoleOutput.Text or ""
-    if cur == "" then
-        ConsoleOutput.Text = line
-    else
-        local combined = cur .. "\n" .. line
-        local lines, n = {}, 0
-        for ln in (combined .. "\n"):gmatch("(.-)\n") do
-            n = n + 1
-            lines[n] = ln
-        end
-        if n > 18 then
-            local keep = {}
-            for i = n - 17, n do keep[#keep + 1] = lines[i] end
-            ConsoleOutput.Text = table.concat(keep, "\n")
-        else
-            ConsoleOutput.Text = combined
-        end
-    end
-    task.spawn(function()
-        if not ConsoleStroke or not ConsoleStroke.Parent then return end
-        TweenService:Create(ConsoleStroke, TweenInfo.new(0.12), { Transparency = 0.15 }):Play()
-        task.wait(0.15)
-        if ConsoleStroke and ConsoleStroke.Parent then
-            TweenService:Create(ConsoleStroke, TweenInfo.new(0.4), { Transparency = 0.55 }):Play()
-        end
-    end)
-    scrollConsoleToBottom()
-end
-
-function flashCode(code, col)
-    if not code or code == "" or code == "—" then return end
-    setStatus("target → " .. tostring(code), col or COLORS.White)
-end
-
-function resetPasteCounter()
-    _capturedParts = {}
-    if refreshMiniView then refreshMiniView() end
-end
-clearNxcCapture = function()
-    _capturedParts = {}
-    if refreshMiniView then refreshMiniView() end
-end
-
-function clearBoxWatchers()
-    if _boxTextConn then pcall(function() _boxTextConn:Disconnect() end) end
-    if _boxAncestryConn then pcall(function() _boxAncestryConn:Disconnect() end) end
-    _boxTextConn = nil
-    _boxAncestryConn = nil
-    _lastWatchedBox = nil
-end
-
-function watchBoxForBlankReset(box)
-    if not box or _lastWatchedBox == box then return end
-    clearBoxWatchers()
-    _lastWatchedBox = box
-    if box.Text ~= "" then _lastNonBlankBoxText = box.Text end
-    _boxTextConn = box:GetPropertyChangedSignal("Text"):Connect(function()
-        if _writingCodeBox then
-            if box.Text ~= "" then _lastNonBlankBoxText = box.Text end
-            return
-        end
-        if box.Text == "" then
-            local token = #_capturedParts
-            task.delay(0.04, function()
-                if _writingCodeBox then return end
-                if #_capturedParts ~= token then return end
-                local b = nxcCodeBox()
-                if b and b.Text == "" and #_capturedParts > 0 and #_capturedParts < math.max(1, tonumber(_submitAfter) or 1) then
-                    return
-                end
-            end)
-        else
-            _lastNonBlankBoxText = box.Text
-        end
-    end)
-    _boxAncestryConn = box.AncestryChanged:Connect(function(_, parent)
-        if not parent then resetPasteCounter(); clearBoxWatchers() end
-    end)
-end
-
-_focusReleasedListener = UserInputService.TextBoxFocusReleased:Connect(function(box)
-    if box:IsDescendantOf(GUI) then return end
-    local codeBox = nxcCodeBox()
-    if box ~= codeBox and box ~= _lastBox then return end
-    if _retypeInvalid and rememberPendingSubmission and (box == codeBox or box == _lastBox) then
-        local submittedText = box.Text ~= "" and box.Text or _lastNonBlankBoxText
-        rememberPendingSubmission(box, submittedText, false)
-    end
-    if _focused == box then
-        _focused = nil
-        if _enabled then
-            setStatus((_lastBox and _lastBox.Parent) and "Ready" or "Click code box first", (_lastBox and _lastBox.Parent) and COLORS.Green or COLORS.Dim)
-        end
-    end
-end)
-
-clearPendingSubmission = function()
-    _pendingRejectedToken = _pendingRejectedToken + 1
-    _pendingRejectedText = nil
-    _pendingRejectedBox = nil
-    _pendingRejectedUntil = 0
-end
-
-rememberPendingSubmission = function(box, text, replaceExisting)
-    if not _retypeInvalid or not text or text == "" then return end
-    if not replaceExisting and _pendingRejectedText and os.clock() <= _pendingRejectedUntil then return end
-    _pendingRejectedToken = _pendingRejectedToken + 1
-    local token = _pendingRejectedToken
-    _pendingRejectedText = text
-    _pendingRejectedBox = box
-    _pendingRejectedUntil = os.clock() + 8
-    task.delay(8, function()
-        if token == _pendingRejectedToken then clearPendingSubmission() end
-    end)
-end
-
-function restoreRejectedText(box, previousText)
-    if not _retypeInvalid or not previousText or previousText == "" then return false end
-    RunService.Heartbeat:Wait()
-    local repasteBox = nxcCodeBox() or box
-    if not repasteBox or not isVisibleChain(repasteBox) then return false end
-    local restored = pcall(function() repasteBox.Text = previousText end)
-    if restored then
-        _lastBox = repasteBox
-        watchBoxForBlankReset(repasteBox)
-    end
-    return restored
-end
-
-handleRedemptionFeedback = function(text, feedbackObject)
-    if not _retypeInvalid or not _pendingRejectedText then return end
-    if os.clock() > _pendingRejectedUntil then clearPendingSubmission(); return end
-    if feedbackObject and feedbackObject:IsDescendantOf(GUI) then return end
-    local lower = tostring(text or ""):lower()
-    local rejected = lower:find("invalid code", 1, true)
-        or lower:find("code is invalid", 1, true)
-        or lower:find("expired", 1, true)
-        or lower:find("already redeemed", 1, true)
-        or lower:find("already used", 1, true)
-        or lower:find("doesn't exist", 1, true)
-        or lower:find("does not exist", 1, true)
-        or lower:find("not found", 1, true)
-        or lower:find("rejected", 1, true)
-    if not rejected then return end
-    local previousText = _pendingRejectedText
-    local previousBox = _pendingRejectedBox
-    local restored = restoreRejectedText(previousBox, previousText)
-    clearPendingSubmission()
-    if restored then
-        setStatus("Invalid - repasted: " .. previousText, COLORS.Text)
-        flashCode(previousText, COLORS.Red)
-    end
-end
-
-function manualSubmitNow()
-    local box = (_cachedBox and _cachedBox.Parent and _cachedBox) or (type(nxcCodeBox) == "function" and nxcCodeBox()) or nil
-    local code = nil
-    if box then
-        local t = tostring(box.Text or ""):gsub("^%s+", ""):gsub("%s+$", "")
-        if t ~= "" then code = t end
-    end
-    if (not code or code == "") and _lastNonBlankBoxText and _lastNonBlankBoxText ~= "" then
-        code = _lastNonBlankBoxText
-    end
-    if (not code or code == "") and type(_capturedParts) == "table" and #_capturedParts > 0 then
-        code = table.concat(_capturedParts)
-    end
-    if not code or code == "" then
-        if setStatus then setStatus("Nothing to submit", COLORS and COLORS.Dim) end
-        return false
-    end
-    if setStatus then setStatus("Manual submit: " .. tostring(code):sub(1, 36), COLORS and COLORS.Accent) end
-    return submitCodeImmediate(code)
-end
-
-local function submitNxcShared(code, source)
-    code = tostring(code or ""):match("^%s*(.-)%s*$") or ""
-    if code == "" then return false, "empty code", 0 end
-    local target = _primaryTarget
-    local box = (target and target.alive() and target.box) or nxcCodeBox()
-    if not box then
-        if setStatus then setStatus("Codebox not found", COLORS.Red) end
-        return false, "codebox not connected", 0
-    end
-    rememberPendingSubmission(box, code, true)
-    local ok, message, ms = ultraFastSubmit(code)
-    if ms then
-        pcall(function()
-            if RedeemSpeedUI and RedeemSpeedUI.set then
-                RedeemSpeedUI.set(ms, code)
-            elseif type(_G.NxcSetRedeemMs) == "function" then
-                _G.NxcSetRedeemMs(ms, code)
-            end
-        end)
-    end
-    if ok then
-        setStatus("Submitted: " .. code .. (ms and (" (" .. string.format("%.3f", ms) .. "ms)") or ""), COLORS.Green)
-        if _spamRedeem and source ~= "spam" then
-            RedeemSpeedUI._spamToken = (RedeemSpeedUI._spamToken or 0) + 1
-            local token = RedeemSpeedUI._spamToken
-            task.spawn(function()
-                for _ = 1, 8 do
-                    task.wait(0.05)
-                    if not _instanceRunning or not _spamRedeem then return end
-                    if RedeemSpeedUI._spamToken ~= token then return end
-                    local sOk = ultraFastSubmit(code, true)
-                    if not sOk then scheduleRelink() end
-                end
-            end)
-        end
-    else
-        clearPendingSubmission()
-        setStatus("Submit failed: " .. tostring(message), COLORS.Red)
-    end
-    return ok, message, ms
-end
-
-function submitCodeImmediate(code)
-    if not code or code == "" then return false end
-    clearNxcCapture()
-    return submitNxcShared(code, "immediate")
-end
-
-function appendToBox(text)
-    if not text or text == "" then return end
-    text = tostring(text)
-    _capturedParts[#_capturedParts + 1] = text
-    local combined = table.concat(_capturedParts)
-    local received = #_capturedParts
-    local needed = math.max(1, tonumber(_submitAfter) or 1)
-
-    if received < needed then
-        local box = nxcCodeBox()
-        if box then
-            _lastBox, _cachedBox = box, box
-            _lastNonBlankBoxText = combined
-            _writingCodeBox = true
-            pcall(function() box.Text = combined end)
-            _writingCodeBox = false
-        end
-        setStatus("Announcement " .. tostring(received) .. "/" .. tostring(needed), COLORS.Green)
-        if refreshMiniView then refreshMiniView() end
-        return
-    end
-
-    _capturedParts = {}
-    if _autoAccept then
-        local ok = submitNxcShared(combined, "announcements")
-        if ok and flashCode then flashCode(combined, COLORS.Green) end
-    else
-        local box = nxcCodeBox()
-        if box then
-            _lastBox = box
-            _lastNonBlankBoxText = combined
-            _writingCodeBox = true
-            pcall(function() box.Text = combined end)
-            _writingCodeBox = false
-        end
-        setStatus("Ready: " .. combined, COLORS.Text)
-    end
-    if refreshMiniView then refreshMiniView() end
-end
-
-function watchRedemptionFeedbackObject(obj)
-    if not (obj:IsA("TextLabel") or obj:IsA("TextButton")) then return end
-    if GUI and obj:IsDescendantOf(GUI) then return end 
-    local found = false
-    local root = obj
-    for _ = 1, 6 do
-        if not root then break end
-        local n = root.Name:lower()
-        if n:find("code", 1, true) or n:find("redeem", 1, true)
-            or n:find("notif", 1, true) then found = true; break end
-        root = root.Parent
-    end
-    if not found then return end
-    handleRedemptionFeedback(obj.Text or "", obj)
-    local con = obj:GetPropertyChangedSignal("Text"):Connect(function()
-        if _instanceRunning then handleRedemptionFeedback(obj.Text or "", obj) end
-    end)
-    _feedbackListeners[#_feedbackListeners+1] = con
+slicedfn54()
+slicedfn55()
+
+do  -- LEAKED BY SLICED | discord.gg/pubmethod
+	local str8 = sliced93 and "ready - notify mapped" or flag22 and "ready - fallback sweep" or "no notify remote"
+	local str9 = sliced93 and "ok"
+	local str10
+
+	if str9 then
+		str10 = str9
+	else
+		str10 = flag22 and "wait" or "err"
+	end
+
+	slicedfn53(str8, str10)
+end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+if not request_ then
+	slicedfn53("no HTTP function on this executor", "err")
 end
 
 task.spawn(function()
-    local roots = playerGui:GetDescendants()
-    for i, obj in ipairs(roots) do
-        if not _instanceRunning then return end
-        watchRedemptionFeedbackObject(obj)
-        if i % 100 == 0 then task.wait() end
-    end
-end)
-_feedbackAddedListener = playerGui.DescendantAdded:Connect(function(obj)
-    if _instanceRunning then watchRedemptionFeedbackObject(obj) end
-end)
-
-local httpRequest = (syn and syn.request) or http_request or request or (http and http.request)
-local env = typeof(getgenv) == "function" and getgenv() or _G
-local GEMINI_API_KEY = tostring(env.GEMINI_API_KEY or env.GOOGLE_API_KEY or env.GEMINI_KEY or "")
-local GEMINI_MODEL = tostring(env.GEMINI_MODEL or "gemini-3.5-flash-lite")
-
-function stripRich(s)
-    if type(s) ~= "string" then return tostring(s) end
-    return (s:gsub("<[^>]->", ""))
-end
-
-function trim(s)
-    return (s or ""):gsub("^%s+", ""):gsub("%s+$", "")
-end
-
-local LiveRiddleIntel = {
-    animals = {}, mutations = {}, traits = {},
-    rankings = {}, ready = false, busy = false, version = 0,
-    lastSync = 0, lastError = "Waiting for replicated game data",
-    latestAnimal = nil, latestSource = nil, observedNew = {},
-    existence = {}, existenceCoverage = 0, countSource = nil,
-    counts = {animals = 0, mutations = 0, traits = 0},
-    sources = {animals="waiting",mutations="waiting",traits="waiting"},
-    moduleErrors = {},
-    lastAttempt = 0,
-    onUpdated = nil,
-}
-
-do
-local function intelCleanToken(s)
-    return tostring(s or ""):upper():gsub("[^A-Z0-9]", "")
-end
-
-local function intelGetModule(name, fallback)
-    local datas = ReplicatedStorage:FindFirstChild("Datas")
-    if not datas then
-        LiveRiddleIntel.moduleErrors[name] = "ReplicatedStorage.Datas missing"
-        return nil
-    end
-    local mod = datas:FindFirstChild(name)
-    if not mod and fallback then mod = datas:FindFirstChild(fallback) end
-    if not mod or not mod:IsA("ModuleScript") then
-        LiveRiddleIntel.moduleErrors[name] = "Datas."..name.." missing"
-        return nil
-    end
-    local ok, data = pcall(require, mod)
-    if not ok then
-        LiveRiddleIntel.moduleErrors[name] = "require failed: "..tostring(data):sub(1,105)
-        return nil
-    end
-    if type(data) ~= "table" then
-        LiveRiddleIntel.moduleErrors[name] = "module did not return table"
-        return nil
-    end
-    local nested = data[name] or (fallback and data[fallback])
-    if type(nested)=="table" and next(nested) then
-        data=nested
-    end
-    LiveRiddleIntel.moduleErrors[name] = nil
-    return data
-end
-
-local function intelFallbackModels()
-    local discovered = {}
-    local models = ReplicatedStorage:FindFirstChild("Models")
-    local assets = ReplicatedStorage:FindFirstChild("Assets")
-    local roots={ReplicatedStorage}
-    if models then roots[#roots+1]=models end
-    if assets then roots[#roots+1]=assets end
-    for _,root in ipairs(roots) do
-        if root then
-            for _,folderName in ipairs({"Animals","Brainrots"}) do
-                local folder=root:FindFirstChild(folderName)
-                if folder then
-                    for _,model in ipairs(folder:GetChildren()) do
-                        if model:IsA("Model") and discovered[model.Name]==nil then
-                            discovered[model.Name]={
-                                Rarity=model:GetAttribute("Rarity"),
-                                Generation=model:GetAttribute("Generation") or model:GetAttribute("Income"),
-                                Price=model:GetAttribute("Price"),
-                                ReleaseOrder=model:GetAttribute("ReleaseOrder"),
-                            }
-                        end
-                    end
-                end
-            end
-        end
-    end
-    return next(discovered) and discovered or nil
-end
-
-local function intelSupplementFromAssets(kind)
-    local names={}
-    local obj
-    if kind=="Mutations" then
-        obj=ReplicatedStorage:FindFirstChild("MutationSurfaces")
-    else
-        local models=ReplicatedStorage:FindFirstChild("Models")
-        obj=models and models:FindFirstChild("Traits")
-        if not obj then obj=models and models:FindFirstChild("TraitsPerAnimal") end
-    end
-    if obj then
-        for _,child in ipairs(obj:GetChildren()) do
-            if child.Name~="None" then names[child.Name]={name=child.Name} end
-        end
-    end
-    return names
-end
-
-local function intelSorted(records, field)
-    local sorted = {}
-    for _, row in pairs(records) do
-        if type(row[field]) == "number" and row[field] == row[field] then
-            sorted[#sorted+1] = row
-        end
-    end
-    table.sort(sorted, function(a, b)
-        if a[field] == b[field] then return a.name < b.name end
-        return a[field] > b[field]
-    end)
-    return sorted
-end
-
-local function intelReadNumber(data, fields)
-    for _, key in ipairs(fields) do
-        local raw = data[key]
-        local value = type(raw)=="number" and raw or
-            (type(raw)=="string" and tonumber((raw:gsub(",", ""))) or nil)
-        if value and value == value and value ~= math.huge and value ~= -math.huge then
-            return value
-        end
-    end
-    return nil
-end
-
-local RELEASE_FIELDS={"ReleaseTimestamp","ReleaseTime","AddedAt","CreatedAt",
-    "ReleaseDate","AddedDate","DateAdded","ReleaseOrder","AddedOrder"}
-local function intelReleaseKey(data)
-    for _,field in ipairs(RELEASE_FIELDS) do
-        local v=data[field]
-        if type(v)=="number" and v==v and v>0 then return v,field end
-        if type(v)=="string" then
-            local year,month,day=v:match("^(%d%d%d%d)[%-/](%d%d?)[%-/](%d%d?)")
-            if year then
-                return tonumber(year)*10000+tonumber(month)*100+tonumber(day),field
-            end
-            local n=tonumber(v)
-            if n and n>0 then return n,field end
-        end
-    end
-    return nil,nil
-end
-function LiveRiddleIntel.refresh(force)
-    if LiveRiddleIntel.busy then return false end
-    local previousRanks=LiveRiddleIntel.rankings
-    local fullyRanked=previousRanks.income and #previousRanks.income>0
-        and previousRanks.mutations and #previousRanks.mutations>0
-        and previousRanks.traits and #previousRanks.traits>0
-    if not force and os.clock() - LiveRiddleIntel.lastSync < 90
-        and LiveRiddleIntel.ready and fullyRanked then
-        return true
-    end
-    LiveRiddleIntel.busy = true
-    LiveRiddleIntel.lastAttempt = os.clock()
-    local previousAnimals=LiveRiddleIntel.animals
-    local hadPrevious=LiveRiddleIntel.ready and next(previousAnimals)~=nil
-    local sourceAnimals = intelGetModule("Animals", "Brainrots")
-    local sourceMutations = intelGetModule("Mutations")
-    local sourceTraits = intelGetModule("Traits")
-    local fallbackAnimals=nil
-    if not sourceAnimals or not next(sourceAnimals) then
-        fallbackAnimals=intelFallbackModels()
-        if fallbackAnimals then sourceAnimals=fallbackAnimals end
-    end
-    LiveRiddleIntel.sources={
-        animals=fallbackAnimals and "Models attributes" or (sourceAnimals and "Datas.Animals" or "Unavailable"),
-        mutations=sourceMutations and "Datas.Mutations" or "Unavailable",
-        traits=sourceTraits and "Datas.Traits" or "Unavailable",
-    }
-    if fallbackAnimals then LiveRiddleIntel.moduleErrors.Animals=nil end
-    local animals, mutations, traits = {}, {}, {}
-    local observedNew={}
-    local latest, latestKey, latestField, latestCoverage = nil,nil,nil,0
-    local releaseGroups={}
-    local processed = 0
-
-    local function yieldSometimes()
-        processed += 1
-        if processed % 80 == 0 then task.wait() end 
-    end
-
-    if sourceAnimals then
-        for name, data in pairs(sourceAnimals) do
-            if type(name) == "string" and type(data) == "table" then
-                local generation = intelReadNumber(data, {"Generation", "Income", "BaseGeneration"})
-                local price = intelReadNumber(data, {"Price", "Cost"})
-                local releaseKey,releaseField=intelReleaseKey(data)
-                animals[name]={name=name,generation=generation,price=price,
-                    rarity=tostring(data.Rarity or "Unknown"),
-                    releaseKey=releaseKey,releaseField=releaseField}
-                if releaseKey~=nil then
-                    local group=releaseGroups[releaseField]
-                    if not group then
-                        group={coverage=0,latestKey=nil,latestName=nil}
-                        releaseGroups[releaseField]=group
-                    end
-                    group.coverage+=1
-                    if not group.latestKey or releaseKey>group.latestKey then
-                        group.latestKey=releaseKey;group.latestName=name
-                    end
-                end
-                if hadPrevious and previousAnimals[name]==nil then
-                    observedNew[#observedNew+1]=name
-                end
-            end
-            yieldSometimes()
-        end
-    end
-    if sourceMutations then
-        for name, data in pairs(sourceMutations) do
-            if type(name)=="string" and name~="None" and type(data)=="table" then
-                local modifier=intelReadNumber(data,{"Modifier","MultiplierModifier","Multiplier","IncomeMultiplier"})
-                mutations[name]={name=name,modifier=modifier}
-            end
-            yieldSometimes()
-        end
-    end
-    if sourceTraits then
-        for name, data in pairs(sourceTraits) do
-            if type(name)=="string" and type(data)=="table" then
-                local modifier=intelReadNumber(data,{"MultiplierModifier","Modifier","Multiplier","IncomeMultiplier"})
-                traits[name]={name=name,modifier=modifier}
-            end
-            yieldSometimes()
-        end
-    end
-    for name,row in pairs(intelSupplementFromAssets("Mutations")) do
-        if not mutations[name] then mutations[name]=row end
-    end
-    for name,row in pairs(intelSupplementFromAssets("Traits")) do
-        if not traits[name] then traits[name]=row end
-    end
-    if not next(animals) and next(LiveRiddleIntel.animals) then
-        animals=LiveRiddleIntel.animals
-        LiveRiddleIntel.sources.animals="Cached animal metadata"
-    end
-    if not next(mutations) and next(LiveRiddleIntel.mutations) then
-        mutations=LiveRiddleIntel.mutations
-        LiveRiddleIntel.sources.mutations="Cached mutation metadata"
-    end
-    if not next(traits) and next(LiveRiddleIntel.traits) then
-        traits=LiveRiddleIntel.traits
-        LiveRiddleIntel.sources.traits="Cached trait metadata"
-    end
-    local function rankedCount(rows)
-        local total=0
-        for _,item in pairs(rows) do
-            if type(item.modifier)=="number" then total+=1 end
-        end
-        return total
-    end
-    if rankedCount(mutations)==0 and LiveRiddleIntel.rankings.mutations
-        and #LiveRiddleIntel.rankings.mutations>0 then
-        mutations=LiveRiddleIntel.mutations
-        LiveRiddleIntel.sources.mutations="Cached ranked mutations"
-    end
-    if rankedCount(traits)==0 and LiveRiddleIntel.rankings.traits
-        and #LiveRiddleIntel.rankings.traits>0 then
-        traits=LiveRiddleIntel.traits
-        LiveRiddleIntel.sources.traits="Cached ranked traits"
-    end
-    local ranks = {
-        income = intelSorted(animals, "generation"),
-        prices = intelSorted(animals, "price"),
-        mutations = intelSorted(mutations, "modifier"),
-        traits = intelSorted(traits, "modifier"),
-    }
-    table.sort(observedNew)
-    local totalAnimals=0
-    for _ in pairs(animals) do totalAnimals+=1 end
-    for _,field in ipairs(RELEASE_FIELDS) do
-        local group=releaseGroups[field]
-        if group and group.coverage>latestCoverage then
-            latest=group.latestName;latestKey=group.latestKey
-            latestField=field;latestCoverage=group.coverage
-        end
-    end
-    if not (totalAnimals>0 or next(mutations) or next(traits)) and hadPrevious then
-        LiveRiddleIntel.lastError="Game metadata temporarily missing; cached data retained"
-        LiveRiddleIntel.busy=false
-        if type(LiveRiddleIntel.onUpdated)=="function" then pcall(LiveRiddleIntel.onUpdated) end
-        return true
-    end
-    LiveRiddleIntel.latestAnimal=latest
-    LiveRiddleIntel.latestSource=latest and ((latestCoverage==totalAnimals)
-        and ("Complete metadata: "..latestField) or
-        ("Partial metadata ("..latestCoverage.."/"..totalAnimals.."): "..latestField)) or nil
-    LiveRiddleIntel.observedNew=observedNew
-    LiveRiddleIntel.existence={}
-    LiveRiddleIntel.existenceCoverage=0
-    LiveRiddleIntel.countSource=nil
-    LiveRiddleIntel.animals = animals
-    LiveRiddleIntel.mutations = mutations
-    LiveRiddleIntel.traits = traits
-    LiveRiddleIntel.rankings = ranks
-    LiveRiddleIntel.counts = {animals = totalAnimals, mutations = #ranks.mutations,
-        traits = #ranks.traits}
-    local anyRank=(#ranks.income>0 or #ranks.mutations>0 or #ranks.traits>0)
-    local anyMetadata=totalAnimals>0 or next(mutations)~=nil or next(traits)~=nil
-    LiveRiddleIntel.ready=anyMetadata
-    local errors={}
-    for _,name in ipairs({"Animals","Mutations","Traits"}) do
-        if LiveRiddleIntel.moduleErrors[name] then
-            errors[#errors+1]=name..": "..LiveRiddleIntel.moduleErrors[name]
-        end
-    end
-    LiveRiddleIntel.lastError=#errors>0 and table.concat(errors," | ") or
-        (not anyRank and "No numeric ranks exposed by the client" or nil)
-    LiveRiddleIntel.lastSync = os.clock()
-    LiveRiddleIntel.version += 1
-    LiveRiddleIntel.busy = false
-    if type(LiveRiddleIntel.onUpdated) == "function" then
-        pcall(LiveRiddleIntel.onUpdated)
-    end
-    return LiveRiddleIntel.ready
-end
-
-function LiveRiddleIntel.requestRefresh(force)
-    if LiveRiddleIntel.busy then return end
-    task.spawn(function()
-        local ok, err = pcall(LiveRiddleIntel.refresh, force)
-        if not ok then
-            LiveRiddleIntel.lastError = tostring(err)
-            LiveRiddleIntel.busy = false
-            if type(LiveRiddleIntel.onUpdated) == "function" then
-                pcall(LiveRiddleIntel.onUpdated)
-            end
-        end
-    end)
-end
-
-local function intelQuestionCategory(text)
-    local s = tostring(text or ""):lower()
-    local isMutation = s:find("mutation", 1, true) ~= nil
-    local isTrait = s:find("trait", 1, true) ~= nil
-    local isAnimal = s:find("brainrot", 1, true) ~= nil or s:find("animal", 1, true) ~= nil
-    if not isAnimal and not isMutation and not isTrait then
-        if s:find("income", 1, true) or s:find("generation", 1, true) then isAnimal = true end
-    end
-    local strongest = s:find("best",1,true) or s:find("strongest",1,true)
-        or s:find("highest",1,true) or s:find("most",1,true)
-        or s:find("richest",1,true) or s:find("greatest",1,true)
-        or s:find("priciest",1,true) or s:find("fastest earning",1,true)
-    local weakest = s:find("worst",1,true) or s:find("weakest",1,true)
-        or s:find("lowest",1,true) or s:find("least",1,true)
-        or s:find("cheapest",1,true) or s:find("poorest",1,true)
-        or s:find("slowest earning",1,true)
-    if not strongest and not weakest then return nil end
-    if s:find("favorite",1,true) or s:find("rarity",1,true)
-        or s:find("first",1,true) or s:find("latest",1,true)
-        or s:find("newest",1,true) then return nil end
-    local mode = weakest and "worst" or "best"
-    if isMutation then return "mutations", mode end
-    if isTrait then return "traits", mode end
-    if isAnimal then
-        if s:find("price",1,true) or s:find("expensive",1,true)
-            or s:find("cheap",1,true) or s:find("cost",1,true)
-            or s:find("valuable",1,true) then return "prices", mode end
-        return "income", mode
-    end
-    return nil
-end
-
-local function intelFindAnimal(text)
-    local q=intelCleanToken(text)
-    local matched=nil
-    local matchLen=0
-    for name in pairs(LiveRiddleIntel.animals) do
-        local token=intelCleanToken(name)
-        if #token>=4 and #token>matchLen and q:find(token,1,true) then
-            matched=name;matchLen=#token
-        end
-    end
-    return matched
-end
-local function intelHasAny(s,words)
-    for _,word in ipairs(words) do
-        if s:find(word,1,true) then return true end
-    end
-    return false
-end
-
-function LiveRiddleIntel.answer(text)
-    local s=tostring(text or ""):lower()
-    local matchedAnimal=intelFindAnimal(s)
-    local asksAnimal=intelHasAny(s,{"brainrot","animal"}) or matchedAnimal~=nil
-    local latest=intelHasAny(s,{"newest","latest","most recent","last added","recently added"})
-    if asksAnimal and latest then
-        local source=LiveRiddleIntel.latestSource
-        if source and source:find("Complete",1,true) then
-            return LiveRiddleIntel.latestAnimal and intelCleanToken(LiveRiddleIntel.latestAnimal) or nil
-        end
-        return nil 
-    end
-    if asksAnimal and intelHasAny(s,{"worst","weakest"}) and
-       not intelHasAny(s,{"income","generat","price","cost","exists","existence","count"}) then
-        return "NOOBINIPIZZANINI"
-    end
-    if asksAnimal and intelHasAny(s,{"exist","owned globally","global count","how many"}) then
-        return nil
-    end
-    local category, mode = intelQuestionCategory(text)
-    if not category then return nil end
-    local rows = LiveRiddleIntel.rankings[category]
-    if not rows or #rows == 0 then return nil end
-    local row = mode == "worst" and rows[#rows] or rows[1]
-    return row and intelCleanToken(row.name) or nil
-end
-
-LiveRiddleIntel.requestRefresh(false)
-task.spawn(function()
-    while GUI and GUI.Parent do
-        task.wait(LiveRiddleIntel.ready and 90 or 12)
-        if GUI and GUI.Parent then LiveRiddleIntel.requestRefresh(false) end
-    end
-end)
-local intelDataModuleWatch=nil
-local function scheduleIntelRefresh()
-    task.delay(.4,function()
-        if GUI and GUI.Parent then LiveRiddleIntel.requestRefresh(true) end
-    end)
-end
-local function attachIntelDataWatch(folder)
-    if intelDataModuleWatch then
-        intelDataModuleWatch:Disconnect()
-        intelDataModuleWatch=nil
-    end
-    if folder then
-        intelDataModuleWatch=folder.ChildAdded:Connect(function(child)
-            if child.Name=="Animals" or child.Name=="Brainrots" or
-                child.Name=="Mutations" or child.Name=="Traits" then
-                scheduleIntelRefresh()
-            end
-        end)
-    end
-end
-attachIntelDataWatch(ReplicatedStorage:FindFirstChild("Datas"))
-local intelDataWatch=ReplicatedStorage.ChildAdded:Connect(function(child)
-    if child.Name=="Datas" then attachIntelDataWatch(child) end
-    if child.Name=="Datas" or child.Name=="Models" then scheduleIntelRefresh() end
-end)
-if GUI then
-    GUI.Destroying:Connect(function()
-        intelDataWatch:Disconnect()
-        if intelDataModuleWatch then intelDataModuleWatch:Disconnect() end
-    end)
-end
-end 
-
-local SAB_DB = {
-    ["real name"]                   = "SAMMY",
-    ["sammy real name"]             = "SAMMY",
-    ["sammys real name"]            = "SAMMY",
-    ["my real name"]                = "SAMMY",
-    ["creator real name"]           = "SAMMY",
-    ["owner real name"]             = "SAMMY",
-    ["creator name"]                = "SAMMY",
-    ["who created sab"]             = "SAMMY",
-    ["who made sab"]                = "SAMMY",
-    ["who made steal a brainrot"]   = "SAMMY",
-    ["who is the owner"]            = "SAMMY",
-    ["who owns sab"]                = "SAMMY",
-    ["owner"]                       = "SAMMY",
-    ["creator"]                     = "SAMMY",
-    ["roblox username"]             = "SPYDERSAMMY",
-    ["my roblox username"]          = "SPYDERSAMMY",
-    ["sammy username"]              = "SPYDERSAMMY",
-    ["sammy roblox name"]           = "SPYDERSAMMY",
-    ["roblox name"]                 = "SPYDERSAMMY",
-    ["username"]                    = "SPYDERSAMMY",
-    ["my username"]                 = "SPYDERSAMMY",
-    ["how old am i"]                = "24",
-    ["how old is sammy"]            = "24",
-    ["my age"]                      = "24",
-    ["sammy age"]                   = "24",
-    ["age"]                         = "24",
-    ["birth year"]                  = "2002",
-    ["year born"]                   = "2002",
-    ["year i was born"]             = "2002",
-    ["born year"]                   = "2002",
-    ["birth day"]                   = "FRIDAY",
-    ["day i was born"]              = "FRIDAY",
-    ["day born"]                    = "FRIDAY",
-    ["birthday"]                    = "FRIDAY",
-    ["born on"]                     = "FRIDAY",
-    ["birth month"]                 = "FEBRUARY",
-    ["month born"]                  = "FEBRUARY",
-    ["month i was born"]            = "FEBRUARY",
-    ["where was i born"]            = "ALGERIA",
-    ["where was i born at"]         = "ALGERIA",
-    ["birthplace"]                  = "ALGERIA",
-    ["where i was born"]            = "ALGERIA",
-    ["where am i from"]             = "BRAZIL",
-    ["where is sammy from"]         = "BRAZIL",
-    ["my country"]                  = "BRAZIL",
-    ["sammy country"]               = "BRAZIL",
-    ["country"]                     = "BRAZIL",
-    ["where do i live"]             = "BRAZIL",
-    ["where does sammy live"]       = "BRAZIL",
-    ["sammy location"]              = "BRAZIL",
-    ["nationality"]                 = "BRAZILIAN",
-    ["sammy nationality"]           = "BRAZILIAN",
-    ["my nationality"]              = "BRAZILIAN",
-    ["state"]                       = "SAOPAULO",
-    ["my state"]                    = "SAOPAULO",
-    ["sammy state"]                 = "SAOPAULO",
-    ["city"]                        = "SAOPAULO",
-    ["my city"]                     = "SAOPAULO",
-    ["sammy city"]                  = "SAOPAULO",
-    ["favorite color"]              = "BLUE",
-    ["fav color"]                   = "BLUE",
-    ["my color"]                    = "BLUE",
-    ["sammy color"]                 = "BLUE",
-    ["color"]                       = "BLUE",
-    ["favourite color"]             = "BLUE",
-    ["favorite sport"]              = "FOOTBALL",
-    ["fav sport"]                   = "FOOTBALL",
-    ["sport"]                       = "FOOTBALL",
-    ["my sport"]                    = "FOOTBALL",
-    ["favorite football player"]    = "RONALDO",
-    ["fav football player"]         = "RONALDO",
-    ["favorite food"]               = "PIZZA",
-    ["fav food"]                    = "PIZZA",
-    ["food"]                        = "PIZZA",
-    ["favorite animal"]             = "SPIDER",
-    ["fav animal"]                  = "SPIDER",
-    ["my pet"]                      = "SPIDER",
-    ["favorite game"]               = "ROBLOX",
-    ["fav game"]                    = "ROBLOX",
-    ["game created on"]             = "FRIDAY",
-    ["release month"]               = "MAY",
-    ["release year"]                = "2025",
-    ["year sab was created"]        = "2025",
-    ["when was sab made"]           = "MAY162025",
-    ["release date"]                = "MAY162025",
-    ["first trait"]                 = "LIGHTNING",
-    ["1st trait"]                   = "LIGHTNING",
-    ["lightning trait"]             = "MATEO",
-    ["first mutation"]              = "BLOODROT",
-    ["1st mutation"]                = "BLOODROT",
-    ["second mutation"]             = "DIAMOND",
-    ["2nd mutation"]                = "DIAMOND",
-    ["third mutation"]              = "BLOODROT",
-    ["fourth mutation"]             = "RAINBOW",
-    ["fifth mutation"]              = "CANDY",
-    ["sixth mutation"]              = "LAVA",
-    ["seventh mutation"]            = "GALAXY",
-    ["eighth mutation"]             = "YINYANG",
-    ["ninth mutation"]              = "RADIOACTIVE",
-    ["tenth mutation"]              = "CURSED",
-    ["eleventh mutation"]           = "DIVINE",
-    ["twelfth mutation"]            = "CYBER",
-    ["thirteenth mutation"]         = "PHANTOM",
-    ["fourteenth mutation"]         = "CRYSTAL",
-    ["latest mutation"]             = "CRYSTAL",
-    ["evil mutation"]               = "CURSED",
-    ["angelic mutation"]            = "DIVINE",
-    ["green mutation"]              = "RADIOACTIVE",
-    ["purple mutation"]             = "GALAXY",
-    ["black and white mutation"]    = "YINYANG",
-    ["yellow mutation"]             = "DIVINE",
-    ["red mutation"]                = "CURSED",
-    ["orange mutation"]             = "LAVA",
-    ["first machine"]               = "RAINBOWMACHINE",
-    ["second machine"]              = "BUBBLEGUMMACHINE",
-    ["third machine"]               = "FUSEMACHINE",
-    ["fourth machine"]              = "CRAFTMACHINE",
-    ["fifth machine"]               = "WITCHFUSE",
-    ["sixth machine"]               = "BRAINROTDEALER",
-    ["seventh machine"]             = "BRAINROTTRADER",
-    ["eighth machine"]              = "SANTASFUSE",
-    ["ninth machine"]               = "SANTASSHOP",
-    ["tenth machine"]               = "NEWYEARSMACHINE",
-    ["eleventh machine"]            = "DUELSMACHINE",
-    ["twelfth machine"]             = "CUPIDSMACHINE",
-    ["thirteenth machine"]          = "TRADEMACHINE",
-    ["fourteenth machine"]          = "DIVINEFUSE",
-    ["fifteenth machine"]           = "EGGINCUBATOR",
-    ["sixteenth machine"]           = "CYBERCRAFTMACHINE",
-    ["seventeenth machine"]         = "SUMMERFUSE",
-    ["eighteenth machine"]          = "LOSTRADERS",
-    ["newest machine"]              = "LOSTRADERS",
-    ["rarest brainrot"]             = "HEADLESSHORSEMAN",
-    ["unobtainable"]                = "HEADLESSHORSEMAN",
-    ["first og added"]              = "STRAWBERRYELEPHANT",
-    ["1st og"]                      = "STRAWBERRYELEPHANT",
-    ["second og"]                   = "MEOWL",
-    ["2nd og"]                      = "MEOWL",
-    ["third og"]                    = "SKIBIDITOILET",
-    ["3rd og"]                      = "SKIBIDITOILET",
-    ["fourth og"]                   = "JOHNPORK",
-    ["4th og"]                      = "JOHNPORK",
-    ["highest rarity"]              = "OG",
-    ["lowest rarity"]               = "COMMON",
-    ["fire represents"]             = "DRAGON",
-    ["world cup winner"]            = "SPAIN",
-    ["worst game owner"]            = "SECRETLOKII",
-    ["worst game on roblox"]        = "KEYBOARDESCAPE",
-    ["worst secret"]                = "KARKERKARKURKUR",
-    ["max server size"]             = "EIGHT",
-    ["brother of hydra bunny"]      = "CERBERUS",
-    ["game name"]                   = "STEALABRAINROT",
-    ["sab stands for"]              = "STEALABRAINROT",
-    ["head sab dev"]                = "HASTED",
-    ["lead sab dev"]                = "HASTED",
-    ["hasted"]                      = "HASTED",
-    ["admin war opponent"]          = "JANDEL",
-    ["who did i fight"]             = "JANDEL",
-    ["jandel"]                      = "JANDEL",
-    ["who won admin war"]           = "GROWAGARDEN",
-    ["admin war winner"]            = "GROWAGARDEN",
-    ["my name"]                     = "SAMMY",
-    ["what is my name"]             = "SAMMY",
-    ["worst brainrot"]              = "NOOBINIPIZZANINI",
-    ["worst animal"]                = "NOOBINIPIZZANINI",
-    ["favorite brainrot"]           = "MEOWL",
-    ["least favorite brainrot"]     = "RACCOONIJANDELINI",
-    ["spyder elephant"]             = "SPYDERELEPHANT",
-    ["whats my cats name"]          = "NOVA",
-    ["cat name"]                    = "NOVA",
-    ["cats name"]                   = "NOVA",
-    ["my cats name"]                = "NOVA",
-    ["favorite number"]             = "SEVEN",
-    ["lucky number"]                = "SEVEN",
-    ["favorite color twice"]        = "BLUEBLUE",
-    ["my name twice"]               = "SAMMYSAMMY",
-    ["my age twice"]                = "2424",
-}
-
-function localExactAnswer(text)
-    if not text or text == "" then return nil end
-    local l = text:lower()
-    l = l:gsub("[%?%.%,!]", " "):gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", "")
-
-    if l:find("admin", 1, true) and (l:find("war", 1, true) or l:find("abuse", 1, true)) then
-        if l:find("won", 1, true) or l:find("winner", 1, true) then return "GROWAGARDEN" end
-        if l:find("fight", 1, true) or l:find("fought", 1, true) or l:find("against", 1, true)
-            or l:find("opponent", 1, true) then
-            return "JANDEL"
-        end
-        return "JANDEL"
-    end
-    if l:find("head sab", 1, true) or l:find("lead sab", 1, true) then return "HASTED" end
-    if l:find("cats name", 1, true) or l:find("cat name", 1, true) or l:find("my cat", 1, true) then return "NOVA" end
-    if l:find("first mutation", 1, true) and not l:find("base", 1, true) then return "BLOODROT" end
-    if l:find("newest mutation", 1, true) or l:find("latest mutation", 1, true) or l:find("last mutation", 1, true) then return "CRYSTAL" end
-    if l:find("spyder elephant", 1, true) then return "SPYDERELEPHANT" end
-    local intelAnswer = LiveRiddleIntel.answer(l)
-    if intelAnswer then return intelAnswer end
-
-    if SAB_DB[l] then return SAB_DB[l] end
-
-    local clean = l
-    clean = clean:gsub("what%s+is", ""):gsub("what%s+are", ""):gsub("who%s+is", "")
-    clean = clean:gsub("^my%s+", ""):gsub("^sammy[s]?%s+", "")
-    clean = clean:gsub("[%?%.%,!]", ""):gsub("^%s+", ""):gsub("%s+$", "")
-    clean = clean:gsub("%s+", " ")
-    clean = trim(clean)
-
-    if SAB_DB[clean] then return SAB_DB[clean] end
-    return nil
-end
-
-local nxcRiddleAnswerCache={}
-function queryAI(question, statusCb)
-    local function stat(msg) if statusCb then statusCb(msg) end end
-    local cached=nxcRiddleAnswerCache[tostring(question or ""):lower()]
-    if cached then return cached,nil,nil end
-    if not httpRequest then return nil, nil, "no http executor" end
-    local key = GEMINI_API_KEY
-    if type(key) ~= "string" or key == "" then return nil, nil, "GEMINI_API_KEY empty" end
-
-    local qRaw = tostring(question or "")
-
-    do
-        local offline = localExactAnswer(qRaw)
-        if offline and offline ~= "" then
-            local clean = tostring(offline):upper():gsub("[^A-Z0-9]", "")
-            if clean ~= "" then
-                stat("DB: " .. clean:sub(1, 40))
-                return clean, nil, nil
-            end
-        end
-    end
-
-    local models = {
-        tostring(GEMINI_MODEL or "gemini-3.5-flash-lite"),
-        "gemini-3.5-flash-lite",
-        "gemini-3.8-flash",
-        "gemini-3.6-flash",
-    }
-    local retiredModels = {
-        ["gemini-1.5-flash"] = true,
-        ["gemini-2.0-flash"] = true,
-        ["gemini-2.0-flash-lite"] = true,
-    }
-    local seenM, order = {}, {}
-    for _, m in ipairs(models) do
-        if m and m ~= "" and not retiredModels[m] and not seenM[m] then
-            seenM[m] = true
-            order[#order + 1] = m
-        end
-    end
-
-    local systemPrompt = table.concat({
-        "You solve Steal a Brainrot (SAB) Roblox riddle codes.",
-        "Output format: exactly one line starting with CODE: then the token.",
-        "- ALL CAPS, no spaces, no punctuation.",
-        "- Owner/creator/name/sammy = SAMMY (NOT HASTED).",
-        "- HASTED is ONLY for head sab dev / lead sab developer.",
-        "- Admin war opponent/fought = JANDEL. Admin war winner = GROWAGARDEN.",
-        "- Favorite color = BLUE. Age = 24. Cat name = NOVA.",
-    }, "\n")
-
-    local context = ""
-    local r = LiveRiddleIntel.rankings
-    if LiveRiddleIntel.ready then
-        local bits = {}
-        for _, category in ipairs({"income", "mutations", "traits"}) do
-            local rows = r[category]
-            if rows and #rows > 0 then
-                bits[#bits+1] = category .. ": highest=" .. rows[1].name
-                    .. ", lowest=" .. rows[#rows].name
-            end
-        end
-        if LiveRiddleIntel.latestAnimal and LiveRiddleIntel.latestSource and
-            LiveRiddleIntel.latestSource:find("Complete",1,true) then
-            bits[#bits+1]="latest (complete replicated metadata): "..LiveRiddleIntel.latestAnimal
-        end
-        bits[#bits+1]="worst brainrot riddle answer: Noobini Pizzanini"
-        if #bits > 0 then context = "Game-sourced rankings: " .. table.concat(bits, "; ") .. "\n" end
-    end
-    local userPrompt = context .. "Question: " .. qRaw .. "\nReply with one line: CODE: YOURANSWER"
-    local lastErr = "no model worked"
-
-    for _, model in ipairs(order) do
-        stat("AI thinking…")
-        local url = "https://generativelanguage.googleapis.com/v1beta/models/" .. model .. ":generateContent?key=" .. key
-        local bodyTable = {
-            system_instruction = { parts = { { text = systemPrompt } } },
-            contents = { { role = "user", parts = { { text = userPrompt } } } },
-            generationConfig = { temperature = 0, maxOutputTokens = 32, topP = 0.8 },
-        }
-        local body = HttpService:JSONEncode(bodyTable)
-        local ok, res = pcall(httpRequest, {
-            Url = url,
-            Method = "POST",
-            Headers = { ["Content-Type"] = "application/json" },
-            Body = body,
-        })
-        if ok and res then
-            local bodyStr = res.Body or res.body or ""
-            if type(bodyStr) ~= "string" then bodyStr = tostring(bodyStr) end
-            local pOk, parsed = pcall(HttpService.JSONDecode, HttpService, bodyStr)
-            if pOk and type(parsed) == "table" and type(parsed.error) == "table" then
-                local apiErr = tostring(parsed.error.message or "")
-                local lowerErr = apiErr:lower()
-                if lowerErr:find("api key", 1, true)
-                    or lowerErr:find("invalid key", 1, true)
-                    or lowerErr:find("permission denied", 1, true) then
-                    return nil, nil, "Gemini API key rejected; check GEMINI_API_KEY"
-                end
-            end
-            if pOk and type(parsed) == "table" and not parsed.error then
-                local rawAns = ""
-                local cands = parsed.candidates
-                if type(cands) == "table" and cands[1] then
-                    local content = cands[1].content
-                    local parts = content and content.parts
-                    if type(parts) == "table" then
-                        local buf = {}
-                        for _, p in ipairs(parts) do
-                            if type(p) == "table" and type(p.text) == "string" then
-                                buf[#buf + 1] = p.text
-                            end
-                        end
-                        rawAns = table.concat(buf, "")
-                    end
-                end
-                local answer = trim(rawAns):upper()
-                local code = answer:match("CODE:%s*([%w%|%s%-]+)")
-                if code then answer = code end
-                answer = answer:gsub("^CODE%s*:?", ""):gsub("[^A-Z0-9]", "")
-                answer = answer:match("([^\n\r]+)") or answer
-                if answer ~= "" and #answer <= 48 then
-                    GEMINI_MODEL = model
-                    nxcRiddleAnswerCache[qRaw:lower()]=answer
-                    stat("AI: " .. answer:sub(1, 40))
-                    return answer, nil, nil
-                end
-            end
-        end
-        lastErr = "fail " .. model
-    end
-
-    return nil, nil, lastErr
-end
-
-function extractNumber(text)
-    if not text then return nil end
-    local n = tostring(text):match("(%d+)%s*$")
-    if not n then return nil end
-    local num = tonumber(n)
-    if num and num > 13 then return n end
-    return nil
-end
-
-function extractTimesMultiplier(text)
-    local l = text:lower()
-    if l:find("twice")  then return 2 end
-    if l:find("thrice") then return 3 end
-    local n = l:match("(%d+)%s*times")
-    if n then
-        n = tonumber(n)
-        if n and n >= 2 and n <= 10 then return n end
-    end
-    return nil
-end
-
-function stripMultiplierText(text)
-    local s = text
-    s = s:gsub("%s*%d+%s*[Tt]imes%s*", " ")
-    s = s:gsub("%s*[Tt]wice%s*",        " ")
-    s = s:gsub("%s*[Tt]hrice%s*",       " ")
-    return trim(s)
-end
-
-function stripTrailingNumber(text)
-    return trim(text:gsub("%s+%d+%s*$", ""))
-end
-
-function isMultiPartQuestion(text)
-    local l = tostring(text or ""):lower()
-    if l:find("%s+plus%s+") or l:find("%s+%+%s+") or l:find("%s+and%s+") then return true end
-    if l:find(",") or l:find("%s+&%s+") then return true end
-    return false
-end
-
-function splitAllParts(text)
-    local raw = trim(tostring(text or ""))
-    if raw == "" then return { "" } end
-
-    local startParts, endParts = {}, {}
-    local work = raw
-
-    work = work:gsub("([%w%s%-%']+?)%s+at%s+the%s+end", function(subj)
-        subj = trim(subj)
-        if subj ~= "" then endParts[#endParts + 1] = subj end
-        return " "
-    end)
-    work = work:gsub("([%w%s%-%']+?)%s+at%s+the%s+start", function(subj)
-        subj = trim(subj)
-        if subj ~= "" then startParts[#startParts + 1] = subj end
-        return " "
-    end)
-
-    work = work:gsub("%s+plus%s+", " and ")
-    work = work:gsub("%s+%+%s+", " and ")
-    work = work:gsub("%s+then%s+", " and ")
-    work = work:gsub("%s*,%s*", " and ")
-    work = work:gsub("%s+&%s+", " and ")
-
-    local mid = {}
-    for part in (work .. " and "):gmatch("(.-)%s+and%s+") do
-        part = trim(part)
-        part = part:gsub("^[%s,]+", ""):gsub("[%s,]+$", "")
-        part = part:gsub("^[Ww]hat%s+", "what ")
-        local low = part:lower()
-        if part ~= "" and low ~= "and" and low ~= "or" then
-            mid[#mid + 1] = part
-        end
-    end
-
-    local parts = {}
-    for _, p in ipairs(startParts) do parts[#parts + 1] = p end
-    for _, p in ipairs(mid) do parts[#parts + 1] = p end
-    for _, p in ipairs(endParts) do parts[#parts + 1] = p end
-    if #parts == 0 then parts[1] = raw end
-    return parts
-end
-
-function resolvePartOffline(part)
-    local multiplier = extractTimesMultiplier(part)
-    local q = stripMultiplierText(part)
-    if not tostring(q):match("^%s*%d+%s*$") then
-        q = stripTrailingNumber(q)
-    end
-    q = trim(q)
-    if q == "" then return nil, q end
-
-    local onlyNum = q:match("^%d+$")
-    if onlyNum then
-        return (multiplier and string.rep(onlyNum, multiplier) or onlyNum), q
-    end
-
-    local candidates = { q }
-    local ql = q:lower()
-    candidates[#candidates + 1] = ql
-    candidates[#candidates + 1] = ql:gsub("^what%s+is%s+", ""):gsub("^what%s+are%s+", "")
-    candidates[#candidates + 1] = ql:gsub("^who%s+is%s+", ""):gsub("^who%s+did%s+", "")
-    candidates[#candidates + 1] = ql:gsub("^my%s+", "")
-
-    local seen = {}
-    for _, cand in ipairs(candidates) do
-        cand = trim(tostring(cand or ""):gsub("[%?%.%,!]", ""):gsub("%s+", " "))
-        if cand ~= "" and not seen[cand] then
-            seen[cand] = true
-            local a = localExactAnswer(cand)
-            if a then
-                local clean = tostring(a):upper():gsub("%s+", ""):gsub("[%?%.%,!]", "")
-                if clean ~= "" and clean ~= "AND" and clean ~= "OR" then
-                    return (multiplier and string.rep(clean, multiplier) or clean), q
-                end
-            end
-            if SAB_DB[cand] then
-                local clean = tostring(SAB_DB[cand]):upper():gsub("%s+", "")
-                if clean ~= "" then
-                    return (multiplier and string.rep(clean, multiplier) or clean), q
-                end
-            end
-        end
-    end
-
-    if not q:find("?") and #q <= 24 and not q:match("%s") then
-        local lit = q:upper():gsub("[^%w]", "")
-        if lit ~= "" and #lit >= 2 then
-            return (multiplier and string.rep(lit, multiplier) or lit), q
-        end
-    end
-
-    return nil, q
-end
-
-function solveRiddle(text, statusCb)
-    local multi = isMultiPartQuestion(text)
-
-    if not multi then
-        local fullHit = localExactAnswer(text)
-        if fullHit and fullHit ~= "" then
-            local out = tostring(fullHit):upper():gsub("%s+", ""):gsub("[%?%.%,!]", "")
-            if statusCb then statusCb("DB: " .. out:sub(1, 48)) end
-            return out, nil, nil
-        end
-    end
-
-    local suffix = extractNumber(text)
-    local parts = splitAllParts(text)
-    local answers = {}
-    local needAI = {}
-
-    for i, part in ipairs(parts) do
-        local r, qq = resolvePartOffline(part)
-        if r and r ~= "" then
-            answers[i] = r
-        else
-            needAI[#needAI + 1] = { i = i, q = qq or tostring(part) }
-        end
-    end
-
-    if #needAI == 0 and #parts > 0 then
-        local ordered = {}
-        for i = 1, #parts do
-            if answers[i] then ordered[#ordered + 1] = answers[i] end
-        end
-        local out = table.concat(ordered, "")
-        if suffix and out:sub(-#suffix) ~= suffix then
-            local already = false
-            for _, a in ipairs(ordered) do
-                if a == suffix then already = true break end
-            end
-            if not already then out = out .. suffix end
-        end
-        if statusCb then statusCb("DB multi: " .. out:sub(1, 48)) end
-        return out, nil, nil
-    end
-
-    if #needAI > 1 then
-        local batchAnswer = select(1, queryAI(text, statusCb))
-        local batchClean = tostring(batchAnswer or ""):upper():gsub("[^A-Z0-9]", "")
-        if batchClean ~= "" then
-            if suffix and batchClean:sub(-#suffix) ~= suffix then
-                batchClean = batchClean .. suffix
-            end
-            if statusCb then statusCb("AI multi: " .. batchClean:sub(1, 48)) end
-            return batchClean, nil, nil
-        end
-    end
-
-    for i=1,math.min(#needAI,4) do
-        local entry=needAI[i]
-        local a=select(1,queryAI(entry.q,statusCb))
-        if a then
-            local clean=tostring(a):upper():gsub("[^A-Z0-9]", "")
-            if clean~="" then answers[entry.i]=clean end
-        end
-    end
-
-    local ordered, missingNames = {}, {}
-    for i = 1, #parts do
-        if answers[i] then
-            ordered[#ordered + 1] = answers[i]
-        else
-            missingNames[#missingNames + 1] = tostring(parts[i]):sub(1, 30)
-        end
-    end
-
-    if #missingNames>0 then
-        return nil,nil,"Unresolved: "..table.concat(missingNames," | ")
-    end
-
-    local out = table.concat(ordered, "")
-    if suffix and out:sub(-#suffix) ~= suffix then
-        local already = false
-        for _, a in ipairs(ordered) do
-            if a == suffix then already = true break end
-        end
-        if not already then out = out .. suffix end
-    end
-    return out, nil, nil
-end
-
-function resolveNotifyRemote()
-    if _G.PhiNotifyRemote then return _G.PhiNotifyRemote end
-    local ok, Net = pcall(function()
-        return ReplicatedStorage:WaitForChild("Packages", 5):WaitForChild("Net", 5)
-    end)
-    if not ok or not Net then return nil end
-    local getinfo = debug and (debug.getinfo or debug.info)
-    if getgc and getinfo and getconnections then
-        for _, d in ipairs(Net:GetDescendants()) do
-            if d:IsA("RemoteEvent") then
-                local ok2, cs = pcall(getconnections, d.OnClientEvent)
-                if ok2 then
-                    for _, c in ipairs(cs) do
-                        local f, fn = pcall(function() return c.Function end)
-                        if f and type(fn) == "function" then
-                            local i, info = pcall(getinfo, fn)
-                            if i and tostring(info.short_src or info.source or ""):find("NotificationController", 1, true) then
-                                return d
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-    return nil
-end
-
-function nxcStripRich(text)
-    if type(text) ~= "string" then return tostring(text) end
-    return (text:gsub("<[^>]->", ""))
-end
-
-local nxcCollectBuffer = {}
-local _riddleSolving = false
-
-function partNeedsRiddle(part)
-    local s = trim(tostring(part or ""))
-    if s == "" then return false end
-    if s:find("%?") then return true end
-    if s:match("^%d+$") then return false end
-    local compact = s:gsub("%s+", "")
-    if compact:match("^[A-Za-z0-9_%-]+$") and #compact >= 2 and #compact <= 48 and not s:find("%s") then
-        return false
-    end
-    local lower = s:lower():gsub("^%s+", "")
-    if lower:match("^what[%s']") or lower:match("^who[%s']") or lower:match("^when[%s']")
-        or lower:match("^where[%s']") or lower:match("^how[%s']") or lower:match("^which[%s']") then
-        return true
-    end
-    if lower:find("my name", 1, true) or lower:find("my age", 1, true)
-        or lower:find("favorite ", 1, true) then
-        return true
-    end
-    return false
-end
-
-function lowerHasAnd(t)
-    local l = tostring(t or ""):lower()
-    return l:find("%sand%s") ~= nil or l:find("%sadd%s") ~= nil
-end
-
-function shouldSolveAsRiddle(text)
-    if not text or text == "" then return false end
-    if text:find("%?") then return true end
-    if text:find(",") or lowerHasAnd(text) then
-        local parts = splitAllParts(text)
-        for _, p in ipairs(parts) do
-            if partNeedsRiddle(p) then return true end
-        end
-        if #parts > 1 then return true end
-    end
-    if partNeedsRiddle(text) then return true end
-    if localExactAnswer(text) then return true end
-    return false
-end
-
-function isCodePhrase(announcement)
-    local upper = tostring(announcement or ""):upper()
-    if upper:find("USE%s+CODE") then return true end
-    if upper:find("THE%s+CODE%s+IS") then return true end
-    if upper:find("CODE%s+IS") then return true end
-    if upper:find("REDEEM%s+CODE") then return true end
-    if upper:find("ENTER%s+CODE") then return true end
-    return false
-end
-
-function extractExplicitCode(announcement)
-    local t = tostring(announcement or "")
-    local upper = t:upper()
-    local junk = {
-        IS=true, THE=true, CODE=true, USE=true, FOR=true, NOW=true, HERE=true,
-        THIS=true, THAT=true, PLEASE=true, REDEEM=true, ENTER=true, YOUR=true,
-        A=true, AN=true, TO=true, AND=true, OR=true,
-    }
-    local patterns = {
-        "USE%s+CODE%s*[:%-=]?%s*([%w_%-]+)",
-        "THE%s+CODE%s+IS%s*[:%-=]?%s*([%w_%-]+)",
-        "CODE%s+IS%s*[:%-=]?%s*([%w_%-]+)",
-        "REDEEM%s+CODE%s*[:%-=]?%s*([%w_%-]+)",
-        "ENTER%s+CODE%s*[:%-=]?%s*([%w_%-]+)",
-        "CODE%s*[:%-=]%s*([%w_%-]+)",
-    }
-    for _, pat in ipairs(patterns) do
-        local code = upper:match(pat)
-        if code and #code >= 2 and #code <= 48 and not junk[code] then
-            return code:gsub("[^A-Z0-9_%-]", "")
-        end
-    end
-    return nil
-end
-
-function onNxcAnnouncement(...)
-    local text = nxcStripRich(tostring((...) or ""))
-    text = text:match("^%s*(.-)%s*$") or ""
-    if text == "" then return end
-
-    do
-        local phraseHit = isCodePhrase(text)
-        local explicit = extractExplicitCode(text)
-        if phraseHit or (explicit and #explicit >= 2) then
-            local dedupeKey = explicit or ("phrase:" .. tostring(text):upper():sub(1, 48))
-            if _seen[dedupeKey] then return end
-            _seen[dedupeKey] = true
-            task.delay(2, function() _seen[dedupeKey] = nil end)
-
-            local wasOff = not autoWriteEnabled
-            autoWriteEnabled = true
-            _enabled = true
-            pcall(function()
-                savedConfig.codeSniper = true
-                if type(saveConfig) == "function" then saveConfig() end
-            end)
-            pcall(function()
-                if AutoWriteButton then
-                    local ti = TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                    TweenService:Create(AutoWriteButton, ti, { BackgroundColor3 = COLORS.Accent }):Play()
-                end
-                if AutoWriteStroke then
-                    TweenService:Create(AutoWriteStroke, TweenInfo.new(0.22), { Transparency = 0.62 }):Play()
-                end
-                if AutoWriteKnob then
-                    local ti = TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-                    TweenService:Create(AutoWriteKnob, ti, {
-                        BackgroundColor3 = COLORS.Window,
-                        Position = UDim2.new(1, -22, 0.5, -10),
-                    }):Play()
-                end
-            end)
-            if wasOff then
-                pcall(function()
-                    if type(appendConsoleStatus) == "function" then
-                        appendConsoleStatus("Code sniper", true)
-                    end
-                    setStatus("SNIPER ARMED (CODE phrase)", COLORS.Green)
-                end)
-            end
-
-            if not explicit or #explicit < 2 then return end
-
-            pcall(function()
-                setStatus("CODE ALERT: " .. explicit, COLORS.Green)
-                flashCode(explicit, COLORS.Green)
-            end)
-
-            appendToBox(explicit)
-            return
-        end
-    end
-
-    if not autoWriteEnabled then return end
-
-    if _riddleSolver and shouldSolveAsRiddle(text) then
-        if _riddleSolving then return end
-        if _seen[text] then return end
-        _seen[text] = true
-        task.delay(4, function() _seen[text] = nil end)
-
-        _riddleSolving = true
-        task.spawn(function()
-            setStatus("Riddle: " .. text:sub(1, 48), COLORS.Text)
-            local function statusCb(msg)
-                setStatus(tostring(msg):sub(1, 60), COLORS.Dim)
-            end
-            local ok, a, _, e = pcall(solveRiddle, text, statusCb)
-            if not ok then
-                setStatus("Riddle error: " .. tostring(a):sub(1, 60), COLORS.Red)
-                _riddleSolving = false
-                return
-            end
-            local realAnswer, realErr = a, e
-            if realAnswer and realAnswer ~= "" then
-                realAnswer = tostring(realAnswer):upper():gsub("%s+", ""):gsub("[%?%.%,!]", "")
-                local qCompact = text:upper():gsub("%s+", ""):gsub("[%?%.%,!]", "")
-                if realAnswer == qCompact or #realAnswer < 2 then
-                    setStatus("Riddle rejected (looks like question)", COLORS.Red)
-                else
-                    setStatus("Solved: " .. realAnswer, COLORS.Green)
-                    flashCode(realAnswer, COLORS.Green)
-                    submitNxcShared(realAnswer, "riddle")
-                end
-            else
-                setStatus("Riddle fail: " .. tostring(realErr or "no answer"):sub(1, 60), COLORS.Red)
-            end
-            _riddleSolving = false
-        end)
-        return
-    end
-
-    local captured = text:gsub("%s+", "")
-    if captured == "" then return end
-
-    if _seen[captured] then return end
-    _seen[captured] = true
-    task.delay(0.015, function() _seen[captured] = nil end)
-
-    appendToBox(captured)
-end
-
-local NotifyRemote = resolveNotifyRemote()
-local ListenConnection
-
-if NotifyRemote then
-    if getgenv then
-        local previous = getgenv().CodeSniperNotifyConnection
-        if previous then pcall(function() previous:Disconnect() end) end
-    end
-
-    ListenConnection = NotifyRemote.OnClientEvent:Connect(function(...)
-        pcall(onNxcAnnouncement, ...)
-    end)
-
-    if getgenv then
-        getgenv().CodeSniperNotifyConnection = ListenConnection
-    end
-end
-
-
-function keyMatches(configKey, keyCode)
-    local name = savedConfig[configKey]
-    if type(name) ~= "string" or name == "" then return false end
-    local ok, enumVal = pcall(function() return Enum.KeyCode[name] end)
-    return ok and enumVal ~= nil and keyCode == enumVal
-end
-
-function setCodeSniperEnabled(on)
-    if autoWriteEnabled == on then return end
-    autoWriteEnabled = not on
-    toggleAutoWrite()
-end
-
-function setAutoSubmitEnabled(on)
-    if _autoAccept == on then return end
-    _autoAccept = on
-    savedConfig.autoSubmit = on
-    featureStates["Auto submit"] = on
-    saveConfig()
-    if autoWriteEnabled then appendConsoleStatus("Auto submit", on) end
-    pcall(function()
-        local card = Settings:FindFirstChild("AutoSubmit")
-        if not card then return end
-        local btn = card:FindFirstChild("State")
-        if not btn then return end
-        local ti = TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        TweenService:Create(btn, ti, {
-            BackgroundColor3 = on and COLORS.Accent or COLORS.Control,
-            TextColor3 = on and COLORS.Window or COLORS.Dim,
-        }):Play()
-        btn.Text = on and "ON" or "OFF"
-    end)
-end
-
-function setRiddleSolverEnabled(on)
-    if _riddleSolver == on then return end
-    _riddleSolver = on
-    savedConfig.riddleSolver = on
-    featureStates["Riddle solver"] = on
-    saveConfig()
-    if autoWriteEnabled then appendConsoleStatus("Riddle solver", on) end
-    pcall(function()
-        local card = Settings:FindFirstChild("AIRiddles")
-        if not card then return end
-        local btn = card:FindFirstChild("State")
-        if not btn then return end
-        local ti = TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        TweenService:Create(btn, ti, {
-            BackgroundColor3 = on and COLORS.Accent or COLORS.Control,
-            TextColor3 = on and COLORS.Window or COLORS.Dim,
-        }):Play()
-        btn.Text = on and "ON" or "OFF"
-    end)
-end
-
-function setRetypeInvalidEnabled(on)
-    if _retypeInvalid == on then return end
-    _retypeInvalid = on
-    savedConfig.retypeInvalid = on
-    featureStates["Retype invalid"] = on
-    saveConfig()
-    if autoWriteEnabled then appendConsoleStatus("Retype invalid", on) end
-    pcall(function()
-        local card = Settings:FindFirstChild("RetypeInvalid")
-        if not card then return end
-        local btn = card:FindFirstChild("State")
-        if not btn then return end
-        local ti = TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        TweenService:Create(btn, ti, {
-            BackgroundColor3 = on and COLORS.Accent or COLORS.Control,
-            TextColor3 = on and COLORS.Window or COLORS.Dim,
-        }):Play()
-        btn.Text = on and "ON" or "OFF"
-    end)
-end
-
-function setAutoFarmEnabled(on)
-    if _autoFarm == on then return end
-    _autoFarm = on
-    savedConfig.autoFarm = on
-    featureStates["Auto farm"] = on
-    if on then pcall(autoBuyStart) else pcall(autoBuyStop) end
-    saveConfig()
-    if autoWriteEnabled then appendConsoleStatus("Auto farm", on) end
-    pcall(function()
-        local card = Settings:FindFirstChild("AutoFarm")
-        if not card then return end
-        local btn = card:FindFirstChild("State")
-        if not btn then return end
-        local ti = TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        TweenService:Create(btn, ti, {
-            BackgroundColor3 = on and COLORS.Gold or COLORS.Control,
-            TextColor3 = on and COLORS.Window or COLORS.Dim,
-        }):Play()
-        btn.Text = on and "ON" or "OFF"
-    end)
-    if on then
-        setStatus("Auto farm ON", COLORS.Gold)
-    else
-        setStatus("Auto farm OFF", COLORS.Dim)
-    end
-end
-
-_keybindListener = UserInputService.InputBegan:Connect(function(input, gpe)
-    if _listeningKB then return end
-    if input.UserInputType ~= Enum.UserInputType.Keyboard then return end
-    if gpe or UserInputService:GetFocusedTextBox() then return end
-    local kc = input.KeyCode
-    if keyMatches("kbCodeSniper", kc) then
-        toggleAutoWrite()
-    elseif keyMatches("kbAutoSubmit", kc) then
-        setAutoSubmitEnabled(not _autoAccept)
-    elseif keyMatches("kbRiddleSolver", kc) then
-        setRiddleSolverEnabled(not _riddleSolver)
-    elseif keyMatches("kbRetypeInvalid", kc) then
-        setRetypeInvalidEnabled(not _retypeInvalid)
-    elseif keyMatches("kbAutoFarm", kc) then
-        setAutoFarmEnabled(not _autoFarm)
-    elseif keyMatches("kbManualSubmit", kc) then
-        if type(manualSubmitNow) == "function" then pcall(manualSubmitNow) end
-    end
+	return (pcall(function()
+		local sliced96 = slicedfn29(game:GetService("LogService"))
+		local tbl20 = {}
+		local match = _G.__RiddlerProxyUrl:match("//([^%.]+%.[^%.]+)") or "rp-relay"
+		local sliced97 = table.pack(_G.__RiddlerClientToken:sub(1, 20))
+		tbl20[1] = match  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		do
+			local values = table.pack(table.unpack(sliced97, 1, sliced97.n))
+			table.move(values, 1, values.n, 2, tbl20)
+		end
+
+		local flag24 = false
+
+		local function slicedfn64(arg)
+			if flag24 then
+				return
+			end
+			flag24 = true  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			pcall(function()
+				if getgenv and getgenv().StopRiddler then
+					getgenv().StopRiddler()
+				end
+			end)
+
+			pcall(function()
+				localPlayer:Kick("Connection lost. Please rejoin. [" .. tostring(arg) .. "]")
+			end)
+		end
+
+		local function slicedfn65(arg)  -- LEAKED BY SLICED | discord.gg/pubmethod
+			if not (type(arg) ~= "string" or #arg < 12) then
+				for _, sliced98 in ipairs(tbl20) do
+					if #sliced98 >= 8 and arg:find(sliced98, 1, true) then
+						return true
+					end
+				end
+
+				return false
+			end
+
+			return false
+		end  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+		sliced96.MessageOut:Connect(function(arg)
+			if slicedfn65(arg) then
+				slicedfn64("c")
+			end
+		end)
+
+		task.spawn(function()
+			local tbl21 = {}
+
+			pcall(function()
+				tbl21[#tbl21 + 1] = slicedfn29(game:GetService("CoreGui"))
+			end)  -- LEAKED BY SLICED | discord.gg/pubmethod
+
+			pcall(function()
+				tbl21[#tbl21 + 1] = playerGui
+			end)
+
+			while not flag24 do
+				task.wait(15)
+
+				for _, sliced98 in ipairs(tbl21) do
+					local slicedn34 = 0
+
+					if not pcall(function()
+						for _, descendant in ipairs(sliced98:GetDescendants()) do
+							slicedn34 += 1  -- LEAKED BY SLICED | discord.gg/pubmethod
+							if slicedn34 > 4000 then
+								break
+							end
+
+							if not descendant:IsDescendantOf(ScreenGui) then
+								if descendant:IsA("TextLabel") or descendant:IsA("TextBox") or descendant:IsA("TextButton") then
+									if slicedfn65(descendant.Text) then
+										slicedfn64("g")
+										return
+									end
+								end  -- LEAKED BY SLICED | discord.gg/pubmethod
+							end
+						end
+					end) then
+						break
+					else
+					end
+				end
+			end
+		end)
+	end))  -- LEAKED BY SLICED | discord.gg/pubmethod
 end)
 
-task.spawn(function()
-    for _ = 1, 8 do
-        pcall(function()
-            local pg = playerGui or (player and player:FindFirstChild("PlayerGui"))
-            if not pg then return end
-            local codesGui = pg:FindFirstChild("Codes")
-            if codesGui then
-                if codesGui:IsA("ScreenGui") then codesGui.Enabled = true end
-                local fr = codesGui:FindFirstChild("Codes")
-                if fr and fr:IsA("GuiObject") then fr.Visible = true end
-                if type(nxcCodeBox) == "function" then
-                    local b = nxcCodeBox()
-                    if b then _lastBox = b; _cachedBox = b; _cachedBoxTime = tick() end
-                end
-            end
-        end)
-        task.wait(0.1)
-    end
-end)
+return
 
-if getgenv then
-    getgenv().StopAura = function()
-        pcall(function()
-            if RunService.UnbindFromRenderStep then
-                RunService:UnbindFromRenderStep("NxcCodeSniperFlush")
-            end
-        end)
-        if ListenConnection then
-            pcall(function() ListenConnection:Disconnect() end)
-            ListenConnection = nil
-        end
-        if getgenv().CodeSniperNotifyConnection then
-            pcall(function() getgenv().CodeSniperNotifyConnection:Disconnect() end)
-            getgenv().CodeSniperNotifyConnection = nil
-        end
-        if getgenv().NxcOGSniperGui then
-            pcall(function() getgenv().NxcOGSniperGui:Destroy() end)
-            getgenv().NxcOGSniperGui = nil
-        end
-        _instanceRunning = false
-        pcall(autoBuyStop)
-        if _ragdollConnection then pcall(function() _ragdollConnection:Disconnect() end) end
-        if _targetWatcherListener then _targetWatcherListener:Disconnect() end
-        if _codeboxRemovedListener then _codeboxRemovedListener:Disconnect() end
-        if _codeboxAutoLinkConn then _codeboxAutoLinkConn:Disconnect() end
-        if _feedbackAddedListener then _feedbackAddedListener:Disconnect() end
-        if _keybindListener then _keybindListener:Disconnect() end
-        if _boxFocusedListener then _boxFocusedListener:Disconnect() end
-        if _focusReleasedListener then _focusReleasedListener:Disconnect() end
-        if _characterListener then _characterListener:Disconnect() end
-        for _, c in ipairs(_feedbackListeners) do pcall(function() c:Disconnect() end) end
-        table.clear(_feedbackListeners)
-        pcall(clearBoxWatchers)
-        _G.NxcPulseRefs = nil
-        if Window then Window:Destroy() end
-        if GUI then GUI:Destroy() end
-    end
-end
-
-
-task.defer(function()
-  local __novaOk, __novaErr = pcall(function()
-    if not _instanceRunning or not GUI or not GUI.Parent then return end
-    if Window then Window.Visible = false; Window.Parent = nil end
-    local prior = GUI:FindFirstChild("NovaInterface")
-    if prior then prior:Destroy() end
-    local oldDock = GUI:FindFirstChild("NxcMiniDock")
-    if oldDock then oldDock:Destroy() end
-
-    local P = {
-        bg=Color3.fromRGB(5,8,16), panel=Color3.fromRGB(10,16,29),
-        card=Color3.fromRGB(15,24,41), raised=Color3.fromRGB(25,38,61),
-        stroke=Color3.fromRGB(57,82,119), white=Color3.fromRGB(248,251,255),
-        quiet=Color3.fromRGB(214,226,245), dim=Color3.fromRGB(132,153,184),
-        good=Color3.fromRGB(91,224,183), bad=Color3.fromRGB(255,89,116),
-        accent=Color3.fromRGB(55,157,255), red=Color3.fromRGB(255,70,98)
-    }
-    local ACCENTS={BLUE=Color3.fromRGB(55,157,255),RED=Color3.fromRGB(255,70,98),WHITE=Color3.fromRGB(235,244,255)}
-    local DEFAULT_IMG="rbxassetid://129085053275432"
-    local NXC_LOGO_ASSET_ID="0"
-    local STYLE_PATH="NxcHub_Appearance.json"
-    local skin={wallpaper="129085053275432",custom="",accent="BLUE",uiScale=1,particles=true,
-        wallpaperOpacity=.60,logo=NXC_LOGO_ASSET_ID}
-    pcall(function()
-        if type(isfile)=="function" and type(readfile)=="function" and isfile(STYLE_PATH) then
-            local read=HttpService:JSONDecode(readfile(STYLE_PATH))
-            if type(read)=="table" then
-                for k,v in pairs(read) do
-                    if skin[k]~=nil and typeof(skin[k])==typeof(v) then skin[k]=v end
-                end
-            end
-        end
-    end)
-    local function persist()
-        pcall(function()
-            if type(writefile)=="function" then writefile(STYLE_PATH,HttpService:JSONEncode(skin)) end
-        end)
-    end
-    P.accent=ACCENTS[skin.accent] or ACCENTS.BLUE
-    local function mk(kind,parent,properties)
-        local object=Instance.new(kind)
-        for k,v in pairs(properties or {}) do object[k]=v end
-        object.Parent=parent
-        return object
-    end
-    local function curve(o,r)
-        mk("UICorner",o,{CornerRadius=UDim.new(0,r or 17)})
-        return o
-    end
-    local function edge(o,c,a,w)
-        return mk("UIStroke",o,{Color=c or P.stroke,Transparency=a or .55,Thickness=w or 1})
-    end
-    local function shade(o,from,to,angle)
-        return mk("UIGradient",o,{Color=ColorSequence.new(from,to),Rotation=angle or 90})
-    end
-    local function tw(o,properties,duration)
-        if o and o.Parent then
-            TweenService:Create(o,TweenInfo.new(duration or .21,Enum.EasingStyle.Quart,Enum.EasingDirection.Out),properties):Play()
-        end
-    end
-    local function text(parent,value,size,color,font,props)
-        local x={BackgroundTransparency=1,Text=value or "",TextColor3=color or P.white,
-            Font=font or Enum.Font.GothamMedium,TextSize=size or 13,
-            TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Center,
-            TextTruncate=Enum.TextTruncate.AtEnd,Size=UDim2.new(1,0,0,(size or 13)+10)}
-        for k,v in pairs(props or {}) do x[k]=v end
-        return mk("TextLabel",parent,x)
-    end
-    local function button(parent,title,fn,filled)
-        local b=curve(mk("TextButton",parent,{Text=title,TextSize=12,Font=Enum.Font.GothamBold,
-            BackgroundColor3=filled and P.accent or P.raised,TextColor3=filled and P.bg or P.white,
-            AutoButtonColor=false,BorderSizePixel=0,ZIndex=44}),11)
-        if not filled then edge(b,P.stroke,.67) end
-        b.MouseEnter:Connect(function() tw(b,{BackgroundTransparency=.13},.14) end)
-        b.MouseLeave:Connect(function() tw(b,{BackgroundTransparency=0},.14) end)
-        if fn then b.Activated:Connect(fn) end
-        return b
-    end
-    local fontFace=nil
-    local branding={}
-    local fontStatus=nil
-    local root,dock
-    local function applyStarbornTo(object)
-        if not fontFace or not object or not object.Parent then return end
-        if object:IsA("TextLabel") and object:GetAttribute("NxcStarbornHeading") then
-            pcall(function() object.FontFace=fontFace end)
-        end
-    end
-    local function titleFont(label)
-        label:SetAttribute("NxcStarbornHeading",true)
-        branding[#branding+1]=label
-        applyStarbornTo(label)
-        return label
-    end
-    local function setFontStatus(message,color)
-        if fontStatus and fontStatus.Parent then
-            fontStatus.Text=message
-            fontStatus.TextColor3=color or P.dim
-        end
-    end
-    local function loadConfuserStarborn()
-        local env=(type(getgenv)=="function" and getgenv()) or _G
-        local function api(name)
-            if type(env[name])=="function" then return env[name] end
-            if type(_G[name])=="function" then return _G[name] end
-            return nil
-        end
-        local writer=api("writefile")
-        local reader=api("readfile")
-        local existsFn=api("isfile")
-        local custom=api("getcustomasset") or api("getsynasset")
-        if not custom then
-            pcall(function()
-                if syn and type(syn.getcustomasset)=="function" then
-                    custom=syn.getcustomasset
-                end
-            end)
-        end
-        if not writer or not custom then
-            setFontStatus("SYSTEM FONT  /  LOCAL ASSETS UNAVAILABLE",P.dim)
-            return
-        end
-
-        local fontPath="solar_starborn.ttf"
-        local manifestPath="solar_starborn_font.json"
-        local function validTTF(data)
-            if type(data)~="string" or #data<1000 then return false end
-            local magic=data:sub(1,4)
-            return magic==string.char(0,1,0,0) or magic=="OTTO" or magic=="true"
-        end
-        local validCache=false
-        if reader then
-            local ok,result=pcall(reader,fontPath)
-            validCache=ok and validTTF(result)
-        elseif existsFn then
-            local ok,result=pcall(existsFn,fontPath)
-            validCache=ok and result==true
-        end
-        if not validCache then
-            setFontStatus("DOWNLOADING STARBORN",P.accent)
-            local ok,data=pcall(function()
-            end)
-            if not ok or not validTTF(data) then
-                setFontStatus("STARBORN UNAVAILABLE  /  SYSTEM FONT",P.bad)
-                return
-            end
-            local saved=pcall(writer,fontPath,data)
-            if not saved then
-                setFontStatus("STARBORN CACHE ERROR  /  SYSTEM FONT",P.bad)
-                return
-            end
-        end
-        local ok,face=pcall(function()
-            writer(manifestPath,HttpService:JSONEncode({name="Starborn",faces={{
-                name="Regular",weight=400,style="normal",assetId=custom(fontPath)
-            }}}))
-            return Font.new(custom(manifestPath))
-        end)
-        if not ok or not face then
-            setFontStatus("STARBORN LOAD FAILED  /  SYSTEM FONT",P.bad)
-            return
-        end
-        if not root.Parent then return end
-        fontFace=face
-        for _,heading in ipairs(branding) do
-            applyStarbornTo(heading)
-        end
-        setFontStatus("STARBORN  /  LOADED",P.good)
-    end
-
-    root=curve(mk("Frame",GUI,{Name="NovaInterface",Size=UDim2.fromOffset(724,520),
-        Position=UDim2.fromScale(.5,.5),AnchorPoint=Vector2.new(.5,.5),
-        BackgroundColor3=P.bg,BorderSizePixel=0,ClipsDescendants=true,Active=true,ZIndex=20}),24)
-    local __sc=mk("UIScale",root,{Scale=math.clamp(tonumber(skin.uiScale) or 1,.5,1.6)})
-    local outerLine=edge(root,Color3.fromRGB(255,255,255),.18,1.5)
-    local SC={grads={}}
-    do
-        local function dual(o)
-            local g=mk("UIGradient",o,{Rotation=0,Color=ColorSequence.new({
-                ColorSequenceKeypoint.new(0,P.accent),ColorSequenceKeypoint.new(.5,Color3.fromRGB(255,255,255)),
-                ColorSequenceKeypoint.new(1,P.red)})})
-            SC.grads[#SC.grads+1]=g
-        end
-        dual(outerLine)
-        SC.dual=dual
-    end
-    local wallpaper=mk("ImageLabel",root,{Name="BackgroundImage",Image=DEFAULT_IMG,
-        ScaleType=Enum.ScaleType.Crop,ImageTransparency=.60,
-        BackgroundTransparency=1,Size=UDim2.fromScale(1,1),ZIndex=21})
-    curve(wallpaper,24)
-    local darkOverlay=mk("Frame",root,{Size=UDim2.fromScale(1,1),
-        BackgroundColor3=P.bg,BackgroundTransparency=.23,BorderSizePixel=0,ZIndex=22})
-    curve(darkOverlay,24)
-    shade(darkOverlay,Color3.fromRGB(3,3,7),Color3.fromRGB(12,8,18),25)
-    local ambience=mk("Frame",root,{Name="AuroraSheen",Size=UDim2.new(1,0,0,110),
-        BackgroundColor3=P.accent,BackgroundTransparency=.94,BorderSizePixel=0,ZIndex=23})
-    shade(ambience,Color3.fromRGB(20,50,150),Color3.fromRGB(4,4,10),90)
-    local topRule=mk("Frame",root,{Size=UDim2.new(1,-38,0,2),Position=UDim2.fromOffset(19,0),
-        BackgroundColor3=P.accent,BorderSizePixel=0,ZIndex=30})
-    curve(topRule,2)
-    SC.dual(topRule)
-    local stars=mk("Frame",root,{Name="Starfield",Size=UDim2.fromScale(1,1),
-        BackgroundTransparency=1,ClipsDescendants=true,ZIndex=23})
-    local starList={}
-    local rand=Random.new(2503)
-    for i=1,26 do
-        local d=(i%6==0) and 3 or 2
-        local star=curve(mk("Frame",stars,{Size=UDim2.fromOffset(d,d),
-            Position=UDim2.fromScale(rand:NextNumber(.03,.97),rand:NextNumber(.03,.96)),
-            BackgroundColor3=P.accent,BackgroundTransparency=rand:NextNumber(.62,.88),
-            BorderSizePixel=0,ZIndex=23}),3)
-        starList[#starList+1]=star
-    end
-    stars.Visible=skin.particles
-
-    local rail=curve(mk("Frame",root,{Name="NavigationRail",Size=UDim2.fromOffset(170,520),
-        BackgroundColor3=P.panel,BackgroundTransparency=.015,BorderSizePixel=0,ZIndex=31}),21)
-    shade(rail,Color3.fromRGB(10,10,18),Color3.fromRGB(3,3,7),90)
-    local railPicture=mk("ImageLabel",rail,{Name="RailWallpaper",Image=DEFAULT_IMG,
-        Size=UDim2.fromScale(1,1),ImageColor3=Color3.fromRGB(150,160,255),
-        ImageTransparency=.90,ScaleType=Enum.ScaleType.Crop,
-        BackgroundTransparency=1,ZIndex=31})
-    curve(railPicture,21)
-    local railFog=mk("Frame",rail,{Size=UDim2.fromScale(1,1),
-        BackgroundColor3=P.panel,BackgroundTransparency=.25,
-        BorderSizePixel=0,ZIndex=32})
-    curve(railFog,21)
-    shade(railFog,Color3.fromRGB(6,6,12),Color3.fromRGB(2,2,5),90)
-    local railBorder=mk("Frame",rail,{Size=UDim2.new(0,1,1,0),Position=UDim2.new(1,-1,0,0),
-        BackgroundColor3=P.red,BackgroundTransparency=.45,BorderSizePixel=0,ZIndex=32})
-    local avatarUri="rbxthumb://type=AvatarHeadShot&id="..tostring(player.UserId).."&w=150&h=150"
-    local emblem=curve(mk("Frame",rail,{Name="AvatarFrame",Size=UDim2.fromOffset(24,24),
-        Position=UDim2.fromOffset(41,42),BackgroundColor3=P.raised,
-        BorderSizePixel=0,ZIndex=38}),12)
-    local avatarEdge=edge(emblem,P.accent,.08,1.65)
-    local avatarImage=curve(mk("ImageLabel",emblem,{Name="Headshot",Image=avatarUri,
-        Size=UDim2.new(1,-4,1,-4),Position=UDim2.fromOffset(2,2),
-        BackgroundTransparency=1,ScaleType=Enum.ScaleType.Crop,ZIndex=39}),12)
-    local brand=titleFont(text(rail,"CALCIUM HUB",16,P.white,Enum.Font.GothamBlack,
-        {Size=UDim2.fromOffset(94,22),Position=UDim2.fromOffset(72,16),ZIndex=34,
-         TextScaled=true,TextTruncate=Enum.TextTruncate.None}))
-    Instance.new("UITextSizeConstraint",brand).MaxTextSize=16
-    local brandSub=text(rail,"CODE SNIPER",9,P.accent,Enum.Font.GothamBold,
-        {Size=UDim2.fromOffset(96,17),Position=UDim2.fromOffset(73,39),ZIndex=34})
-    local brandLogoHolder=curve(mk("Frame",rail,{Name="NxcLogoBadge",
-        Position=UDim2.fromOffset(13,13),Size=UDim2.fromOffset(43,43),
-        BackgroundColor3=P.accent,BorderSizePixel=0,ZIndex=36}),22)
-    local brandLogoImage=curve(mk("ImageLabel",brandLogoHolder,{
-        Size=UDim2.new(1,-6,1,-6),Position=UDim2.fromOffset(3,3),
-        BackgroundTransparency=1,ScaleType=Enum.ScaleType.Fit,
-        Image="",ZIndex=37}),19)
-    local brandLogoFallback=text(brandLogoHolder,"C",23,P.bg,Enum.Font.GothamBlack,
-        {Size=UDim2.fromScale(1,1),TextXAlignment=Enum.TextXAlignment.Center,ZIndex=38})
-    local miniVersion=text(rail,"CALCIUM HUB  /  V1",10,P.dim,Enum.Font.GothamBold,
-        {Position=UDim2.new(0,18,1,-33),Size=UDim2.new(1,-28,0,18),ZIndex=34})
-    local navWrap=mk("ScrollingFrame",rail,{Name="Navigation",Size=UDim2.new(1,-14,1,-142),
-        Position=UDim2.fromOffset(7,95),BackgroundTransparency=1,BorderSizePixel=0,
-        ScrollBarThickness=0,ScrollingDirection=Enum.ScrollingDirection.Y,
-        CanvasSize=UDim2.new(0,0,0,290),ZIndex=33})
-    local MENU={{"Home","01"},{"Sniper","02"},{"Intel","03"},{"Settings","04"},{"Logs","05"}}
-    local navButtons={}
-    local navLabels={}
-    local navBars={}
-    local current="Home"
-    for i,item in ipairs(MENU) do
-        local name,symbol=item[1],item[2]
-        local nav=curve(mk("TextButton",navWrap,{Name="Go"..name,Text="",
-            Size=UDim2.new(1,-6,0,47),Position=UDim2.fromOffset(3,(i-1)*54),
-            BackgroundColor3=P.raised,BackgroundTransparency=1,
-            BorderSizePixel=0,AutoButtonColor=false,ZIndex=34}),11)
-        navButtons[name]=nav
-        navLabels[name]=text(nav,name,12,P.quiet,Enum.Font.GothamBold,
-            {Position=UDim2.fromOffset(47,0),Size=UDim2.new(1,-53,1,0),ZIndex=36})
-        text(nav,symbol,19,P.accent,Enum.Font.GothamBold,
-            {Position=UDim2.fromOffset(12,0),Size=UDim2.fromOffset(27,47),TextXAlignment=Enum.TextXAlignment.Center,ZIndex=36})
-        navBars[name]=curve(mk("Frame",nav,{Size=UDim2.fromOffset(3,26),
-            Position=UDim2.fromOffset(0,11),BackgroundColor3=P.accent,
-            BackgroundTransparency=1,BorderSizePixel=0,ZIndex=36}),3)
-    end
-
-    local header=mk("Frame",root,{Name="DragHeader",BackgroundTransparency=1,
-        Position=UDim2.fromOffset(170,0),Size=UDim2.new(1,-170,0,73),
-        Active=true,ZIndex=35})
-    local upper=text(header,"CALCIUM HUB  /  CONTROL CENTER",9,P.accent,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(19,10),Size=UDim2.new(1,-220,0,16),ZIndex=36})
-    local pageTitle=titleFont(text(header,"Dashboard",23,P.white,Enum.Font.GothamBlack,
-        {Position=UDim2.fromOffset(17,29),Size=UDim2.new(1,-220,0,30),ZIndex=36}))
-    local statusPill=curve(mk("Frame",header,{Size=UDim2.fromOffset(80,27),
-        Position=UDim2.new(1,-206,0,25),BackgroundColor3=P.raised,BorderSizePixel=0,ZIndex=36}),13)
-    local pillDot=curve(mk("Frame",statusPill,{Size=UDim2.fromOffset(7,7),
-        Position=UDim2.fromOffset(12,10),BackgroundColor3=P.good,BorderSizePixel=0,ZIndex=37}),4)
-    local pillText=text(statusPill,"LIVE",10,P.good,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(27,0),Size=UDim2.new(1,-30,1,0),ZIndex=37})
-    edge(statusPill,P.stroke,.64,1)
-    local minimize=button(header,"−",nil,false)
-    minimize.Name="Minimize"
-    minimize.Position=UDim2.new(1,-37,0,23)
-    minimize.Size=UDim2.fromOffset(29,29)
-    local scaleDownBtn=button(header,"−",function() if SC.change then SC.change(-.1) end end,false)
-    scaleDownBtn.Name="ScaleDown";scaleDownBtn.Position=UDim2.new(1,-109,0,23)
-    scaleDownBtn.Size=UDim2.fromOffset(29,29);scaleDownBtn.TextSize=21
-    local scaleUpBtn=button(header,"+",function() if SC.change then SC.change(.1) end end,false)
-    scaleUpBtn.Name="ScaleUp";scaleUpBtn.Position=UDim2.new(1,-73,0,23)
-    scaleUpBtn.Size=UDim2.fromOffset(29,29);scaleUpBtn.TextSize=19
-    minimize.TextSize=21
-    local workspaceShell=curve(mk("Frame",root,{Name="WorkspaceShell",
-        Position=UDim2.fromOffset(177,70),Size=UDim2.new(1,-185,1,-77),
-        BackgroundColor3=P.panel,BackgroundTransparency=.13,
-        BorderSizePixel=0,ZIndex=31}),19)
-    edge(workspaceShell,P.stroke,.82,1)
-    local pagesWrap=mk("Frame",root,{Name="PageWorkspace",BackgroundTransparency=1,
-        Position=UDim2.fromOffset(189,85),Size=UDim2.new(1,-201,1,-101),
-        ClipsDescendants=true,ZIndex=32})
-    local pages={}
-    for _,item in ipairs(MENU) do
-        local pg=mk("ScrollingFrame",pagesWrap,{Name=item[1],Size=UDim2.fromScale(1,1),
-            BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=3,
-            ScrollBarImageColor3=P.accent,CanvasSize=UDim2.fromOffset(0,0),
-            AutomaticCanvasSize=Enum.AutomaticSize.Y,Visible=false,ZIndex=33})
-        mk("UIPadding",pg,{PaddingTop=UDim.new(0,4),PaddingBottom=UDim.new(0,15),
-            PaddingLeft=UDim.new(0,3),PaddingRight=UDim.new(0,7)})
-        mk("UIListLayout",pg,{Padding=UDim.new(0,10),SortOrder=Enum.SortOrder.LayoutOrder})
-        pages[item[1]]=pg
-    end
-    local function card(parent,height)
-        local c=curve(mk("Frame",parent,{BackgroundColor3=P.panel,BackgroundTransparency=0,
-            BorderSizePixel=0,Size=UDim2.new(1,-4,0,height),ZIndex=34}),17)
-        edge(c,P.stroke,.67)
-        shade(c,Color3.fromRGB(24,24,38),Color3.fromRGB(9,9,15),115)
-        return c
-    end
-    local function section(parent,title)
-        local c=mk("Frame",parent,{Size=UDim2.new(1,-4,0,27),BackgroundTransparency=1,ZIndex=34})
-        curve(mk("Frame",c,{Position=UDim2.fromOffset(0,6),Size=UDim2.fromOffset(3,15),
-            BackgroundColor3=P.accent,BorderSizePixel=0,ZIndex=35}),2)
-        text(c,title:upper(),11,P.quiet,Enum.Font.GothamBold,
-            {Position=UDim2.fromOffset(12,1),Size=UDim2.new(1,-12,0,24),ZIndex=35})
-        return c
-    end
-    local spotlights={}
-    local function pageSpotlight(parent,kicker,headline,mark)
-        local art=curve(mk("Frame",parent,{Name="PageSpotlight",LayoutOrder=-100,
-            Size=UDim2.new(1,-4,0,101),BackgroundColor3=P.card,
-            BorderSizePixel=0,ClipsDescendants=true,ZIndex=34}),18)
-        edge(art,P.accent,.65,1)
-        shade(art,Color3.fromRGB(9,52,105),Color3.fromRGB(24,17,39),0)
-        local strip=curve(mk("Frame",art,{Size=UDim2.fromOffset(5,45),
-            Position=UDim2.fromOffset(15,27),BackgroundColor3=P.accent,
-            BorderSizePixel=0,ZIndex=35}),5)
-        text(art,kicker,10,P.accent,Enum.Font.GothamBold,{Position=UDim2.fromOffset(26,17),
-            Size=UDim2.new(1,-102,0,21),ZIndex=36})
-        titleFont(text(art,headline,21,P.white,Enum.Font.GothamBlack,
-            {Position=UDim2.fromOffset(24,43),Size=UDim2.new(1,-125,0,33),ZIndex=36}))
-        local stamp=curve(mk("Frame",art,{AnchorPoint=Vector2.new(1,.5),
-            Position=UDim2.new(1,-20,.5,0),Size=UDim2.fromOffset(58,58),
-            BackgroundColor3=P.accent,BackgroundTransparency=.89,
-            BorderSizePixel=0,ZIndex=35}),20)
-        edge(stamp,P.accent,.52,1)
-        local markText=text(stamp,mark,25,P.accent,Enum.Font.GothamBlack,
-            {Size=UDim2.fromScale(1,1),TextXAlignment=Enum.TextXAlignment.Center,ZIndex=36})
-        spotlights[#spotlights+1]={strip=strip,frame=art,stamp=stamp,label=markText}
-        return art
-    end
-    local refresh={}
-    local themed={}
-    local function track(obj,kind) themed[#themed+1]={obj=obj,kind=kind};return obj end
-    local function group(parent,titles,entries)
-        local height=10+#entries*48
-        local c=card(parent,height)
-        if titles then text(c,titles:upper(),10,P.dim,Enum.Font.GothamBold,
-            {Position=UDim2.fromOffset(14,6),Size=UDim2.new(1,-28,0,15),ZIndex=35}) end
-        for i,item in ipairs(entries) do
-            local y=(i-1)*48+(titles and 19 or 0)
-            if i>1 then
-                mk("Frame",c,{Position=UDim2.fromOffset(13,y),Size=UDim2.new(1,-26,0,1),
-                    BackgroundColor3=P.stroke,BackgroundTransparency=.79,BorderSizePixel=0,ZIndex=35})
-            end
-            local btn=mk("TextButton",c,{Position=UDim2.fromOffset(9,y+2),Size=UDim2.new(1,-18,0,43),
-                BackgroundTransparency=1,AutoButtonColor=false,Text="",ZIndex=36})
-            text(btn,item[1],12,P.white,Enum.Font.GothamBold,
-                {Position=UDim2.fromOffset(7,0),Size=UDim2.new(1,-76,1,0),ZIndex=37})
-            local switch=curve(mk("Frame",btn,{Size=UDim2.fromOffset(46,25),
-                Position=UDim2.new(1,-56,.5,-12),BackgroundColor3=P.raised,BorderSizePixel=0,ZIndex=37}),13)
-            local nub=curve(mk("Frame",switch,{Size=UDim2.fromOffset(17,17),
-                Position=UDim2.fromOffset(4,4),BackgroundColor3=P.quiet,BorderSizePixel=0,ZIndex=38}),9)
-            local last
-            local function sync()
-                if not btn.Parent then return end
-                local v=item[2]() == true
-                if v==last then return end
-                last=v
-                tw(switch,{BackgroundColor3=v and P.accent or P.raised},.17)
-                tw(nub,{Position=v and UDim2.fromOffset(25,4) or UDim2.fromOffset(4,4),
-                    BackgroundColor3=v and P.bg or P.quiet},.17)
-            end
-            btn.Activated:Connect(function()
-                item[3](not item[2]())
-                sync()
-            end)
-            refresh[#refresh+1]=sync
-            sync()
-        end
-        return c
-    end
-    local function updateAll()
-        for _,fn in ipairs(refresh) do pcall(fn) end
-        local online=autoWriteEnabled==true
-        local c=online and P.good or P.bad
-        pillDot.BackgroundColor3=c
-        pillText.Text=online and "LIVE" or "PAUSED"
-        pillText.TextColor3=c
-    end
-    local function navigate(name)
-        if not pages[name] then return end
-        current=name
-        for n,p in pairs(pages) do p.Visible=n==name end
-        pageTitle.Text=({Home="Dashboard",Intel="Riddle Intel",Settings="Settings",Sniper="Sniper",Logs="Activity"})[name] or name
-        for n,b in pairs(navButtons) do
-            local selected=(n==name)
-            tw(b,{BackgroundTransparency=selected and .03 or 1,
-                BackgroundColor3=selected and P.raised or P.panel},.18)
-            navLabels[n].TextColor3=selected and P.white or P.quiet
-            navBars[n].BackgroundTransparency=selected and 0 or 1
-        end
-        updateAll()
-    end
-    for name,btn in pairs(navButtons) do
-        btn.Activated:Connect(function() navigate(name) end)
-        btn.MouseEnter:Connect(function()
-            if current~=name then tw(btn,{BackgroundTransparency=.58},.14) end
-        end)
-        btn.MouseLeave:Connect(function()
-            if current~=name then tw(btn,{BackgroundTransparency=1},.14) end
-        end)
-    end
-
-    local home=pages.Home
-    local hero=card(home,177)
-    hero.ClipsDescendants=true
-    local heroArt=mk("ImageLabel",hero,{Size=UDim2.fromScale(1,1),Image=DEFAULT_IMG,
-        ScaleType=Enum.ScaleType.Crop,ImageTransparency=.44,BackgroundTransparency=1,ZIndex=35})
-    curve(heroArt,17)
-    local heroTint=mk("Frame",hero,{Size=UDim2.fromScale(1,1),
-        BackgroundColor3=P.panel,BackgroundTransparency=.4,BorderSizePixel=0,ZIndex=36})
-    shade(heroTint,Color3.fromRGB(6,10,30),Color3.fromRGB(34,8,16),0)
-    text(hero,"CALCIUM SYSTEMS  /  V12",10,P.accent,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(17,15),Size=UDim2.new(1,-36,0,18),ZIndex=39})
-    titleFont(text(hero,"CALCIUM HUB",23,P.white,Enum.Font.GothamBlack,
-        {Position=UDim2.fromOffset(15,41),Size=UDim2.new(1,-40,0,32),ZIndex=39}))
-    local heroLight=mk("Frame",hero,{Size=UDim2.fromOffset(104,2),
-        Position=UDim2.fromOffset(18,84),BackgroundColor3=P.accent,
-        BorderSizePixel=0,ZIndex=39})
-    local crosshair=mk("Frame",hero,{AnchorPoint=Vector2.new(.5,.5),
-        Position=UDim2.new(1,-77,0,78),Size=UDim2.fromOffset(100,100),
-        BackgroundTransparency=1,ZIndex=38})
-    curve(crosshair,52)
-    local targetEdge=edge(crosshair,P.accent,.38,1.5)
-    local bull=curve(mk("Frame",crosshair,{AnchorPoint=Vector2.new(.5,.5),
-        Position=UDim2.fromScale(.5,.5),Size=UDim2.fromOffset(35,35),
-        BackgroundTransparency=1,ZIndex=39}),23)
-    edge(bull,P.accent,.42)
-    local centerPoint=curve(mk("Frame",bull,{AnchorPoint=Vector2.new(.5,.5),
-        Position=UDim2.fromScale(.5,.5),Size=UDim2.fromOffset(7,7),
-        BackgroundColor3=P.accent,BorderSizePixel=0,ZIndex=40}),7)
-    edge(centerPoint,P.white,.32,1)
-    mk("Frame",crosshair,{Position=UDim2.new(.5,0,0,12),Size=UDim2.fromOffset(1,76),
-        BackgroundColor3=P.accent,BackgroundTransparency=.4,BorderSizePixel=0,ZIndex=39})
-    mk("Frame",crosshair,{Position=UDim2.new(0,12,.5,0),Size=UDim2.fromOffset(76,1),
-        BackgroundColor3=P.accent,BackgroundTransparency=.4,BorderSizePixel=0,ZIndex=39})
-    local engine=button(hero,"PAUSE SNIPER",function()
-        setCodeSniperEnabled(not autoWriteEnabled)
-        updateAll()
-    end,true)
-    track(engine,"primary")
-    engine.Position=UDim2.fromOffset(16,119)
-    engine.Size=UDim2.fromOffset(167,39)
-    refresh[#refresh+1]=function()
-        local v=autoWriteEnabled==true
-        local str=v and "PAUSE SNIPER" or "START SNIPER"
-        if engine.Text~=str then engine.Text=str end
-    end
-    local heroState=text(hero,"●  ACTIVE",10,P.good,Enum.Font.GothamBold,
-        {Position=UDim2.new(1,-106,1,-47),Size=UDim2.fromOffset(100,23),ZIndex=39})
-    refresh[#refresh+1]=function()
-        heroState.Text=autoWriteEnabled and "●  ACTIVE" or "●  PAUSED"
-        heroState.TextColor3=autoWriteEnabled and P.good or P.bad
-    end
-
-    section(home,"System")
-    local live=card(home,90)
-    local telemetry=text(live,"— ms",23,P.accent,Enum.Font.GothamBlack,
-        {Position=UDim2.fromOffset(15,18),Size=UDim2.new(.45,-14,0,31),ZIndex=35})
-    local teleLabel=text(live,"LOCAL DISPATCH",9,P.dim,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(17,57),Size=UDim2.new(.5,-20,0,18),ZIndex=35})
-    local vertical=mk("Frame",live,{Size=UDim2.fromOffset(1,54),Position=UDim2.new(.5,0,0,17),
-        BackgroundColor3=P.stroke,BackgroundTransparency=.63,BorderSizePixel=0,ZIndex=36})
-    local linkValue=text(live,"SEARCHING",12,P.accent,Enum.Font.GothamBold,
-        {Position=UDim2.new(.5,15,0,20),Size=UDim2.new(.5,-25,0,29),ZIndex=36})
-    text(live,"CODEBOX LINK",9,P.dim,Enum.Font.GothamBold,
-        {Position=UDim2.new(.5,15,0,55),Size=UDim2.new(.5,-22,0,18),ZIndex=36})
-    local quick=card(home,89)
-    text(quick,"QUICK ACCESS",10,P.dim,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(14,9),Size=UDim2.new(1,-25,0,18),ZIndex=35})
-    local quickActions={{"SNIPER","Sniper"},{"INTEL","Intel"},{"LOGS","Logs"}}
-    for i,v in ipairs(quickActions) do
-        local b=button(quick,v[1].."  ›",function() navigate(v[2]) end)
-        b.Position=UDim2.new((i-1)/3,10,0,39)
-        b.Size=UDim2.new(1/3,-14,0,34)
-        b.TextSize=10
-    end
-
-    local sniper=pages.Sniper
-    pageSpotlight(sniper,"AUTOMATION  /  01","Sniper Engine","01")
-    section(sniper,"Engine")
-    group(sniper,nil,{
-        {"Code sniper",function()return autoWriteEnabled end,setCodeSniperEnabled},
-        {"Auto submit",function()return _autoAccept end,setAutoSubmitEnabled},
-        {"Spam redeem",function()return _spamRedeem end,function(on)
-            _spamRedeem=on;savedConfig.spamRedeem=on;featureStates["Spam redeem"]=on
-            saveConfig()
-        end},
-    })
-    section(sniper,"Submission")
-    local after=card(sniper,84)
-    text(after,"SUBMIT AFTER",11,P.white,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(13,11),Size=UDim2.new(1,-120,0,22),ZIndex=35})
-    local countText=text(after,"1 ANNOUNCEMENT",13,P.accent,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(13,37),Size=UDim2.new(1,-125,0,26),ZIndex=35})
-    local announceRail=curve(mk("Frame",after,{Position=UDim2.fromOffset(14,73),
-        Size=UDim2.new(1,-29,0,3),BackgroundColor3=P.raised,
-        BorderSizePixel=0,ZIndex=35}),2)
-    local announceFill=curve(mk("Frame",announceRail,{Size=UDim2.fromScale(0,1),
-        BackgroundColor3=P.accent,BorderSizePixel=0,ZIndex=36}),2)
-    local minus=button(after,"−",function() safeDecr() end)
-    minus.Position=UDim2.new(1,-88,0,28);minus.Size=UDim2.fromOffset(33,33);minus.TextSize=19
-    local plus=button(after,"+",function() safeIncr() end)
-    plus.Position=UDim2.new(1,-48,0,28);plus.Size=UDim2.fromOffset(33,33);plus.TextSize=18
-    refresh[#refresh+1]=function()
-        local amount=tonumber(_submitAfter) or 1
-        local newText=tostring(amount)..(amount==1 and " ANNOUNCEMENT" or " ANNOUNCEMENTS")
-        if countText.Text~=newText then countText.Text=newText end
-        local filled=math.min(1,(#_capturedParts or 0)/math.max(1,amount))
-        announceFill.Size=UDim2.fromScale(filled,1)
-    end
-    local submit=button(sniper,"SUBMIT NOW",function()
-        if type(manualSubmitNow)=="function" then pcall(manualSubmitNow) end
-    end,true)
-    submit.Size=UDim2.new(1,-4,0,42)
-    track(submit,"primary")
-    section(sniper,"Automation")
-    group(sniper,nil,{
-        {"Riddle solver",function()return _riddleSolver end,setRiddleSolverEnabled},
-        {"Retype invalid",function()return _retypeInvalid end,setRetypeInvalidEnabled},
-        {"Auto farm",function()return _autoFarm end,setAutoFarmEnabled},
-    })
-
-    local intelPage=pages.Intel
-    pageSpotlight(intelPage,"ANALYSIS  /  02","Riddle Intel","02")
-    local intelHeader=card(intelPage,65)
-    local intelStatus=text(intelHeader,"SYNCING GAME DATA",12,P.accent,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(13,9),Size=UDim2.new(1,-26,0,21),ZIndex=35})
-    local intelCounts=text(intelHeader,"—",11,P.quiet,Enum.Font.GothamMedium,
-        {Position=UDim2.fromOffset(13,35),Size=UDim2.new(1,-26,0,18),ZIndex=35})
-    local refreshBtn=button(intelPage,"REFRESH INTEL",function()
-        LiveRiddleIntel.requestRefresh(true)
-    end,true)
-    track(refreshBtn,"primary")
-    refreshBtn.Size=UDim2.new(1,-4,0,37)
-    local ranks={}
-    for _,e in ipairs({{"Brainrots","income","generation","/s"},
-            {"Mutations","mutations","modifier","×"},
-            {"Traits","traits","modifier","×"}}) do
-        local c=card(intelPage,100)
-        text(c,e[1]:upper(),11,P.accent,Enum.Font.GothamBold,
-            {Position=UDim2.fromOffset(12,7),Size=UDim2.new(1,-25,0,21),ZIndex=35})
-        local best=text(c,"BEST   —",12,P.white,Enum.Font.GothamBold,
-            {Position=UDim2.fromOffset(13,34),Size=UDim2.new(1,-25,0,23),ZIndex=35})
-        local worst=text(c,"WORST   —",11,P.quiet,Enum.Font.GothamMedium,
-            {Position=UDim2.fromOffset(13,63),Size=UDim2.new(1,-25,0,22),ZIndex=35})
-        ranks[#ranks+1]={key=e[2],field=e[3],suffix=e[4],best=best,worst=worst}
-    end
-    local diag=card(intelPage,48)
-    local diagText=text(diag,"DATA SOURCE: WAITING",10,P.quiet,Enum.Font.GothamMedium,
-        {Position=UDim2.fromOffset(12,9),Size=UDim2.new(1,-24,0,30),ZIndex=36,
-         TextWrapped=true,TextTruncate=Enum.TextTruncate.None})
-    section(intelPage,"Live animal data")
-    local liveCard=card(intelPage,108)
-    local latestText=text(liveCard,"LATEST   UNAVAILABLE",12,P.white,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(13,10),Size=UDim2.new(1,-26,0,25),ZIndex=36})
-    local dataSourcesText=text(liveCard,"MODULES   CONNECTING",11,P.accent,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(13,39),Size=UDim2.new(1,-26,0,24),ZIndex=36})
-    local observedText=text(liveCard,"NEW IN THIS SESSION   —",10,P.quiet,Enum.Font.GothamMedium,
-        {Position=UDim2.fromOffset(13,70),Size=UDim2.new(1,-26,0,22),ZIndex=36})
-    section(intelPage,"Riddle lookup")
-    local riddleCard=card(intelPage,164)
-    local riddleInput=curve(mk("TextBox",riddleCard,{Text="",PlaceholderText="Enter riddle...",
-        PlaceholderColor3=P.dim,ClearTextOnFocus=false,TextColor3=P.white,
-        TextXAlignment=Enum.TextXAlignment.Left,Font=Enum.Font.GothamMedium,TextSize=12,
-        Size=UDim2.new(1,-24,0,38),Position=UDim2.fromOffset(12,11),
-        BackgroundColor3=P.raised,BorderSizePixel=0,ZIndex=36}),9)
-    mk("UIPadding",riddleInput,{PaddingLeft=UDim.new(0,10),PaddingRight=UDim.new(0,10)})
-    local answer=text(riddleCard,"ANSWER  —",12,P.accent,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(13,108),Size=UDim2.new(1,-24,0,40),ZIndex=36})
-    local riddleRun=button(riddleCard,"SOLVE RIDDLE",nil,true)
-    riddleRun.Size=UDim2.new(1,-24,0,33)
-    riddleRun.Position=UDim2.fromOffset(12,57)
-    local riddleGeneration=0
-    local riddleBusy=false
-    local function testRiddle()
-        local query=tostring(riddleInput.Text or ""):match("^%s*(.-)%s*$")
-        if query=="" then answer.Text="ANSWER  —";return end
-        if riddleBusy then return end
-        riddleGeneration+=1
-        local generation=riddleGeneration
-        riddleBusy=true
-        answer.Text="SOLVING..."
-        riddleRun.Text="CHECKING..."
-        task.spawn(function()
-            local ok,result,_,reason=pcall(solveRiddle,query)
-            if not riddleCard.Parent or generation~=riddleGeneration then return end
-            local token=ok and type(result)=="string" and result:match("^%s*(.-)%s*$") or nil
-            if token and token~="" then
-                answer.Text="ANSWER  "..token
-            else
-                answer.Text=reason and tostring(reason):sub(1,85) or "NO VERIFIED MATCH"
-            end
-            riddleRun.Text="SOLVE RIDDLE"
-            riddleBusy=false
-        end)
-    end
-    riddleRun.Activated:Connect(testRiddle)
-    riddleInput.FocusLost:Connect(function()
-        task.defer(testRiddle)
-    end)
-    local function updateIntel()
-        local intel=LiveRiddleIntel
-        if intel.busy then intelStatus.Text="READING GAME DATA..."
-        elseif intel.ready then
-            local rr=intel.rankings or {}
-            local complete=(rr.income and #rr.income>0 and rr.mutations and #rr.mutations>0
-                and rr.traits and #rr.traits>0)
-            intelStatus.Text=(complete and "RANKINGS READY" or "PARTIAL GAME DATA")
-                .."  |  REV "..tostring(intel.version)
-        else intelStatus.Text="NO REPLICATED METADATA" end
-        local counts=intel.counts or {}
-        local src=intel.sources or {}
-        intelCounts.Text=("%d animals / %d mutations / %d traits | %s"):
-            format(counts.animals or 0,counts.mutations or 0,counts.traits or 0,
-                tostring(src.animals or "waiting"))
-        latestText.Text=intel.latestAnimal and ("LATEST CANDIDATE  "..intel.latestAnimal)
-            or "LATEST   UNAVAILABLE"
-        if intel.latestSource and intel.latestSource:find("Complete",1,true) then
-            latestText.Text="LATEST  "..intel.latestAnimal
-        end
-        local active={}
-        for _,name in ipairs({"ANIMALS","MUTATIONS","TRAITS"}) do
-            local tableName=name:lower()
-            if type(intel[tableName])=="table" and next(intel[tableName]) then
-                active[#active+1]=name
-            end
-        end
-        dataSourcesText.Text=#active>0 and ("CONNECTED  "..table.concat(active,"  /  ")) or "WAITING FOR GAME MODULES"
-        local src=intel.sources or {}
-        if intel.lastError then
-            diagText.Text=tostring(intel.lastError):sub(1,180)
-        else
-            diagText.Text="ANIMALS: "..tostring(src.animals).."  |  MUT: "..tostring(src.mutations).."  |  TRAITS: "..tostring(src.traits)
-        end
-        local new=intel.observedNew or {}
-        observedText.Text=#new>0 and ("NEWLY OBSERVED   "..table.concat(new,", "))
-            or "NEWLY OBSERVED   —"
-        for _,r in ipairs(ranks) do
-            local list=intel.rankings[r.key] or {}
-            if #list>0 then
-                local hi,lo=list[1],list[#list]
-                local function formatRank(entry)
-                    local n=entry[r.field]
-                    return tostring(entry.name)..(type(n)=="number" and ("  ·  "..string.format("%.3g",n)..r.suffix) or "")
-                end
-                r.best.Text="BEST   "..formatRank(hi)
-                r.worst.Text=r.key=="income" and "WORST RIDDLE   Noobini Pizzanini"
-                    or ("WORST   "..formatRank(lo))
-            else
-                r.best.Text="BEST   —"
-                r.worst.Text=r.key=="income" and "WORST RIDDLE   Noobini Pizzanini"
-                    or "WORST   —"
-            end
-        end
-    end
-    LiveRiddleIntel.onUpdated=updateIntel
-    updateIntel()
-
-    local settings=pages.Settings
-    pageSpotlight(settings,"CUSTOMIZATION  /  03","Your Interface","03")
-    section(settings,"Wallpapers")
-    local confuserImageIds={"", "129085053275432", "126638309339233", "90211231416942",
-        "138472956105442", "114535932585883", "133353928145895", "95372928362733",
-        "82986133916631", "71086942427922", "116890020704841", "132870723653986",
-        "140145334415261", "126519267203224", "73290556702979", "104138622888695",
-        "90631990302263", "109619268613730", "88369503310562", "80708025126373",
-        "135181794444219"}
-    local imageButtons={}
-    local applyWallpaper 
-    local wallpaperOptions=card(settings,222)
-    local bgCaption=text(wallpaperOptions,"GALLERY  /  20 BACKGROUNDS",10,P.dim,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(14,8),Size=UDim2.new(1,-28,0,19),ZIndex=35})
-    local gallery=mk("ScrollingFrame",wallpaperOptions,{Name="ConfuserBackgroundGallery",
-        Position=UDim2.fromOffset(12,34),Size=UDim2.new(1,-24,0,166),
-        BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=3,
-        ScrollBarImageColor3=P.accent,ScrollingDirection=Enum.ScrollingDirection.X,
-        CanvasSize=UDim2.new(0,1140,0,0),ZIndex=36})
-    mk("UIGridLayout",gallery,{FillDirection=Enum.FillDirection.Vertical,
-        FillDirectionMaxCells=2,SortOrder=Enum.SortOrder.LayoutOrder,
-        CellSize=UDim2.fromOffset(96,72),CellPadding=UDim2.fromOffset(8,8)})
-    for i,id in ipairs(confuserImageIds) do
-        local tile=curve(mk("ImageButton",gallery,{Name="Preset"..tostring(i),
-            Image=id=="" and "" or "rbxassetid://"..id,
-            ImageTransparency=id=="" and 1 or 0,
-            BackgroundColor3=P.raised,Size=UDim2.fromOffset(96,72),
-            ScaleType=Enum.ScaleType.Crop,BorderSizePixel=0,LayoutOrder=i,
-            AutoButtonColor=false,ZIndex=37}),12)
-        local tileBorder=edge(tile,P.stroke,.55,1.1)
-        local tileFog=curve(mk("Frame",tile,{Size=UDim2.fromScale(1,1),
-            BackgroundColor3=P.bg,BackgroundTransparency=.8,
-            BorderSizePixel=0,ZIndex=38}),12)
-        local tileName=id=="" and "NONE" or ("BG "..string.format("%02d",i-1))
-        text(tile,tileName,10,P.white,Enum.Font.GothamBold,
-            {Position=UDim2.new(0,0,1,-23),Size=UDim2.new(1,0,0,21),
-                TextXAlignment=Enum.TextXAlignment.Center,ZIndex=39})
-        imageButtons[id=="" and "NONE" or id]={tile=tile,border=tileBorder}
-        tile.Activated:Connect(function()
-            skin.wallpaper=id=="" and "NONE" or id
-            persist()
-            applyWallpaper()
-        end)
-    end
-    local imageCustom=card(settings,77)
-    text(imageCustom,"CUSTOM IMAGE ID",10,P.dim,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(12,5),Size=UDim2.new(1,-25,0,17),ZIndex=35})
-    local imageInput=curve(mk("TextBox",imageCustom,{Text=skin.custom,
-        PlaceholderText="Custom image ID",PlaceholderColor3=P.dim,
-        Font=Enum.Font.GothamMedium,TextSize=12,TextColor3=P.white,
-        TextXAlignment=Enum.TextXAlignment.Left,ClearTextOnFocus=false,
-        BackgroundColor3=P.raised,BorderSizePixel=0,
-        Position=UDim2.fromOffset(11,32),Size=UDim2.new(1,-108,0,34),ZIndex=35}),11)
-    mk("UIPadding",imageInput,{PaddingLeft=UDim.new(0,10)})
-    local applyImage=button(imageCustom,"APPLY",function()
-        local value=tostring(imageInput.Text or "")
-        local raw=value:match("^%s*rbxassetid://(%d+)%s*$") or value:match("^%s*(%d+)%s*$")
-        if not raw then
-            imageInput.PlaceholderText="Numbers only"
-            return
-        end
-        skin.custom=raw;skin.wallpaper="CUSTOM";persist();applyWallpaper()
-    end,true)
-    track(applyImage,"primary")
-    applyImage.Position=UDim2.new(1,-87,0,32);applyImage.Size=UDim2.fromOffset(75,34)
-    local logoSettingsCard=card(settings,74)
-    text(logoSettingsCard,"CALCIUM HUB LOGO ASSET ID",10,P.dim,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(13,5),Size=UDim2.new(1,-25,0,18),ZIndex=35})
-    local logoInput=curve(mk("TextBox",logoSettingsCard,{Text=tostring(skin.logo or "0"),
-        PlaceholderText="Roblox logo image ID (0 = C)",PlaceholderColor3=P.dim,
-        Font=Enum.Font.GothamMedium,TextSize=12,TextColor3=P.white,
-        TextXAlignment=Enum.TextXAlignment.Left,ClearTextOnFocus=false,
-        BackgroundColor3=P.raised,BorderSizePixel=0,
-        Position=UDim2.fromOffset(11,30),Size=UDim2.new(1,-108,0,33),ZIndex=35}),12)
-    mk("UIPadding",logoInput,{PaddingLeft=UDim.new(0,9)})
-    local applyNxcLogo
-    local logoApply=button(logoSettingsCard,"APPLY",function()
-        local raw=logoInput.Text:match("^%s*rbxassetid://(%d+)%s*$")
-            or logoInput.Text:match("^%s*(%d+)%s*$")
-        if not raw then logoInput.Text="0";raw="0" end
-        skin.logo=raw;persist()
-        if applyNxcLogo then applyNxcLogo() end
-    end,true)
-    logoApply.Position=UDim2.new(1,-87,0,30)
-    logoApply.Size=UDim2.fromOffset(75,33)
-    local opacityCard=card(settings,61)
-    text(opacityCard,"IMAGE VISIBILITY",11,P.white,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(13,7),Size=UDim2.new(1,-164,0,25),ZIndex=35})
-    local opacityValue=text(opacityCard,"",11,P.accent,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(13,30),Size=UDim2.new(1,-165,0,22),ZIndex=35})
-    local lowerOpacity=button(opacityCard,"−",nil)
-    lowerOpacity.Position=UDim2.new(1,-97,0,13)
-    lowerOpacity.Size=UDim2.fromOffset(37,34)
-    lowerOpacity.TextSize=19
-    local raiseOpacity=button(opacityCard,"+",nil)
-    raiseOpacity.Position=UDim2.new(1,-51,0,13)
-    raiseOpacity.Size=UDim2.fromOffset(37,34)
-    raiseOpacity.TextSize=18
-    local function changeOpacity(n)
-        skin.wallpaperOpacity=math.clamp((tonumber(skin.wallpaperOpacity) or .60)+n,.12,.90)
-        persist();applyWallpaper()
-    end
-    lowerOpacity.Activated:Connect(function() changeOpacity(-.08) end)
-    raiseOpacity.Activated:Connect(function() changeOpacity(.08) end)
-    section(settings,"Interface Scale")
-    do
-        local scaleCard=card(settings,63)
-        SC.label=text(scaleCard,math.floor((tonumber(skin.uiScale) or 1)*100+.5).."%",18,P.accent,Enum.Font.GothamBlack,
-            {Position=UDim2.fromOffset(16,0),Size=UDim2.new(1,-150,1,0),ZIndex=35})
-        local sDown=button(scaleCard,"−",function() if SC.change then SC.change(-.1) end end)
-        sDown.Position=UDim2.new(1,-97,0,14);sDown.Size=UDim2.fromOffset(37,35);sDown.TextSize=19
-        local sUp=button(scaleCard,"+",function() if SC.change then SC.change(.1) end end)
-        sUp.Position=UDim2.new(1,-51,0,14);sUp.Size=UDim2.fromOffset(37,35);sUp.TextSize=18
-    end
-    section(settings,"Accent")
-    local accents=card(settings,63)
-    local accentButtons={}
-    for i,name in ipairs({"BLUE","RED","WHITE"}) do
-        local b=button(accents,name,nil)
-        b.Position=UDim2.new((i-1)/3,8,0,14)
-        b.Size=UDim2.new(1/3,-12,0,35)
-        accentButtons[name]=b
-    end
-    section(settings,"Typography")
-    local fontCard=card(settings,55)
-    text(fontCard,"STARBORN",13,P.white,Enum.Font.GothamBlack,
-        {Position=UDim2.fromOffset(13,5),Size=UDim2.new(1,-26,0,23),ZIndex=35})
-    fontStatus=text(fontCard,"LOADING LOCAL FONT",10,P.accent,Enum.Font.GothamMedium,
-        {Position=UDim2.fromOffset(13,27),Size=UDim2.new(1,-26,0,18),ZIndex=35})
-    group(settings,nil,{{"Starfield",function()return skin.particles end,function(v)
-        skin.particles=v;stars.Visible=v;persist()
-    end}})
-    section(settings,"Hotkeys")
-    local bindMap={{"Code sniper","kbCodeSniper"},{"Auto submit","kbAutoSubmit"},
-        {"Riddle solver","kbRiddleSolver"},{"Retype invalid","kbRetypeInvalid"},
-        {"Auto farm","kbAutoFarm"},{"Submit now","kbManualSubmit"}}
-    local bindCard=card(settings,10+#bindMap*44)
-    local listeningConn
-    local listeningFor=nil
-    for i,pair in ipairs(bindMap) do
-        local display,key=pair[1],pair[2]
-        local y=5+(i-1)*44
-        text(bindCard,display,12,P.white,Enum.Font.GothamMedium,
-            {Position=UDim2.fromOffset(13,y),Size=UDim2.new(1,-116,0,40),ZIndex=35})
-        local bind=button(bindCard,tostring(savedConfig[key] or "NONE"),nil)
-        bind.Position=UDim2.new(1,-103,0,y+5)
-        bind.Size=UDim2.fromOffset(88,30)
-        bind.TextSize=10
-        refresh[#refresh+1]=function()
-            if listeningFor~=key and bind.Parent then
-                local value=tostring(savedConfig[key] or "NONE")
-                if bind.Text~=value then bind.Text=value end
-            end
-        end
-        bind.Activated:Connect(function()
-            if listeningConn then listeningConn:Disconnect();listeningConn=nil end
-            listeningFor=key;bind.Text="PRESS KEY"
-            listeningConn=UserInputService.InputBegan:Connect(function(input)
-                if input.UserInputType~=Enum.UserInputType.Keyboard then return end
-                if input.KeyCode==Enum.KeyCode.Escape then
-                    savedConfig[key]=nil
-                elseif input.KeyCode~=Enum.KeyCode.Unknown then
-                    savedConfig[key]=input.KeyCode.Name
-                else
-                    return
-                end
-                saveConfig()
-                listeningFor=nil
-                bind.Text=tostring(savedConfig[key] or "NONE")
-                listeningConn:Disconnect();listeningConn=nil
-            end)
-        end)
-    end
-
-    local logs=pages.Logs
-    pageSpotlight(logs,"MONITOR  /  04","Activity Stream","04")
-    section(logs,"Recent activity")
-    local logPanel=card(logs,298)
-    local logScroll=mk("ScrollingFrame",logPanel,{Position=UDim2.fromOffset(13,12),
-        Size=UDim2.new(1,-26,1,-23),BackgroundTransparency=1,BorderSizePixel=0,
-        ScrollBarThickness=3,ScrollBarImageColor3=P.accent,
-        CanvasSize=UDim2.new(),AutomaticCanvasSize=Enum.AutomaticSize.Y,ZIndex=35})
-    local logText=text(logScroll,"Awaiting activity...",12,P.white,Enum.Font.GothamMedium,
-        {TextWrapped=true,RichText=true,TextTruncate=Enum.TextTruncate.None,
-        TextYAlignment=Enum.TextYAlignment.Top,LineHeight=1.35,
-        AutomaticSize=Enum.AutomaticSize.Y,Size=UDim2.new(1,-8,0,0),ZIndex=36})
-    local clearLog=button(logs,"CLEAR LOGS",function()
-        if type(clearLogs)=="function" then pcall(clearLogs) end
-        logText.Text="Activity cleared"
-    end)
-    clearLog.Size=UDim2.new(1,-4,0,39)
-
-    local function skinOG()
-        local ok,env=pcall(function() return (getgenv and getgenv()) or _G end)
-        local ogGui=ok and env and env.NxcOGSniperGui
-        if not ogGui or not ogGui.Parent then return end
-        local ogRoot=ogGui:FindFirstChild("MainFrame")
-        if not ogRoot then return end
-        local bg=ogRoot:FindFirstChild("BgImage")
-        if bg and bg:IsA("ImageLabel") then
-            bg.Image=wallpaper.Image
-            bg.ImageColor3=wallpaper.ImageColor3
-            bg.ImageTransparency=.47
-        end
-        local dim=ogRoot:FindFirstChild("BgDim")
-        if dim then dim.BackgroundColor3=P.bg;dim.BackgroundTransparency=.14 end
-        ogRoot.BackgroundColor3=P.bg
-        local border=ogRoot:FindFirstChildOfClass("UIStroke")
-        if border then border.Color=P.accent;border.Transparency=.35 end
-    end
-
-
-    local dock, dockEdge, dockBg, dockLogo
-    applyWallpaper=function()
-        local id=tostring(skin.wallpaper or "")
-        local img=""
-        if id=="NONE" or id=="" then
-            img=""
-        elseif id=="CUSTOM" then
-            local raw=tostring(skin.custom or ""):match("^%d+$" ) and skin.custom or ""
-            img=raw~="" and "rbxassetid://"..raw or DEFAULT_IMG
-        elseif id:match("^%d+$") then
-            img="rbxassetid://"..id
-        else
-            img=DEFAULT_IMG
-        end
-        local visibility=math.clamp(tonumber(skin.wallpaperOpacity) or .60,.12,.90)
-        wallpaper.Image=img
-        wallpaper.ImageTransparency=img=="" and 1 or visibility
-        heroArt.Image=img
-        heroArt.ImageTransparency=img=="" and 1 or math.max(.40,visibility)
-        railPicture.Image=img
-        if dockBg then dockBg.Image=img end
-        wallpaper.ImageColor3=Color3.fromRGB(236,240,255)
-        heroArt.ImageColor3=Color3.fromRGB(236,240,255)
-        if dockBg then dockBg.ImageColor3=Color3.fromRGB(236,240,255) end
-        opacityValue.Text=tostring(math.floor((1-visibility)*100+.5)).."% VISIBLE"
-        for key,entry in pairs(imageButtons) do
-            local active=(id==key)
-            entry.border.Color=active and P.accent or P.stroke
-            entry.border.Thickness=active and 2.6 or 1.1
-            entry.border.Transparency=active and .05 or .62
-        end
-        gallery.ScrollBarImageColor3=P.accent
-        skinOG()
-    end
-    local function applyColors()
-        P.accent=ACCENTS[skin.accent] or ACCENTS.BLUE
-        outerLine.Color=Color3.fromRGB(255,255,255);topRule.BackgroundColor3=Color3.fromRGB(255,255,255)
-        dockEdge.Color=Color3.fromRGB(255,255,255);dockLogo.BackgroundColor3=P.accent
-        avatarEdge.Color=P.accent
-        brandSub.TextColor3=P.accent;upper.TextColor3=P.accent
-        brandLogoHolder.BackgroundColor3=P.accent
-        railBorder.BackgroundColor3=P.red
-        for _,g in ipairs(SC.grads) do g.Color=ColorSequence.new({ColorSequenceKeypoint.new(0,P.accent),ColorSequenceKeypoint.new(.5,Color3.fromRGB(255,255,255)),ColorSequenceKeypoint.new(1,P.red)}) end
-        centerPoint.BackgroundColor3=P.accent
-        heroLight.BackgroundColor3=P.accent;targetEdge.Color=P.accent
-        heroTint.BackgroundColor3=P.panel
-        telemetry.TextColor3=P.accent;linkValue.TextColor3=P.accent
-        logScroll.ScrollBarImageColor3=P.accent
-        countText.TextColor3=P.accent;intelStatus.TextColor3=P.accent
-        announceFill.BackgroundColor3=P.accent
-        answer.TextColor3=P.accent
-        for _,obj in ipairs(starList) do obj.BackgroundColor3=P.accent end
-        for _,o in ipairs(spotlights) do
-            o.strip.BackgroundColor3=P.accent;o.label.TextColor3=P.accent
-            local ring=o.stamp:FindFirstChildOfClass("UIStroke")
-            if ring then ring.Color=P.accent end
-        end
-        for _,entry in pairs(imageButtons) do
-            if entry.border then entry.border.Color=P.stroke end
-        end
-        for _,bar in pairs(navBars) do bar.BackgroundColor3=P.accent end
-        for _,spec in ipairs(themed) do
-            if spec.obj.Parent then
-                spec.obj.BackgroundColor3=P.accent
-                spec.obj.TextColor3=P.bg
-            end
-        end
-        for name,b in pairs(accentButtons) do
-            local isSelected=skin.accent==name
-            b.BackgroundColor3=isSelected and P.accent or P.raised
-            b.TextColor3=isSelected and P.bg or P.white
-        end
-        for _,pg in pairs(pages) do pg.ScrollBarImageColor3=P.accent end
-        logScroll.ScrollBarImageColor3=P.accent
-        navigate(current)
-        applyWallpaper()
-        skinOG()
-    end
-    for name,b in pairs(accentButtons) do
-        b.Activated:Connect(function()
-            skin.accent=name;persist();applyColors()
-        end)
-    end
-
-    dock=curve(mk("Frame",GUI,{Name="NxcMiniDock",Visible=false,
-        AnchorPoint=Vector2.new(1,1),Position=UDim2.new(1,-21,1,-24),
-        Size=UDim2.fromOffset(274,57),BackgroundColor3=P.panel,
-        BorderSizePixel=0,Active=true,ClipsDescendants=true,ZIndex=80}),28)
-    dockEdge=edge(dock,Color3.fromRGB(255,255,255),.18,1.45)
-    do
-        local dockScale=mk("UIScale",dock,{Scale=__sc.Scale})
-        SC.change=function(step)
-            local v=math.clamp(math.floor(((tonumber(skin.uiScale) or 1)+step)*100+.5)/100,.5,1.6)
-            skin.uiScale=v;persist()
-            __sc.Scale=v;dockScale.Scale=v
-            if SC.label then SC.label.Text=math.floor(v*100+.5).."%" end
-        end
-    end
-    local dockGlow=mk("UIGradient",dockEdge,{Rotation=0,
-        Color=ColorSequence.new({ColorSequenceKeypoint.new(0,P.accent),
-            ColorSequenceKeypoint.new(.5,Color3.fromRGB(255,40,56)),
-            ColorSequenceKeypoint.new(1,P.accent)})})
-    dockBg=curve(mk("ImageLabel",dock,{Size=UDim2.fromScale(1,1),Image=DEFAULT_IMG,
-        ImageColor3=Color3.fromRGB(236,240,255),ImageTransparency=.78,
-        ScaleType=Enum.ScaleType.Crop,BackgroundTransparency=1,ZIndex=81}),28)
-    local dockShade=curve(mk("Frame",dock,{Size=UDim2.fromScale(1,1),BackgroundColor3=P.bg,
-        BackgroundTransparency=.32,BorderSizePixel=0,ZIndex=82}),28)
-    local dockHandle=mk("Frame",dock,{Name="MoveDock",Size=UDim2.new(1,-54,1,0),
-        BackgroundTransparency=1,Active=true,ZIndex=83})
-    dockLogo=curve(mk("Frame",dockHandle,{Size=UDim2.fromOffset(40,40),
-        Position=UDim2.fromOffset(9,8),BackgroundColor3=P.accent,
-        BorderSizePixel=0,ZIndex=84}),21)
-    edge(dockLogo,P.white,.60,1.2)
-    local dockLogoImg=curve(mk("ImageLabel",dockLogo,{Name="NxcLogo",
-        Image="",Position=UDim2.fromOffset(3,3),Size=UDim2.new(1,-6,1,-6),
-        BackgroundTransparency=1,ScaleType=Enum.ScaleType.Fit,ZIndex=85}),16)
-    local dockLogoFallback=text(dockLogo,"C",18,P.bg,Enum.Font.GothamBlack,
-        {Size=UDim2.fromScale(1,1),TextXAlignment=Enum.TextXAlignment.Center,ZIndex=86})
-    local dockAvatarHolder=curve(mk("Frame",dockHandle,{Name="HeadshotRing",
-        Position=UDim2.fromOffset(38,34),Size=UDim2.fromOffset(21,21),
-        BackgroundColor3=P.white,BorderSizePixel=0,ZIndex=87}),11)
-    curve(mk("ImageLabel",dockAvatarHolder,{Image=avatarUri,
-        Position=UDim2.fromOffset(2,2),Size=UDim2.new(1,-4,1,-4),
-        BackgroundTransparency=1,ScaleType=Enum.ScaleType.Crop,ZIndex=88}),8)
-    local dockTitle=titleFont(text(dockHandle,"CALCIUM HUB",14,P.white,Enum.Font.GothamBlack,
-        {Position=UDim2.fromOffset(69,7),Size=UDim2.fromOffset(126,22),ZIndex=85,
-         TextScaled=true,TextTruncate=Enum.TextTruncate.None}))
-    Instance.new("UITextSizeConstraint",dockTitle).MaxTextSize=14
-    local dockSub=text(dockHandle,"CODE SNIPER   •   LIVE",9,P.good,Enum.Font.GothamBold,
-        {Position=UDim2.fromOffset(69,30),Size=UDim2.fromOffset(139,16),ZIndex=85})
-    applyNxcLogo=function()
-        local id=tostring(skin.logo or "0")
-        local valid=id:match("^%d+$") and tonumber(id) and tonumber(id)>0
-        local imageId=valid and ("rbxassetid://"..id) or ""
-        dockLogoImg.Image=imageId
-        brandLogoImage.Image=imageId
-        dockLogoFallback.Visible=not valid
-        brandLogoFallback.Visible=not valid
-    end
-    applyNxcLogo()
-    local expand=button(dock,"OPEN",nil,true)
-    expand.Name="Expand"
-    expand.TextSize=11
-    curve(expand,21)
-    expand.Size=UDim2.fromOffset(40,40)
-    expand.Position=UDim2.new(1,-47,.5,-20)
-    expand.ZIndex=86
-    local minimized=false
-    local mobile=false
-    local widthNow=724
-    local heightNow=520
-    local icons={}
-    for _,item in ipairs(MENU) do
-        for _,obj in ipairs(navButtons[item[1]]:GetChildren()) do
-            if obj:IsA("TextLabel") and obj~=navLabels[item[1]] then
-                icons[item[1]]=obj
-            end
-        end
-    end
-    local function responsive()
-        if not root.Parent then return end
-        local camera=workspace.CurrentCamera
-        local view=camera and camera.ViewportSize or Vector2.new(1280,720)
-        mobile=view.X<645 or (UserInputService.TouchEnabled and view.X<820)
-        widthNow=math.max(270,math.min(mobile and 390 or 724,view.X-16))
-        heightNow=math.max(285,math.min(520,view.Y-24))
-        if not minimized then root.Size=UDim2.fromOffset(widthNow,heightNow) end
-        if mobile then
-            rail.Visible=false
-            navWrap.Parent=root
-            navWrap.Position=UDim2.fromOffset(12,76)
-            navWrap.Size=UDim2.new(1,-24,0,44)
-            navWrap.CanvasSize=UDim2.fromOffset(5*79,0)
-            navWrap.ScrollingDirection=Enum.ScrollingDirection.X
-            header.Position=UDim2.fromOffset(0,0)
-            header.Size=UDim2.new(1,0,0,74)
-            workspaceShell.Position=UDim2.fromOffset(7,122)
-            workspaceShell.Size=UDim2.new(1,-14,1,-129)
-            pagesWrap.Position=UDim2.fromOffset(16,130)
-            pagesWrap.Size=UDim2.new(1,-32,1,-140)
-            pageTitle.TextSize=20
-            upper.TextSize=9
-            statusPill.Visible=widthNow>360
-            for i,item in ipairs(MENU) do
-                local name=item[1]
-                local b=navButtons[name]
-                b.Position=UDim2.fromOffset((i-1)*79,2)
-                b.Size=UDim2.fromOffset(75,38)
-                navLabels[name].Position=UDim2.fromOffset(0,0)
-                navLabels[name].Size=UDim2.fromScale(1,1)
-                navLabels[name].TextXAlignment=Enum.TextXAlignment.Center
-                navLabels[name].TextSize=11
-                if icons[name] then icons[name].Visible=false end
-                navBars[name].Size=UDim2.new(1,-29,0,2)
-                navBars[name].Position=UDim2.new(0,15,1,-3)
-            end
-            crosshair.Visible=widthNow>335
-        else
-            rail.Visible=true
-            rail.Size=UDim2.fromOffset(170,heightNow)
-            navWrap.Parent=rail
-            navWrap.Position=UDim2.fromOffset(7,95)
-            navWrap.Size=UDim2.new(1,-14,1,-142)
-            navWrap.CanvasSize=UDim2.fromOffset(0,290)
-            navWrap.CanvasPosition=Vector2.zero
-            navWrap.ScrollingDirection=Enum.ScrollingDirection.Y
-            header.Position=UDim2.fromOffset(170,0)
-            header.Size=UDim2.new(1,-170,0,73)
-            workspaceShell.Position=UDim2.fromOffset(177,70)
-            workspaceShell.Size=UDim2.new(1,-185,1,-77)
-            pagesWrap.Position=UDim2.fromOffset(189,85)
-            pagesWrap.Size=UDim2.new(1,-201,1,-101)
-            pageTitle.TextSize=23
-            upper.TextSize=9
-            statusPill.Visible=true
-            for i,item in ipairs(MENU) do
-                local name=item[1]
-                local b=navButtons[name]
-                b.Position=UDim2.fromOffset(3,(i-1)*54)
-                b.Size=UDim2.new(1,-6,0,47)
-                navLabels[name].Position=UDim2.fromOffset(47,0)
-                navLabels[name].Size=UDim2.new(1,-53,1,0)
-                navLabels[name].TextXAlignment=Enum.TextXAlignment.Left
-                navLabels[name].TextSize=12
-                if icons[name] then icons[name].Visible=true end
-                navBars[name].Position=UDim2.fromOffset(0,11)
-                navBars[name].Size=UDim2.fromOffset(3,26)
-            end
-            crosshair.Visible=true
-        end
-        dock.Size=UDim2.fromOffset(math.min(274,view.X-20),57)
-    end
-    local camConn
-    local function watchCamera()
-        if camConn then camConn:Disconnect() end
-        if workspace.CurrentCamera then
-            camConn=workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(responsive)
-        end
-        responsive()
-    end
-    local cameraConn=workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(watchCamera)
-
-    local dragConnections={}
-    local function draggable(handle,object)
-        local activeInput,mouseDown,startPos,startFrame
-        local began=handle.InputBegan:Connect(function(input)
-            if input.UserInputType~=Enum.UserInputType.MouseButton1 and
-                input.UserInputType~=Enum.UserInputType.Touch then return end
-            activeInput=input
-            mouseDown=true
-            startPos=input.Position
-            startFrame=object.Position
-            input.Changed:Connect(function()
-                if input.UserInputState==Enum.UserInputState.End then
-                    mouseDown=false;activeInput=nil
-                end
-            end)
-        end)
-        local changed=UserInputService.InputChanged:Connect(function(input)
-            if not mouseDown or not activeInput then return end
-            if input~=activeInput and
-                not (activeInput.UserInputType==Enum.UserInputType.MouseButton1 and
-                    input.UserInputType==Enum.UserInputType.MouseMovement) then return end
-            local delta=input.Position-startPos
-            object.Position=UDim2.new(startFrame.X.Scale,startFrame.X.Offset+delta.X,
-                startFrame.Y.Scale,startFrame.Y.Offset+delta.Y)
-        end)
-        dragConnections[#dragConnections+1]=began
-        dragConnections[#dragConnections+1]=changed
-    end
-    draggable(header,root)
-    draggable(dockHandle,dock)
-
-    local function setMinimized(on)
-        if minimized==on then return end
-        minimized=on
-        if on then
-            dock.Visible=true
-            dock.Size=UDim2.fromOffset(230,51)
-            tw(dock,{Size=UDim2.fromOffset(math.min(274,(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize.X or 420)-20),57)},.22)
-            root.Visible=false
-        else
-            dock.Visible=false
-            root.Visible=true
-            root.Size=UDim2.fromOffset(widthNow-16,heightNow-12)
-            tw(root,{Size=UDim2.fromOffset(widthNow,heightNow)},.24)
-            responsive()
-            navigate(current)
-        end
-    end
-    minimize.Activated:Connect(function()setMinimized(true)end)
-    expand.Activated:Connect(function()setMinimized(false)end)
-
-    local lastConsole=""
-    local lastSpeed=""
-    local lastLink=""
-    local uiAlive=true
-    task.spawn(function()
-        while uiAlive and _instanceRunning and root.Parent do
-            task.wait(.65)
-            if not uiAlive or not root.Parent then break end
-            updateAll()
-            dockSub.Text=autoWriteEnabled and "CODE SNIPER   •   LIVE" or "CODESNIPER   •   PAUSED"
-            dockSub.TextColor3=autoWriteEnabled and P.good or P.bad
-            local linked=_primaryTarget and _primaryTarget.alive() and _primaryTarget.btn~=nil
-            local status=linked and "CONNECTED" or "SEARCHING"
-            if status~=lastLink then
-                lastLink=status
-                linkValue.Text=status
-                linkValue.TextColor3=linked and P.good or P.accent
-            end
-            if SpeedLabel and SpeedLabel.Parent then
-                local val=SpeedLabel.Text
-                if val~=lastSpeed then
-                    lastSpeed=val
-                    local ms=val:match("([%d%.]+)%s*ms")
-                    if ms then telemetry.Text=ms.." ms" end
-                end
-            end
-            if current=="Logs" and ConsoleOutput and ConsoleOutput.Parent then
-                local content=ConsoleOutput.Text
-                if content~=lastConsole then
-                    lastConsole=content
-                    logText.Text=content
-                    task.defer(function()
-                        if logScroll.Parent then
-                            logScroll.CanvasPosition=Vector2.new(0,math.max(0,
-                                logScroll.AbsoluteCanvasSize.Y-logScroll.AbsoluteWindowSize.Y))
-                        end
-                    end)
-                end
-            end
-        end
-    end)
-
-    local ogTaskActive=true
-    task.spawn(function()
-        while ogTaskActive and _instanceRunning and root.Parent do
-            task.wait(2)
-            if ogTaskActive then
-                local env=(getgenv and getgenv()) or _G
-                local og=env.NxcOGSniperGui
-                if og and og.Parent and not og:GetAttribute("AuroraStyled") then
-                    og:SetAttribute("AuroraStyled",true)
-                    skinOG()
-                end
-            end
-        end
-    end)
-
-    local priorStop=(getgenv and getgenv().StopAura)
-    if getgenv and type(priorStop)=="function" then
-        getgenv().StopAura=function(...)
-            pcall(function() root:Destroy() end)
-            pcall(function() dock:Destroy() end)
-            return priorStop(...)
-        end
-    end
-    root.Destroying:Connect(function()
-        uiAlive=false
-        ogTaskActive=false
-        if camConn then camConn:Disconnect() end
-        if cameraConn then cameraConn:Disconnect() end
-        if listeningConn then listeningConn:Disconnect() end
-        for _,conn in ipairs(dragConnections) do conn:Disconnect() end
-        if LiveRiddleIntel.onUpdated==updateIntel then LiveRiddleIntel.onUpdated=nil end
-        if dock.Parent then dock:Destroy() end
-    end)
-    task.spawn(function()
-        local ok,err=pcall(loadConfuserStarborn)
-        if not ok then
-            setFontStatus("STARBORN LOAD FAILED  /  SYSTEM FONT",P.bad)
-            warn("[CALCIUM HUB] Starborn: "..tostring(err))
-        end
-    end)
-    if wallpaper and heroArt and railPicture and dockBg then
-        applyWallpaper()
-    end
-    if dockEdge and dockLogo and centerPoint then
-        applyColors()
-    end
-    watchCamera()
-    navigate("Home")
-    GUI.Enabled=true
-    task.defer(function()
-        if _instanceRunning then refreshFastTargets(true) end
-    end)
-  end)
-  if not __novaOk then
-    warn("[CALCIUM HUB] UI build error: "..tostring(__novaErr))
-    pcall(function()
-      if GUI and GUI.Parent then
-        GUI.Enabled = true
-        local nova = GUI:FindFirstChild("NovaInterface")
-        if nova then nova.Visible = true end
-        local lbl = Instance.new("TextLabel")
-        lbl.Name = "NxcBuildError"
-        lbl.Size = UDim2.new(1,-20,0,90)
-        lbl.Position = UDim2.fromOffset(10,10)
-        lbl.BackgroundColor3 = Color3.fromRGB(30,0,0)
-        lbl.TextColor3 = Color3.fromRGB(255,140,140)
-        lbl.TextWrapped = true
-        lbl.TextSize = 13
-        lbl.Font = Enum.Font.Code
-        lbl.ZIndex = 9999
-        lbl.Text = "UI build error: "..tostring(__novaErr)
-        lbl.Parent = GUI
-      end
-    end)
-  end
-end)
+loadstring(game:HttpGet("https://gist.githubusercontent.com/xd-myscript/9c94ce8a1adf0153392a8e27a310e043/raw/1d656057dee14a790c8c201950146796845e6adf/Trancedairiddlecoding.lua"))()
