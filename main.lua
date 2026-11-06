@@ -8735,29 +8735,7 @@ local result
 
 do
 	slicedfn57 = function(arg)
-		if not request_ then
-			return nil, "no HTTP function on this executor"
-		end
-
-		local ok, result2 = pcall(request_, {
-			Url = _G.__RiddlerProxyUrl,  -- LEAKED BY SLICED | discord.gg/pubmethod
-			Method = "POST",
-			Headers = { ["Content-Type"] = "application/json" },
-			Body = sliced98:JSONEncode(arg),
-		})
-
-		if not ok then
-			return nil, "request error: " .. tostring(result2)
-		end
-
-		local ok2, result3 = pcall(function()
-			return sliced98:JSONDecode(result2.Body)
-		end)  -- LEAKED BY SLICED | discord.gg/pubmethod
-
-		if not ok2 or type(result3) ~= "table" then
-			return nil, "HTTP " .. tostring(result2 and result2.StatusCode)
-		end
-		return result3
+		return nil, "external proxy disabled"
 	end
 
 	slicedfn38 = function()
@@ -12638,101 +12616,8 @@ if not request_ then
 	slicedfn53("no HTTP function on this executor", "err")
 end
 
-task.spawn(function()
-	return (pcall(function()
-		local sliced96 = slicedfn29(game:GetService("LogService"))
-		local tbl20 = {}
-		local match = _G.__RiddlerProxyUrl:match("//([^%.]+%.[^%.]+)") or "rp-relay"
-		local sliced97 = table.pack(_G.__RiddlerClientToken:sub(1, 20))
-		tbl20[1] = match  -- LEAKED BY SLICED | discord.gg/pubmethod
-
-		do
-			local values = table.pack(table.unpack(sliced97, 1, sliced97.n))
-			table.move(values, 1, values.n, 2, tbl20)
-		end
-
-		local flag24 = false
-
-		local function slicedfn64(arg)
-			if flag24 then
-				return
-			end
-			flag24 = true  -- LEAKED BY SLICED | discord.gg/pubmethod
-
-			pcall(function()
-				if getgenv and getgenv().StopRiddler then
-					getgenv().StopRiddler()
-				end
-			end)
-
-			pcall(function()
-				localPlayer:Kick("Connection lost. Please rejoin. [" .. tostring(arg) .. "]")
-			end)
-		end
-
-		local function slicedfn65(arg)  -- LEAKED BY SLICED | discord.gg/pubmethod
-			if not (type(arg) ~= "string" or #arg < 12) then
-				for _, sliced98 in ipairs(tbl20) do
-					if #sliced98 >= 8 and arg:find(sliced98, 1, true) then
-						return true
-					end
-				end
-
-				return false
-			end
-
-			return false
-		end  -- LEAKED BY SLICED | discord.gg/pubmethod
-
-		sliced96.MessageOut:Connect(function(arg)
-			if slicedfn65(arg) then
-				slicedfn64("c")
-			end
-		end)
-
-		task.spawn(function()
-			local tbl21 = {}
-
-			pcall(function()
-				tbl21[#tbl21 + 1] = slicedfn29(game:GetService("CoreGui"))
-			end)  -- LEAKED BY SLICED | discord.gg/pubmethod
-
-			pcall(function()
-				tbl21[#tbl21 + 1] = playerGui
-			end)
-
-			while not flag24 do
-				task.wait(15)
-
-				for _, sliced98 in ipairs(tbl21) do
-					local slicedn34 = 0
-
-					if not pcall(function()
-						for _, descendant in ipairs(sliced98:GetDescendants()) do
-							slicedn34 += 1  -- LEAKED BY SLICED | discord.gg/pubmethod
-							if slicedn34 > 4000 then
-								break
-							end
-
-							if not descendant:IsDescendantOf(ScreenGui) then
-								if descendant:IsA("TextLabel") or descendant:IsA("TextBox") or descendant:IsA("TextButton") then
-									if slicedfn65(descendant.Text) then
-										slicedfn64("g")
-										return
-									end
-								end  -- LEAKED BY SLICED | discord.gg/pubmethod
-							end
-						end
-					end) then
-						break
-					else
-					end
-				end
-			end
-		end)
-	end))  -- LEAKED BY SLICED | discord.gg/pubmethod
-end)
+-- LogService/CoreGui/PlayerGui monitoring removed.
 
 return
 
-loadstring(game:HttpGet("https://gist.githubusercontent.com/xd-myscript/9c94ce8a1adf0153392a8e27a310e043/raw/1d656057dee14a790c8c201950146796845e6adf/Trancedairiddlecoding.lua"))()
+-- Remote loadstring removed.
