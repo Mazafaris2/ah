@@ -33,8 +33,6 @@ end
 
 playerGui = localPlayer:WaitForChild("PlayerGui")
 sliced89 = sliced86:WaitForChild("Packages"):WaitForChild("Net")
-_G.__RiddlerProxyUrl = "https://riddler-proxy.rp-relay-7k2m.workers.dev"
-_G.__RiddlerClientToken = "2b1f85fb32a1bbe4faf71cf47f64ee8777f9190b35337ee59d05e7b0081a6ad7"
 
 do  -- LEAKED BY SLICED | discord.gg/pubmethod
 	local tbl19 = {}
@@ -140,7 +138,6 @@ do
 				end  -- LEAKED BY SLICED | discord.gg/pubmethod
 			end
 
-			request_ = syn and syn.request or http and http.request or http_request or request
 			flag18 = sliced96.TouchEnabled and not sliced96.KeyboardEnabled
 			flag19 = _G.__RiddlerCfgBool("wordMode", false)
 			flag20 = false
@@ -5675,72 +5672,6 @@ _G.__RiddlerCurrentUpdate = function()
 	return str8, sliced100
 end
 
-task.spawn(function()
-	local tbl19 = {}
-
-	while true do
-		task.wait(5)
-
-		if not pcall(function()
-			local activeEvents = playerGui:FindFirstChild("ActiveEvents")  -- LEAKED BY SLICED | discord.gg/pubmethod
-			activeEvents = activeEvents and activeEvents:FindFirstChild("ActiveEvents")
-			if not activeEvents then
-				return
-			end
-
-			for _, riddlerDevBaseEvent in ipairs(_G.__RiddlerDevBaseEvents) do
-				local sliced99 = activeEvents:FindFirstChild(riddlerDevBaseEvent)
-
-				if sliced99 and sliced99.Visible and not tbl19[riddlerDevBaseEvent] then
-					tbl19[riddlerDevBaseEvent] = true
-					local tbl20 = { "=== " .. riddlerDevBaseEvent .. " @ " .. os.date("%Y-%m-%d %H:%M:%S") .. " ===" }
-					local plots = sliced88:FindFirstChild("Plots")  -- LEAKED BY SLICED | discord.gg/pubmethod
-
-					if plots then
-						for _, child in ipairs(plots:GetChildren()) do
-							local tbl21 = {}
-
-							for k, sliced100 in pairs(child:GetAttributes()) do
-								tbl21[#tbl21 + 1] = tostring(k) .. "=" .. tostring(sliced100)
-							end
-
-							table.sort(tbl21)
-							tbl20[#tbl20 + 1] = "plot " .. child.Name:sub(1, 8) .. ": " .. table.concat(tbl21, ",")
-						end
-					end  -- LEAKED BY SLICED | discord.gg/pubmethod
-
-					for _, child in ipairs(sliced88:GetChildren()) do
-						local str8 = child.Name:lower()
-
-						if str8:find("sammy") or str8:find("caylus") or str8:find("steak") or str8:find("rusty") or str8:find("base") then
-							local tbl21 = {}
-
-							for k, sliced100 in pairs(child:GetAttributes()) do
-								tbl21[#tbl21 + 1] = tostring(k) .. "=" .. tostring(sliced100)
-							end
-
-							table.sort(tbl21)
-							tbl20[#tbl20 + 1] = "ws " .. child.Name .. " (" .. child.ClassName .. "): " .. table.concat(tbl21, ",")
-						end  -- LEAKED BY SLICED | discord.gg/pubmethod
-					end
-
-					if writefile and appendfile then
-						if isfile and isfile("riddler_devbase_capture.txt") then
-							pcall(appendfile, "riddler_devbase_capture.txt", "\n" .. table.concat(tbl20, "\n"))
-						else
-							pcall(writefile, "riddler_devbase_capture.txt", table.concat(tbl20, "\n"))
-						end
-					end
-				elseif sliced99 and not sliced99.Visible then
-					tbl19[riddlerDevBaseEvent] = nil  -- LEAKED BY SLICED | discord.gg/pubmethod
-				end
-			end
-		end) then
-			task.wait(30)
-		end
-	end
-end)
-
 _G.__RiddlerReadUpdateItems = function()
 	local tbl19 = {}
 	local datas = sliced86:FindFirstChild("Datas")  -- LEAKED BY SLICED | discord.gg/pubmethod
@@ -8731,8 +8662,6 @@ do
 	end
 end
 
-local result
-
 do
 	slicedfn57 = function(arg)
 		return nil, "external proxy disabled"
@@ -8741,116 +8670,16 @@ do
 	slicedfn38 = function()
 		local sliced99 = slicedfn57({
 			op = "warm",
-			token = _G.__RiddlerClientToken,
 			tier = model,  -- LEAKED BY SLICED | discord.gg/pubmethod
-			user = _G.__RiddlerIdentNow and select(2, pcall(_G.__RiddlerIdentNow)) or _G.__RiddlerIdent,
 		})
 
 		return sliced99 ~= nil and sliced99.ok == true
 	end
 
-	_G.__RiddlerIdent = nil
-
-	do
-		local genv = getgenv and getgenv() or _G
-		result = nil
-
-		for _, sliced99 in ipairs({
-			"LRM_ScriptKey",  -- LEAKED BY SLICED | discord.gg/pubmethod
-			"LRM_SCRIPT_KEY",
-			"script_key",
-			"ScriptKey",
-			"SCRIPT_KEY",
-			"LRM_Key",
-			"lrm_key",
-			"luarmor_key",
-		}) do
-			do
-				local ok  -- LEAKED BY SLICED | discord.gg/pubmethod
-
-				ok, result = pcall(function()
-					return rawget(genv, sliced99)
-				end)
-
-				if ok then
-					local sliced100 = "string"
-					ok = type(result) == sliced100
-				end
-
-				if not (ok and #result >= 6) then
-					result = nil
-					continue  -- LEAKED BY SLICED | discord.gg/pubmethod
-				end
-			end
-
-			break
-		end
-	end
 end
 
 do
-	local function slicedfn58(arg)
-		local str8 = "riddler:" .. tostring(arg)
-		local slicedn34 = 2166136261  -- LEAKED BY SLICED | discord.gg/pubmethod
-
-		for i = 1, #str8 do
-			slicedn34 = bit32.bxor(slicedn34, str8:byte(i)) * 16777619 % 4294967296
-		end
-
-		return ("id:%08x"):format(slicedn34)
-	end
-
-	local str8 = nil
-
-	for _, sliced99 in ipairs({
-		function()
-			return gethwid()
-		end,  -- LEAKED BY SLICED | discord.gg/pubmethod
-		function()
-			return get_hwid()
-		end,
-		function()
-			return syn.get_hwid()
-		end,
-		function()
-			return game:GetService("RbxAnalyticsService"):GetClientId()
-		end,
-	}) do  -- LEAKED BY SLICED | discord.gg/pubmethod
-		local ok, result2 = pcall(sliced99)
-		if ok and type(result2) == "string" and #result2 >= 16 then
-			str8 = result2:lower()
-			break
-		end
-	end
-
-	if str8 then
-		_G.__RiddlerServerNow = function()
-			local ok, result2 = pcall(function()
-				return workspace:GetServerTimeNow()  -- LEAKED BY SLICED | discord.gg/pubmethod
-			end)
-
-			if ok and type(result2) == "number" and result2 > 1.6e9 then
-				return result2
-			end
-			return os.time()
-		end
-
-		_G.__RiddlerIdentNow = function()
-			return slicedfn58(str8 .. "|" .. tostring(math.floor(_G.__RiddlerServerNow() / 900)))
-		end
-	end  -- LEAKED BY SLICED | discord.gg/pubmethod
-
-	if str8 then
-		_G.__RiddlerIdent = slicedfn58(str8)
-	elseif result then
-		_G.__RiddlerIdent = slicedfn58(result)
-	else
-		local ok, result2 = pcall(function()
-			return localPlayer.UserId
-		end)
-
-		_G.__RiddlerIdent = ok and result2 and slicedfn58(result2) or "id:unknown"
-	end  -- LEAKED BY SLICED | discord.gg/pubmethod
+	-- Local identity and executor script-key collection removed.
 end
 
 do
@@ -9084,51 +8913,7 @@ do
 
 		do
 			local function slicedfn58(arg, arg2)
-				local riddlerIdent = _G.__RiddlerIdent  -- LEAKED BY SLICED | discord.gg/pubmethod
-
-				if _G.__RiddlerIdentNow then
-					local ok, result = pcall(_G.__RiddlerIdentNow)
-
-					if ok and type(result) == "string" and result ~= "" then
-						riddlerIdent = result
-					end
-				end
-
-				local tbl19 = { op = arg, token = _G.__RiddlerClientToken, tier = model, user = riddlerIdent }
-
-				for k, sliced98 in pairs(arg2) do
-					tbl19[k] = sliced98
-				end  -- LEAKED BY SLICED | discord.gg/pubmethod
-
-				local sliced98 = nil
-
-				if _G.__RiddlerCryptoOK then
-					sliced98 = _G.__RiddlerNonce()
-					tbl19.nonce = sliced98
-					tbl19.enc = 1
-					local str8 = ("%s|%s|%s|%s"):format(tostring(os.time()), sliced98, tostring(riddlerIdent), tostring(arg2.riddle or arg))
-					tbl19.sig = _G.__RiddlerSign(_G.__RiddlerClientToken, str8)
-					tbl19.checksum = _G.__RiddlerChecksum(str8)
-				end
-
-				local sliced99, sliced100 = slicedfn57(tbl19)  -- LEAKED BY SLICED | discord.gg/pubmethod
-				if not sliced99 then
-					return nil, sliced100
-				end
-
-				if not sliced99.ok then
-					return nil, tostring(sliced99.error or "proxy error")
-				end
-				local text = sliced99.text
-
-				if type(sliced99.data) == "string" and sliced98 then
-					text = _G.__RiddlerDecrypt(_G.__RiddlerClientToken, sliced98, sliced99.data)
-				end  -- LEAKED BY SLICED | discord.gg/pubmethod
-
-				if type(text) ~= "string" or slicedfn32(text) == "" then
-					return nil, "model returned no text"
-				end
-				return slicedfn32(text)
+				return nil, "external proxy disabled"
 			end
 
 			_G.__RiddlerSuffixes = { "EVENT" }
@@ -12382,17 +12167,6 @@ do
 
 		_G.__RiddlerWarmGen = (_G.__RiddlerWarmGen or 0) + 1
 
-		task.spawn(function()
-			if not request_ then
-				return
-			end
-			local riddlerWarmGen = _G.__RiddlerWarmGen
-			pcall(slicedfn38)
-
-			while task.wait(600) and _G.__RiddlerWarmGen == riddlerWarmGen do
-				pcall(slicedfn38)
-			end  -- LEAKED BY SLICED | discord.gg/pubmethod
-		end)
 
 		if getgenv then
 			getgenv().StopRiddler = function()
@@ -12612,9 +12386,6 @@ do  -- LEAKED BY SLICED | discord.gg/pubmethod
 	slicedfn53(str8, str10)
 end  -- LEAKED BY SLICED | discord.gg/pubmethod
 
-if not request_ then
-	slicedfn53("no HTTP function on this executor", "err")
-end
 
 -- LogService/CoreGui/PlayerGui monitoring removed.
 
